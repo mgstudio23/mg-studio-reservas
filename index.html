@@ -1564,47 +1564,63 @@
             }
         }
 
-        // Confirmar la reserva (redireccionar a WhatsApp)
-        function confirmReservation() {
-            const serviceSelect = document.getElementById('serviceSelect');
-            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
-            
-            // Obtener método de pago seleccionado
-            let paymentMethod = 'Yape';
-            if (document.getElementById('plin').checked) {
-                paymentMethod = 'Plin';
-            } else if (document.getElementById('bcp').checked) {
-                paymentMethod = 'Transferencia BCP';
-            }
-            
-            // Crear mensaje para WhatsApp
-            let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
-            message += `👤 Nombre: ${clientData.name}\n`;
-            message += `📱 Teléfono: ${clientData.phone}\n`;
-            message += `💅 Servicio: ${serviceName}\n`;
-            message += `📅 Fecha: ${selectedDay}\n`;
-            message += `⏰ Hora: ${selectedTime}\n`;
-            message += `💳 Método de pago preferido: ${paymentMethod}\n`;
-            
-            if (clientData.comments) {
-                message += `\n📝 Comentarios: ${clientData.comments}\n`;
-            }
-            
-            // Codificar el mensaje para URL
-            const encodedMessage = encodeURIComponent(message);
-            
-            // Crear el enlace de WhatsApp
-            const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
-            
-            // Redireccionar
-            window.open(whatsappLink, '_blank');
-            
-            // Cerrar el modal
-            closeModal();
-            
-            // Opcional: Mostrar mensaje de éxito
-            showSuccessMessage();
-        }
+     // Confirmar la reserva (redireccionar a WhatsApp)
+function confirmReservation() {
+    const serviceSelect = document.getElementById('serviceSelect');
+    const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+    
+    // Obtener método de pago seleccionado
+    let paymentMethod = 'Yape';
+    if (document.getElementById('plin').checked) {
+        paymentMethod = 'Plin';
+    } else if (document.getElementById('bcp').checked) {
+        paymentMethod = 'Transferencia BCP';
+    }
+    
+    // GUARDAR LA RESERVA EN LOCALSTORAGE
+    const reservationId = saveReservation(
+        selectedDay, 
+        selectedTime, 
+        {
+            name: clientData.name,
+            phone: clientData.phone,
+            comments: clientData.comments
+        }, 
+        serviceName
+    );
+    
+    // Marcar el horario como pendiente en la UI
+    markAsPending(selectedDay, selectedTime);
+    
+    // Crear mensaje para WhatsApp con el ID de reserva
+    let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
+    message += `👤 Nombre: ${clientData.name}\n`;
+    message += `📱 Teléfono: ${clientData.phone}\n`;
+    message += `💅 Servicio: ${serviceName}\n`;
+    message += `📅 Fecha: ${selectedDay}\n`;
+    message += `⏰ Hora: ${selectedTime}\n`;
+    message += `💳 Método de pago preferido: ${paymentMethod}\n`;
+    message += `🔢 ID de reserva: #${reservationId}\n`;
+    
+    if (clientData.comments) {
+        message += `\n📝 Comentarios: ${clientData.comments}\n`;
+    }
+    
+    // Codificar el mensaje para URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Crear el enlace de WhatsApp
+    const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
+    
+    // Redireccionar
+    window.open(whatsappLink, '_blank');
+    
+    // Cerrar el modal
+    closeModal();
+    
+    // Mostrar mensaje de éxito
+    showSuccessMessage();
+}
 
         // Mostrar mensaje de éxito después de la reserva
         function showSuccessMessage() {
@@ -1868,6 +1884,29 @@ function saveReservation(day, time, client, service) {
         // markAsReserved('Sábado 10 Mayo', '11:00 AM');
         // markAsPending('Viernes 9 Mayo', '5:00 PM');
         // markAsConfirmed('Domingo 4 Mayo', '9:00 AM');
+
+// Función para cargar todas las reservas existentes al cargar la página
+function loadReservations() {
+    // Obtener las reservas del localStorage
+    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Aplicar cada reserva a la UI
+    reservations.forEach(reservation => {
+        if (reservation.status === 'pending') {
+            markAsPending(reservation.day, reservation.time);
+        } else if (reservation.status === 'confirmed') {
+            markAsConfirmed(reservation.day, reservation.time);
+        }
+    });
+}
+
+// Cargar las reservas existentes al iniciar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Código existente aquí...
+    
+    // Cargar reservas
+    loadReservations();
+});
     </script>
 </body>
 </html>
