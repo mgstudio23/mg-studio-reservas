@@ -33,6 +33,7 @@
             background-color: #f5f5f5;
             font-size: 16px;
             line-height: 1.5;
+            overflow-x: hidden;
         }
         
         .admin-container {
@@ -50,6 +51,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .admin-header h1 {
@@ -84,6 +88,8 @@
             display: grid;
             grid-template-columns: 250px 1fr;
             gap: 20px;
+            position: relative;
+            min-height: calc(100vh - 140px);
         }
         
         .admin-sidebar {
@@ -91,6 +97,11 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
         }
         
         .admin-menu {
@@ -132,6 +143,13 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            min-height: 600px;
+            overflow: hidden;
+        }
+        
+        .admin-content.active {
+            display: block;
         }
         
         .admin-content-header {
@@ -141,6 +159,10 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--gray);
+            position: sticky;
+            top: 0;
+            background-color: var(--light);
+            z-index: 10;
         }
         
         .admin-content-header h2 {
@@ -152,6 +174,18 @@
             display: flex;
             border-bottom: 1px solid var(--gray);
             margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: sticky;
+            top: 60px;
+            background-color: var(--light);
+            z-index: 5;
+            padding-bottom: 1px;
+        }
+        
+        .admin-tabs::-webkit-scrollbar {
+            display: none;
         }
         
         .admin-tab {
@@ -159,6 +193,7 @@
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
         
         .admin-tab.active {
@@ -168,9 +203,15 @@
         }
         
         /* Tablas */
+        .admin-table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
         .admin-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
         
         .admin-table th, .admin-table td {
@@ -182,6 +223,9 @@
         .admin-table th {
             background-color: var(--gray-light);
             font-weight: bold;
+            position: sticky;
+            top: 120px;
+            z-index: 2;
         }
         
         .admin-table tr:hover {
@@ -256,6 +300,11 @@
         .admin-search {
             display: flex;
             margin-bottom: 20px;
+            position: sticky;
+            top: 100px;
+            z-index: 3;
+            padding: 5px 0;
+            background-color: var(--light);
         }
         
         .admin-search input {
@@ -289,6 +338,11 @@
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border-left: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
         }
         
         .admin-card-title {
@@ -337,6 +391,7 @@
         
         .admin-textarea {
             min-height: 100px;
+            resize: vertical;
         }
         
         .admin-form-buttons {
@@ -356,7 +411,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            overflow: auto;
+            overflow-y: auto;
         }
         
         .admin-modal-content {
@@ -404,6 +459,9 @@
         
         .admin-modal-body {
             margin-bottom: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
         }
         
         .admin-modal-footer {
@@ -427,10 +485,62 @@
             color: var(--light);
         }
         
+        /* Loader */
+        .admin-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .admin-loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--gray);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty state */
+        .admin-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .admin-empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--gray);
+        }
+        
+        .admin-empty-state-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .admin-panel {
                 grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                position: static;
+                margin-bottom: 20px;
+                max-height: none;
             }
             
             .admin-content-header {
@@ -447,15 +557,24 @@
                 width: 95%;
                 margin: 20px auto;
             }
+            
+            .admin-table th {
+                position: static;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loader -->
+    <div class="admin-loader" id="adminLoader">
+        <div class="admin-loader-spinner"></div>
+    </div>
+    
     <div class="admin-container">
         <div class="admin-header">
             <h1>MG STUDIO - Panel de Administración</h1>
             <div class="admin-actions">
-                <a href="index.html" class="admin-btn admin-btn-primary">Ver Sitio</a>
+                <a href="index.html" target="_blank" class="admin-btn admin-btn-primary">Ver Sitio</a>
             </div>
         </div>
         
@@ -496,44 +615,44 @@
             </div>
             
             <!-- DASHBOARD SECTION -->
-            <div id="dashboard" class="admin-content admin-section active">
+            <div id="dashboard" class="admin-content active">
                 <div class="admin-content-header">
                     <h2>Dashboard</h2>
                     <div>
-                        <span id="currentDate">Hoy: 28/04/2023</span>
+                        <span id="currentDate">Hoy: --/--/----</span>
                     </div>
                 </div>
                 
                 <div class="admin-cards">
                     <div class="admin-card">
                         <div class="admin-card-title">Citas de Hoy</div>
-                        <div class="admin-card-value">4</div>
+                        <div class="admin-card-value" id="todayCounter">0</div>
                         <div class="admin-card-footer">
-                            <span style="color: #2ecc71; margin-right: 5px;">↑ 25%</span> vs. semana pasada
+                            <span style="color: #999; margin-right: 5px;">-</span> Citas programadas
                         </div>
                     </div>
                     
                     <div class="admin-card">
                         <div class="admin-card-title">Citas Pendientes</div>
-                        <div class="admin-card-value">7</div>
+                        <div class="admin-card-value" id="pendingCounter">0</div>
                         <div class="admin-card-footer">
-                            <span style="color: #e74c3c; margin-right: 5px;">↓ 10%</span> vs. semana pasada
+                            <span style="color: #999; margin-right: 5px;">-</span> Por confirmar
                         </div>
                     </div>
                     
                     <div class="admin-card">
-                        <div class="admin-card-title">Clientes Nuevos</div>
-                        <div class="admin-card-value">12</div>
+                        <div class="admin-card-title">Clientes Totales</div>
+                        <div class="admin-card-value" id="clientsCounter">0</div>
                         <div class="admin-card-footer">
-                            <span style="color: #2ecc71; margin-right: 5px;">↑ 33%</span> vs. mes pasado
+                            <span style="color: #999; margin-right: 5px;">-</span> En la base de datos
                         </div>
                     </div>
                     
                     <div class="admin-card">
                         <div class="admin-card-title">Ingresos (Mes)</div>
-                        <div class="admin-card-value">s/1,450</div>
+                        <div class="admin-card-value" id="incomeCounter">s/0</div>
                         <div class="admin-card-footer">
-                            <span style="color: #2ecc71; margin-right: 5px;">↑ 15%</span> vs. mes pasado
+                            <span style="color: #999; margin-right: 5px;">-</span> Acumulado
                         </div>
                     </div>
                 </div>
@@ -549,86 +668,37 @@
                     <button onclick="searchAppointments()">🔍</button>
                 </div>
                 
-                <div id="appointmentsTable">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Servicio</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>María López</td>
-                                <td>Lifting de Pestañas</td>
-                                <td>28/04/2023</td>
-                                <td>2:00 PM</td>
-                                <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                                <td>
-                                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('1')">✎</button>
-                                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('María López', '999888777')">📱</button>
-                                    <button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('1')">✕</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Carlos Mendoza</td>
-                                <td>Extensiones Clásicas</td>
-                                <td>28/04/2023</td>
-                                <td>5:00 PM</td>
-                                <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                                <td>
-                                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('2')">✎</button>
-                                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('Carlos Mendoza', '987654321')">📱</button>
-                                    <button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('2')">✕</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Ana García</td>
-                                <td>Volumen Brasileño 2D</td>
-                                <td>29/04/2023</td>
-                                <td>11:00 AM</td>
-                                <td><span class="admin-badge admin-badge-pending">Pendiente</span></td>
-                                <td>
-                                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('3')">✎</button>
-                                    <button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('3')">✓</button>
-                                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('Ana García', '912345678')">📱</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Lucía Martínez</td>
-                                <td>Laminado de cejas</td>
-                                <td>29/04/2023</td>
-                                <td>2:00 PM</td>
-                                <td><span class="admin-badge admin-badge-pending">Pendiente</span></td>
-                                <td>
-                                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('4')">✎</button>
-                                    <button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('4')">✓</button>
-                                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('Lucía Martínez', '945678123')">📱</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Valentina Rojas</td>
-                                <td>Paquete 1: Lifting + Laminado</td>
-                                <td>30/04/2023</td>
-                                <td>9:00 AM</td>
-                                <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                                <td>
-                                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('5')">✎</button>
-                                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('Valentina Rojas', '956781234')">📱</button>
-                                    <button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('5')">✕</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="admin-table-container">
+                    <div id="appointmentsTable">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Servicio</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="admin-empty-state">
+                                            <div class="admin-empty-state-icon">📅</div>
+                                            <div class="admin-empty-state-text">No hay citas registradas</div>
+                                            <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
             <!-- APPOINTMENTS SECTION -->
-            <div id="appointments" class="admin-content admin-section">
+            <div id="appointments" class="admin-content">
                 <div class="admin-content-header">
                     <h2>Gestión de Citas</h2>
                     <div>
@@ -649,114 +719,36 @@
                     <div class="admin-tab">Completadas</div>
                 </div>
                 
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Servicio</th>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#001</td>
-                            <td>María López</td>
-                            <td>Lifting de Pestañas</td>
-                            <td>28/04/2023</td>
-                            <td>2:00 PM</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#002</td>
-                            <td>Carlos Mendoza</td>
-                            <td>Extensiones Clásicas</td>
-                            <td>28/04/2023</td>
-                            <td>5:00 PM</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#003</td>
-                            <td>Ana García</td>
-                            <td>Volumen Brasileño 2D</td>
-                            <td>29/04/2023</td>
-                            <td>11:00 AM</td>
-                            <td><span class="admin-badge admin-badge-pending">Pendiente</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-confirm">✓</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#004</td>
-                            <td>Lucía Martínez</td>
-                            <td>Laminado de cejas</td>
-                            <td>29/04/2023</td>
-                            <td>2:00 PM</td>
-                            <td><span class="admin-badge admin-badge-pending">Pendiente</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-confirm">✓</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#005</td>
-                            <td>Valentina Rojas</td>
-                            <td>Paquete 1: Lifting + Laminado</td>
-                            <td>30/04/2023</td>
-                            <td>9:00 AM</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Confirmado</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#006</td>
-                            <td>Jorge Pérez</td>
-                            <td>Extensiones Híbridas</td>
-                            <td>27/04/2023</td>
-                            <td>3:00 PM</td>
-                            <td><span class="admin-badge admin-badge-completed">Completado</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#007</td>
-                            <td>Carmen Díaz</td>
-                            <td>Visagismo</td>
-                            <td>26/04/2023</td>
-                            <td>10:00 AM</td>
-                            <td><span class="admin-badge admin-badge-canceled">Cancelado</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Servicio</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="admin-empty-state">
+                                        <div class="admin-empty-state-icon">📅</div>
+                                        <div class="admin-empty-state-text">No hay citas registradas</div>
+                                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- CLIENTS SECTION -->
-            <div id="clients" class="admin-content admin-section">
+            <div id="clients" class="admin-content">
                 <div class="admin-content-header">
                     <h2>Gestión de Clientes</h2>
                     <div>
@@ -769,79 +761,35 @@
                     <button>🔍</button>
                 </div>
                 
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Teléfono</th>
-                            <th>Última Visita</th>
-                            <th>Total Visitas</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#001</td>
-                            <td>María López</td>
-                            <td>999888777</td>
-                            <td>28/04/2023</td>
-                            <td>5</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#002</td>
-                            <td>Carlos Mendoza</td>
-                            <td>987654321</td>
-                            <td>28/04/2023</td>
-                            <td>2</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#003</td>
-                            <td>Ana García</td>
-                            <td>912345678</td>
-                            <td>15/04/2023</td>
-                            <td>8</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#004</td>
-                            <td>Lucía Martínez</td>
-                            <td>945678123</td>
-                            <td>20/04/2023</td>
-                            <td>1</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#005</td>
-                            <td>Valentina Rojas</td>
-                            <td>956781234</td>
-                            <td>10/04/2023</td>
-                            <td>4</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-whatsapp">📱</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Última Visita</th>
+                                <th>Total Visitas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">
+                                    <div class="admin-empty-state">
+                                        <div class="admin-empty-state-icon">👥</div>
+                                        <div class="admin-empty-state-text">No hay clientes registrados</div>
+                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nuevo Cliente</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- SERVICES SECTION -->
-            <div id="services" class="admin-content admin-section">
+            <div id="services" class="admin-content">
                 <div class="admin-content-header">
                     <h2>Gestión de Servicios</h2>
                     <div>
@@ -854,79 +802,35 @@
                     <button>🔍</button>
                 </div>
                 
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Servicio</th>
-                            <th>Categoría</th>
-                            <th>Duración</th>
-                            <th>Precio</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#001</td>
-                            <td>Lifting de Pestañas</td>
-                            <td>Pestañas</td>
-                            <td>45 min</td>
-                            <td>s/40</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#002</td>
-                            <td>Extensiones Clásicas</td>
-                            <td>Pestañas</td>
-                            <td>60 min</td>
-                            <td>s/50</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#003</td>
-                            <td>Volumen Brasileño 2D</td>
-                            <td>Volumen</td>
-                            <td>90 min</td>
-                            <td>s/80</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#004</td>
-                            <td>Laminado de cejas</td>
-                            <td>Cejas</td>
-                            <td>45 min</td>
-                            <td>s/35</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#005</td>
-                            <td>Visagismo</td>
-                            <td>Cejas</td>
-                            <td>20 min</td>
-                            <td>s/10</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Servicio</th>
+                                <th>Categoría</th>
+                                <th>Duración</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">
+                                    <div class="admin-empty-state">
+                                        <div class="admin-empty-state-icon">💄</div>
+                                        <div class="admin-empty-state-text">No hay servicios registrados</div>
+                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nuevo Servicio</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- PROMOTIONS SECTION -->
-            <div id="promotions" class="admin-content admin-section">
+            <div id="promotions" class="admin-content">
                 <div class="admin-content-header">
                     <h2>Gestión de Promociones</h2>
                     <div>
@@ -939,68 +843,35 @@
                     <button>🔍</button>
                 </div>
                 
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Descuento</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#001</td>
-                            <td>Lifting + Laminado</td>
-                            <td>Tratamiento completo para mirada perfecta</td>
-                            <td>s/15 (20%)</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Activa</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#002</td>
-                            <td>Extensiones + Visagismo</td>
-                            <td>Mirada impactante y cejas perfectas</td>
-                            <td>s/10 (12%)</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Activa</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#003</td>
-                            <td>Mamá e Hija</td>
-                            <td>Experiencia compartida</td>
-                            <td>25%</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Activa</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#004</td>
-                            <td>Promo Verano</td>
-                            <td>Descuento especial en efecto mojado</td>
-                            <td>s/10 (15%)</td>
-                            <td><span class="admin-badge admin-badge-canceled">Inactiva</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-confirm">✓</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Descuento</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">
+                                    <div class="admin-empty-state">
+                                        <div class="admin-empty-state-icon">📢</div>
+                                        <div class="admin-empty-state-text">No hay promociones registradas</div>
+                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nueva Promoción</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <!-- SETTINGS SECTION -->
-            <div id="settings" class="admin-content admin-section">
+            <div id="settings" class="admin-content">
                 <div class="admin-content-header">
                     <h2>Configuración</h2>
                 </div>
@@ -1029,7 +900,7 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                             <div>
                                 <label class="admin-label">Día</label>
-                                <select class="admin-select">
+                                <select class="admin-select" id="workDay">
                                     <option>Lunes</option>
                                     <option>Martes</option>
                                     <option>Miércoles</option>
@@ -1041,30 +912,19 @@
                             </div>
                             <div>
                                 <label class="admin-label">Desde</label>
-                                <input type="time" class="admin-input" value="09:00">
+                                <input type="time" class="admin-input" id="workTimeFrom" value="09:00">
                             </div>
                             <div>
                                 <label class="admin-label">Hasta</label>
-                                <input type="time" class="admin-input" value="19:00">
+                                <input type="time" class="admin-input" id="workTimeTo" value="19:00">
                             </div>
                         </div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white; margin-top: 10px;">+ Añadir Horario</button>
+                        <button class="admin-btn" style="background-color: var(--primary); color: white; margin-top: 10px;" onclick="addWorkingHours()">+ Añadir Horario</button>
                         
-                        <div style="margin-top: 15px;">
-                            <div style="display: flex; justify-content: space-between; padding: 8px; background-color: white; border-radius: 5px; margin-bottom: 5px;">
-                                <span>Lunes</span>
-                                <span>9:00 AM - 7:00 PM</span>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px; background-color: white; border-radius: 5px; margin-bottom: 5px;">
-                                <span>Martes</span>
-                                <span>9:00 AM - 7:00 PM</span>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px; background-color: white; border-radius: 5px; margin-bottom: 5px;">
-                                <span>Miércoles</span>
-                                <span>9:00 AM - 7:00 PM</span>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
+                        <div style="margin-top: 15px;" id="workingHoursList">
+                            <!-- Los horarios se cargarán dinámicamente -->
+                            <div class="admin-empty-state" style="padding: 20px 0;">
+                                <div class="admin-empty-state-text" style="font-size: 14px;">No hay horarios configurados</div>
                             </div>
                         </div>
                     </div>
@@ -1080,11 +940,16 @@
                             <label for="facebook" class="admin-label">Facebook:</label>
                             <input type="text" id="facebook" class="admin-input" value="">
                         </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="whatsapp" class="admin-label">WhatsApp para reservas:</label>
+                            <input type="text" id="whatsapp" class="admin-input" value="51995904351">
+                        </div>
                     </div>
                     
                     <div class="admin-form-buttons">
                         <button class="admin-btn" style="background-color: var(--gray);">Cancelar</button>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;">Guardar Cambios</button>
+                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="saveSettings()">Guardar Cambios</button>
                     </div>
                 </div>
             </div>
@@ -1236,29 +1101,48 @@
             if (document.getElementById('newDate')) {
                 const formattedDate = now.toISOString().split('T')[0];
                 document.getElementById('newDate').value = formattedDate;
-                document.getElementById('editDate').value = formattedDate;
+                if (document.getElementById('editDate')) {
+                    document.getElementById('editDate').value = formattedDate;
+                }
+            }
+            
+            // Cargar las reservas desde localStorage si existen
+            if (typeof loadReservationsAdmin === 'function') {
+                loadReservationsAdmin();
             }
         });
         
         // Mostrar/ocultar secciones del panel
         function showAdminSection(sectionId) {
-            // Ocultar todas las secciones
-            const sections = document.querySelectorAll('.admin-section');
-            sections.forEach(section => {
-                section.classList.remove('active');
-            });
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
             
-            // Mostrar la sección seleccionada
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Actualizar menú lateral
-            const menuLinks = document.querySelectorAll('.admin-menu-link');
-            menuLinks.forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Activar link del menú
-            event.currentTarget.classList.add('active');
+            // Pequeño delay para mostrar la animación de carga
+            setTimeout(() => {
+                // Ocultar todas las secciones
+                const sections = document.querySelectorAll('.admin-content');
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Mostrar la sección seleccionada
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Actualizar menú lateral
+                const menuLinks = document.querySelectorAll('.admin-menu-link');
+                menuLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Activar link del menú
+                event.currentTarget.classList.add('active');
+                
+                // Scroll al inicio
+                window.scrollTo(0, 0);
+                
+                // Ocultar el loader
+                document.getElementById('adminLoader').style.display = 'none';
+            }, 300);
         }
         
         // Mostrar diferentes tabs de citas
@@ -1272,11 +1156,21 @@
             // Activar la tab seleccionada
             event.currentTarget.classList.add('active');
             
-            // Aquí iría la lógica para mostrar las citas según la tab
-            console.log('Mostrando tab: ' + tabId);
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
             
-            // Para una implementación real, aquí filtrarías las citas según el tipo
-            // y actualizarías la tabla
+            // Pequeño delay para mostrar la animación de carga
+            setTimeout(() => {
+                // Aquí iría la lógica para mostrar las citas según la tab
+                console.log('Mostrando tab: ' + tabId);
+                
+                if (typeof loadReservationsFiltered === 'function') {
+                    loadReservationsFiltered(tabId);
+                }
+                
+                // Ocultar el loader
+                document.getElementById('adminLoader').style.display = 'none';
+            }, 300);
         }
         
         // Buscar citas
@@ -1284,8 +1178,19 @@
             const searchText = document.getElementById('appointmentSearch').value.toLowerCase();
             console.log('Buscando: ' + searchText);
             
-            // Para una implementación real, aquí filtrarías las citas 
-            // según el texto de búsqueda
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
+            
+            // Pequeño delay para mostrar la animación de carga
+            setTimeout(() => {
+                // Para este panel de demostración, simplemente recargar las reservas
+                if (typeof searchReservations === 'function') {
+                    searchReservations(searchText);
+                }
+                
+                // Ocultar el loader
+                document.getElementById('adminLoader').style.display = 'none';
+            }, 300);
         }
         
         // Abrir modal de edición de cita
@@ -1295,10 +1200,15 @@
             // En una implementación real, aquí cargarías los datos de la cita
             console.log('Editando cita ID: ' + appointmentId);
             
-            // Para este ejemplo, cargamos datos de prueba
-            document.getElementById('editClientName').value = 'María López';
-            document.getElementById('editClientPhone').value = '999888777';
-            document.getElementById('editStatus').value = 'confirmed';
+            if (typeof openEditModalReservation === 'function') {
+                openEditModalReservation(appointmentId);
+            } else {
+                // Datos de ejemplo para el modal
+                document.getElementById('editClientName').value = '';
+                document.getElementById('editClientPhone').value = '';
+                document.getElementById('editStatus').value = 'pending';
+                document.getElementById('editNotes').value = '';
+            }
         }
         
         // Cerrar modal de edición
@@ -1308,6 +1218,9 @@
         
         // Guardar cambios en la cita
         function saveAppointment() {
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
+            
             // Recoger los datos del formulario
             const clientName = document.getElementById('editClientName').value;
             const clientPhone = document.getElementById('editClientPhone').value;
@@ -1317,20 +1230,43 @@
             const status = document.getElementById('editStatus').value;
             const notes = document.getElementById('editNotes').value;
             
-            // En una implementación real, aquí guardarías los datos
-            console.log('Guardando cita para: ' + clientName);
+            // Validar datos
+            if (!clientName) {
+                alert('Por favor, ingresa el nombre del cliente');
+                document.getElementById('adminLoader').style.display = 'none';
+                return;
+            }
             
-            // Cerrar el modal
-            closeEditModal();
-            
-            // Mostrar mensaje de éxito
-            alert('Cita actualizada correctamente');
-            
-            // Actualizar la tabla (en una implementación real)
+            // Si existe la función del código de integración, usarla
+            if (typeof saveAppointmentData === 'function') {
+                saveAppointmentData();
+            } else {
+                // Simulación de guardado (para demostración)
+                setTimeout(() => {
+                    // Cerrar el modal
+                    closeEditModal();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Cita actualizada correctamente');
+                    
+                    // Ocultar el loader
+                    document.getElementById('adminLoader').style.display = 'none';
+                }, 500);
+            }
         }
         
         // Abrir modal de nueva cita
         function openNewAppointmentModal() {
+            // Limpiar el formulario
+            document.getElementById('newClientName').value = '';
+            document.getElementById('newClientPhone').value = '';
+            document.getElementById('newNotes').value = '';
+            
+            // Establecer la fecha actual
+            const now = new Date();
+            document.getElementById('newDate').value = now.toISOString().split('T')[0];
+            
+            // Mostrar el modal
             document.getElementById('newAppointmentModal').style.display = 'block';
         }
         
@@ -1341,6 +1277,9 @@
         
         // Crear nueva cita
         function createAppointment() {
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
+            
             // Recoger los datos del formulario
             const clientName = document.getElementById('newClientName').value;
             const clientPhone = document.getElementById('newClientPhone').value;
@@ -1353,59 +1292,66 @@
             // Validar datos
             if (!clientName || !clientPhone) {
                 alert('Por favor, completa los campos obligatorios');
+                document.getElementById('adminLoader').style.display = 'none';
                 return;
             }
             
-            // En una implementación real, aquí guardarías los datos
-            console.log('Creando cita para: ' + clientName);
-            
-            // También actualizarías los horarios disponibles en el sistema de reservas
-            
-            // Cerrar el modal
-            closeNewAppointmentModal();
-            
-            // Mostrar mensaje de éxito
-            alert('Cita creada correctamente');
-            
-            // Actualizar la tabla (en una implementación real)
+            // Si existe la función del código de integración, usarla
+            if (typeof createAppointmentData === 'function') {
+                createAppointmentData();
+            } else {
+                // Simulación de creación (para demostración)
+                setTimeout(() => {
+                    // Cerrar el modal
+                    closeNewAppointmentModal();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Cita creada correctamente');
+                    
+                    // Ocultar el loader
+                    document.getElementById('adminLoader').style.display = 'none';
+                }, 500);
+            }
         }
         
         // Confirmar una cita
         function confirmAppointment(appointmentId) {
-            // En una implementación real, aquí confirmarías la cita
-            console.log('Confirmando cita ID: ' + appointmentId);
-            
-            // Actualizar estado en la tabla (simulación)
-            const confirmBtn = event.currentTarget;
-            const row = confirmBtn.closest('tr');
-            const statusCell = row.querySelector('td:nth-child(5)');
-            statusCell.innerHTML = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-            
-            // Eliminar el botón de confirmar
-            confirmBtn.remove();
-            
-            // Mostrar mensaje de éxito
-            alert('Cita confirmada correctamente');
+            // Pedir confirmación
+            if (confirm('¿Confirmar esta cita?')) {
+                // Mostrar el loader
+                document.getElementById('adminLoader').style.display = 'flex';
+                
+                // Si existe la función del código de integración, usarla
+                if (typeof confirmReservationAdmin === 'function') {
+                    confirmReservationAdmin(appointmentId);
+                } else {
+                    // Simulación de confirmación (para demostración)
+                    setTimeout(() => {
+                        alert('Cita confirmada correctamente');
+                        document.getElementById('adminLoader').style.display = 'none';
+                    }, 500);
+                }
+            }
         }
         
         // Cancelar una cita
         function cancelAppointment(appointmentId) {
             // Pedir confirmación
-            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-                return;
+            if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                // Mostrar el loader
+                document.getElementById('adminLoader').style.display = 'flex';
+                
+                // Si existe la función del código de integración, usarla
+                if (typeof cancelReservationAdmin === 'function') {
+                    cancelReservationAdmin(appointmentId);
+                } else {
+                    // Simulación de cancelación (para demostración)
+                    setTimeout(() => {
+                        alert('Cita cancelada correctamente');
+                        document.getElementById('adminLoader').style.display = 'none';
+                    }, 500);
+                }
             }
-            
-            // En una implementación real, aquí cancelarías la cita
-            console.log('Cancelando cita ID: ' + appointmentId);
-            
-            // Actualizar estado en la tabla (simulación)
-            const cancelBtn = event.currentTarget;
-            const row = cancelBtn.closest('tr');
-            const statusCell = row.querySelector('td:nth-child(5)');
-            statusCell.innerHTML = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-            
-            // Mostrar mensaje de éxito
-            alert('Cita cancelada correctamente');
         }
         
         // Contactar con cliente por WhatsApp
@@ -1417,11 +1363,112 @@
             window.open(`https://wa.me/51${phone}?text=${encodeURIComponent(message)}`, '_blank');
         }
         
+        // Agregar horario de trabajo
+        function addWorkingHours() {
+            const day = document.getElementById('workDay').value;
+            const timeFrom = document.getElementById('workTimeFrom').value;
+            const timeTo = document.getElementById('workTimeTo').value;
+            
+            // Validar datos
+            if (!day || !timeFrom || !timeTo) {
+                alert('Por favor, completa todos los campos del horario');
+                return;
+            }
+            
+            // Formatear las horas para mostrar AM/PM
+            const formatTime = (timeStr) => {
+                const [hours, minutes] = timeStr.split(':');
+                const h = parseInt(hours);
+                return `${h % 12 || 12}:${minutes} ${h < 12 ? 'AM' : 'PM'}`;
+            };
+            
+            // Crear elemento HTML para el nuevo horario
+            const scheduleItem = document.createElement('div');
+            scheduleItem.style.display = 'flex';
+            scheduleItem.style.justifyContent = 'space-between';
+            scheduleItem.style.padding = '8px';
+            scheduleItem.style.backgroundColor = 'white';
+            scheduleItem.style.borderRadius = '5px';
+            scheduleItem.style.marginBottom = '5px';
+            
+            scheduleItem.innerHTML = `
+                <span>${day}</span>
+                <span>${formatTime(timeFrom)} - ${formatTime(timeTo)}</span>
+                <button class="admin-action-btn admin-action-cancel" onclick="this.parentElement.remove()">✕</button>
+            `;
+            
+            // Eliminar mensaje de "no hay horarios" si existe
+            const emptyState = document.querySelector('#workingHoursList .admin-empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Añadir al contenedor
+            document.getElementById('workingHoursList').appendChild(scheduleItem);
+        }
+        
+        // Guardar la configuración
+        function saveSettings() {
+            // Mostrar el loader
+            document.getElementById('adminLoader').style.display = 'flex';
+            
+            // Recoger los datos del formulario
+            const studioName = document.getElementById('studioName').value;
+            const studioAddress = document.getElementById('studioAddress').value;
+            const studioPhone = document.getElementById('studioPhone').value;
+            const instagram = document.getElementById('instagram').value;
+            const facebook = document.getElementById('facebook').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            
+            // Recoger los horarios
+            const workingHours = [];
+            const hourItems = document.querySelectorAll('#workingHoursList > div:not(.admin-empty-state)');
+            hourItems.forEach(item => {
+                const day = item.querySelector('span:first-child').textContent;
+                const timeRange = item.querySelector('span:nth-child(2)').textContent;
+                workingHours.push({ day, timeRange });
+            });
+            
+            // Simulación de guardado (para demostración)
+            setTimeout(() => {
+                // Mostrar mensaje de éxito
+                alert('Configuración guardada correctamente');
+                
+                // Ocultar el loader
+                document.getElementById('adminLoader').style.display = 'none';
+            }, 500);
+        }
+        
         // Cerrar los modales si se hace clic fuera
         window.onclick = function(event) {
             if (event.target.classList.contains('admin-modal')) {
                 event.target.style.display = 'none';
             }
+        }
+        
+        // Inicializar funciones del sistema de reservas si están disponibles
+        function initReservationSystem() {
+            // Aquí se inicializarían las funciones del sistema de reservas
+            // cuando se integre con el sistema principal
+            
+            if (typeof loadReservations === 'function') {
+                loadReservations();
+            }
+        }
+        
+        // Verificar al cargar si es posible integrar con el sistema principal
+        if (window.parent !== window) {
+            try {
+                // Intentar comunicación con la ventana padre (para caso de iframe)
+                console.log('Panel de administración cargado en iframe');
+                
+                // Inicializar sistema si es posible
+                initReservationSystem();
+            } catch (e) {
+                console.error('Error al comunicarse con la ventana padre:', e);
+            }
+        } else {
+            console.log('Panel de administración cargado de forma independiente');
         }
     </script>
 </body>
