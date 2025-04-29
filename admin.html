@@ -1192,23 +1192,151 @@ function showAdminSection(sectionId) {
             }, 300);
         }
         
-        // Abrir modal de edición de cita
-        function openEditModal(appointmentId) {
-            document.getElementById('editAppointmentModal').style.display = 'block';
-            
-            // En una implementación real, aquí cargarías los datos de la cita
-            console.log('Editando cita ID: ' + appointmentId);
-            
-            if (typeof openEditModalReservation === 'function') {
-                openEditModalReservation(appointmentId);
-            } else {
-                // Datos de ejemplo para el modal
-                document.getElementById('editClientName').value = '';
-                document.getElementById('editClientPhone').value = '';
-                document.getElementById('editStatus').value = 'pending';
-                document.getElementById('editNotes').value = '';
-            }
+    // Abrir modal de edición de cita
+function openEditModal(appointmentId) {
+    document.getElementById('editAppointmentModal').style.display = 'block';
+    
+    // Convertir a número si viene como string
+    appointmentId = parseInt(appointmentId);
+    
+    // Obtener todas las reservas
+    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Encontrar la reserva por ID
+    const reservation = reservations.find(r => r.id === appointmentId);
+    
+    if (!reservation) {
+        alert('No se encontró la reserva');
+        return;
+    }
+    
+    // Llenar el formulario con los datos de la reserva
+    document.getElementById('editClientName').value = reservation.client.name || '';
+    document.getElementById('editClientPhone').value = reservation.client.phone || '';
+    
+    // Seleccionar el servicio
+    const serviceSelect = document.getElementById('editService');
+    for (let i = 0; i < serviceSelect.options.length; i++) {
+        if (serviceSelect.options[i].value === reservation.service) {
+            serviceSelect.selectedIndex = i;
+            break;
         }
+    }
+    
+    // Convertir día a fecha para el input date
+    try {
+        // Para formato como "Lunes 10 Mayo"
+        const parts = reservation.day.split(' ');
+        const day = parseInt(parts[1]);
+        const monthName = parts[2];
+        
+        // Convertir nombre de mes a número
+        const months = {
+            'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
+            'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+        };
+        
+        const month = months[monthName] || 0;
+        const year = new Date().getFullYear();
+        
+        const date = new Date(year, month, day);
+        const dateString = date.toISOString().split('T')[0];
+        
+        document.getElementById('editDate').value = dateString;
+    } catch (e) {
+        // Si hay error, usar la fecha actual
+        const now = new Date();
+        document.getElementById('editDate').value = now.toISOString().split('T')[0];
+    }
+    
+    // Seleccionar la hora
+    const timeSelect = document.getElementById('editTime');
+    for (let i = 0; i < timeSelect.options.length; i++) {
+        if (timeSelect.options[i].text === reservation.time) {
+            timeSelect.selectedIndex = i;
+            break;
+        }
+    }
+    
+    // Seleccionar el estado
+    document.getElementById('editStatus').value = reservation.status || 'pending';
+    
+    // Establecer observaciones si existen
+    document.getElementById('editNotes').value = reservation.client.comments || '';
+    
+    // Guardar el ID de la reserva en un atributo data
+    document.getElementById('editAppointmentModal').setAttribute('data-reservation-id', appointmentId);
+}
+
+// Función para guardar los cambios de una reserva
+function saveAppointment() {
+    // Obtener el ID de la reserva
+    const appointmentId = parseInt(document.getElementById('editAppointmentModal').getAttribute('data-reservation-id'));
+    
+    // Obtener todas las reservas
+    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Encontrar la reserva por ID
+    const index = reservations.findIndex(r => r.id === appointmentId);
+    
+    if (index === -1) {
+        alert('No se encontró la reserva');
+        return;
+    }
+    
+    // Obtener los valores del formulario
+    const clientName = document.getElementById('editClientName').value;
+    const clientPhone = document.getElementById('editClientPhone').value;
+    const service = document.getElementById('editService').value;
+    const date = document.getElementById('editDate').value;
+    const time = document.getElementById('editTime').value;
+    const status = document.getElementById('editStatus').value;
+    const notes = document.getElementById('editNotes').value;
+    
+    // Validar datos
+    if (!clientName) {
+        alert('Por favor, ingresa el nombre del cliente');
+        return;
+    }
+    
+    // Convertir fecha a formato de día (formato: "Lunes 1 Mayo")
+    const dateObj = new Date(date);
+    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const dayOfWeek = weekdays[dateObj.getDay()];
+    const dayOfMonth = dateObj.getDate();
+    const monthName = months[dateObj.getMonth()];
+    
+    const formattedDay = `${dayOfWeek} ${dayOfMonth} ${monthName}`;
+    
+    // Actualizar la reserva
+    reservations[index] = {
+        ...reservations[index],
+        day: formattedDay,
+        time: time,
+        service: service,
+        status: status,
+        client: {
+            name: clientName,
+            phone: clientPhone,
+            comments: notes
+        },
+        lastUpdated: new Date().toISOString()
+    };
+    
+    // Guardar los cambios
+    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+    
+    // Cerrar el modal
+    closeEditModal();
+    
+    // Recargar la lista de reservas
+    loadReservationsAdmin();
+    
+    // Mostrar mensaje de éxito
+    alert('Cita actualizada correctamente');
+}
         
         // Cerrar modal de edición
         function closeEditModal() {
@@ -1499,6 +1627,202 @@ function showAdminSection(sectionId) {
         document.body.appendChild(emergencyButton);
         emergencyButton.style.display = 'block';
     }, 5000);
+    // Función para cargar reservas desde localStorage
+function loadReservationsAdmin() {
+    // Obtener las reservas
+    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Actualizar contadores del dashboard
+    document.getElementById('todayCounter').textContent = countTodayReservations(reservations);
+    document.getElementById('pendingCounter').textContent = countPendingReservations(reservations);
+    
+    // Obtener el elemento de la tabla
+    const tableBody = document.querySelector('#appointmentsTable tbody');
+    
+    // Limpiar la tabla
+    tableBody.innerHTML = '';
+    
+    // Si no hay reservas, mostrar mensaje
+    if (reservations.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📅</div>
+                        <div class="admin-empty-state-text">No hay citas registradas</div>
+                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Ordenar reservas (más recientes primero)
+    reservations.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Llenar la tabla con los datos
+    reservations.forEach(reservation => {
+        // Formatear fecha para visualización
+        const formattedDate = formatReservationDate(reservation.date);
+        
+        // Crear elemento de fila
+        const row = document.createElement('tr');
+        
+        // Definir estado con su clase correspondiente
+        let statusBadge = getStatusBadge(reservation.status);
+        
+        // Definir botones de acción según el estado
+        let actionButtons = getActionButtons(reservation);
+        
+        // Llenar contenido de la fila
+        row.innerHTML = `
+            <td>${reservation.client.name || 'Cliente sin nombre'}</td>
+            <td>${reservation.service || 'Servicio no especificado'}</td>
+            <td>${reservation.day || formattedDate}</td>
+            <td>${reservation.time || '00:00'}</td>
+            <td>${statusBadge}</td>
+            <td>${actionButtons}</td>
+        `;
+        
+        // Añadir fila a la tabla
+        tableBody.appendChild(row);
+    });
+}
+
+// Función auxiliar para formatear fechas
+function formatReservationDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    } catch (e) {
+        return 'Fecha desconocida';
+    }
+}
+
+// Función para contar reservas de hoy
+function countTodayReservations(reservations) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return reservations.filter(r => {
+        // Intentar parsear la fecha de la reserva
+        try {
+            const reservationDay = r.day.split(' ')[1]; // Extraer el día del formato "Lunes 10 Mayo"
+            const reservationDate = new Date();
+            reservationDate.setDate(parseInt(reservationDay));
+            reservationDate.setHours(0, 0, 0, 0);
+            
+            // Comparar si es hoy
+            return reservationDate.getTime() === today.getTime();
+        } catch (e) {
+            // Si hay un error al parsear, intentar con la fecha de creación
+            try {
+                const creationDate = new Date(r.date);
+                creationDate.setHours(0, 0, 0, 0);
+                return creationDate.getTime() === today.getTime();
+            } catch (e2) {
+                return false;
+            }
+        }
+    }).length;
+}
+
+// Función para contar reservas pendientes
+function countPendingReservations(reservations) {
+    return reservations.filter(r => r.status === 'pending').length;
+}
+
+// Función para generar el HTML del badge de estado
+function getStatusBadge(status) {
+    switch (status) {
+        case 'pending':
+            return '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+        case 'confirmed':
+            return '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+        case 'canceled':
+            return '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+        case 'completed':
+            return '<span class="admin-badge admin-badge-completed">Completado</span>';
+        default:
+            return '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+    }
+}
+
+// Función para generar los botones de acción según el estado
+function getActionButtons(reservation) {
+    let buttons = `
+        <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${reservation.id}')">✎</button>
+        <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${reservation.client.name || 'Cliente'}', '${reservation.client.phone || ''}')">📱</button>
+    `;
+    
+    if (reservation.status === 'pending') {
+        buttons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${reservation.id}')">✓</button>`;
+    }
+    
+    if (reservation.status !== 'canceled' && reservation.status !== 'completed') {
+        buttons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${reservation.id}')">✕</button>`;
+    }
+    
+    return buttons;
+}
+
+// Función para confirmar una reserva (actualizar estado)
+function confirmReservationAdmin(reservationId) {
+    // Obtener todas las reservas
+    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Encontrar la reserva por ID
+    const index = reservations.findIndex(r => r.id === parseInt(reservationId));
+    
+    if (index === -1) {
+        alert('No se encontró la reserva');
+        return;
+    }
+    
+    // Actualizar el estado
+    reservations[index].status = 'confirmed';
+    
+    // Guardar los cambios
+    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+    
+    // Recargar la lista de reservas
+    loadReservationsAdmin();
+    
+    // Mostrar mensaje de éxito
+    alert('Cita confirmada correctamente');
+}
+
+// Función para cancelar una reserva
+function cancelReservationAdmin(reservationId) {
+    // Obtener todas las reservas
+    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Encontrar la reserva por ID
+    const index = reservations.findIndex(r => r.id === parseInt(reservationId));
+    
+    if (index === -1) {
+        alert('No se encontró la reserva');
+        return;
+    }
+    
+    // Actualizar el estado
+    reservations[index].status = 'canceled';
+    
+    // Guardar los cambios
+    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+    
+    // Recargar la lista de reservas
+    loadReservationsAdmin();
+    
+    // Mostrar mensaje de éxito
+    alert('Cita cancelada correctamente');
+}
+
+// Cargar reservas al iniciar la página
+document.addEventListener('DOMContentLoaded', function() {
+    loadReservationsAdmin();
+});
 </script>
 </body>
 </html>
