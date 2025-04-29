@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reservas MG STUDIO</title>
+    <style>
+        /* Estilos generales optimizados para móvil */
+        :root {
+            --primary: #ff4b7d;
+            --primary-light: #ff85a2;
+            --primary-dark: #e62a5d;
+            --secondary: #333333;
+            --light: #ffffff;
+            --gray-light: #f8f8f8;
+            --gray: #eaeaea;
+            --text: #333333;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            background-color: #fbfbfb;
+            font-size: 16px;
+            line-height: 1.5;
+            width: 100%;
+        }
+        
+        .mg-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: var(--light);
+            overflow: hidden;
+        }
+        
+        /* Encabezado */
+        .mg-header {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: var(--light);
+            padding: 20px 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mg-header h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .mg-header p {
+            margin: 8px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Tabs para móvil */
+        .mg-mobile-tabs {
+            display: flex;
+            background-color: var(--light);
+            border-bottom: 1px solid var(--gray);
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .mg-mobile-tabs::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .mg-tab {
+            padding: 15px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            min-width: 100px;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .mg-tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        /* Contenido de las tabs */
+        .mg-content-section {
+            display: none;
+            padding: 15px;
+        }
+        
+        .mg-content-section.active {
+            display: block;
+        }
+        
+        /* Calendario optimizado para móvil */
+        .mg-calendar {
+            background: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .mg-calendar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mg-calendar .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .month-nav button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .month-nav button:active {
+            background-color: rgba(255, 75, 125, 0.1);
+        }
+        
+        .mg-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        
+        .mg-calendar-day {
+            padding: 10px 0;
+            font-size: 14px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        
+        .mg-calendar-header {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .mg-day-available {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .mg-day-available:active {
+            background-color: rgba(76, 175, 80, 0.2);
+        }
+        
+        .mg-day-selected {
+            background-color: rgba(255, 75, 125, 0.1);
+            color: var(--primary);
+            font-weight: bold;
+            border: 1px solid var(--primary);
+        }
+        
+        .mg-day-past {
+            color: #BDBDBD;
+        }
+        
+        .mg-day-empty {
+            color: transparent;
+        }
+        
+        /* Promociones */
+        .mg-promotions {
+            background: linear-gradient(135deg, #fff6f9, #fff);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .mg-promotions h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .mg-promo-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+            gap: 10px;
+        }
+        
+        .mg-promo-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .mg-promo-icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .mg-promo-content {
+            flex-grow: 1;
+        }
+        
+        .mg-promo-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .mg-promo-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        /* Tabla de horarios para móvil */
+        .mg-schedule-mobile {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .mg-day-header {
+            background-color: var(--secondary);
+            color: var(--light);
+            padding: 12px 15px;
+            border-radius: 10px 10px 0 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mg-day-card {
+            background: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .mg-day-content {
+            padding: 15px;
+        }
+        
+        .mg-day-mobile {
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .mg-day-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Botones de horario optimizados para táctil */
+        .mg-time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .mg-time-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: var(--light);
+            padding: 12px 16px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(255, 75, 125, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            gap: 6px;
+            min-width: 110px;
+            min-height: 44px; /* Para mejor área táctil */
+        }
+        
+        .mg-time-btn:active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 75, 125, 0.4);
+        }
+        
+        .mg-time-btn i {
+            font-size: 14px;
+        }
+        
+        .mg-time-btn-disabled {
+            background: linear-gradient(135deg, #cccccc, #a0a0a0);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .mg-time-btn-disabled:active {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .mg-time-btn-low {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+        
+        .mg-time-btn-low:active {
+            background: linear-gradient(135deg, #f57c00, #ef6c00);
+        }
+        
+        /* Información adicional */
+        .mg-info {
+            background-color: var(--gray-light);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .mg-info h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .mg-info ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        
+        .mg-info li {
+            margin-bottom: 8px;
+            position: relative;
+            font-size: 14px;
+        }
+        
+        .mg-info li::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        
+        /* Footer */
+        .mg-footer {
+            text-align: center;
+            padding: 20px 15px;
+            background-color: var(--secondary);
+            color: var(--light);
+            font-size: 14px;
+        }
+        
+        .mg-footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+        
+        .mg-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .mg-social-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .mg-social-icon:active {
+            background-color: var(--primary);
+        }
+        
+        /* Modal optimizado para móvil */
+        .mg-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+        
+        .mg-modal-content {
+            background-color: var(--light);
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .mg-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -10px -10px 0 0;
+        }
+        
+        .mg-close:active {
+            color: var(--primary);
+        }
+        
+        .mg-modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .mg-modal-header h3 {
+            margin: 0 0 5px 0;
+            color: var(--secondary);
+            font-size: 18px;
+        }
+        
+        .mg-modal-details {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: var(--gray-light);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .mg-modal-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .mg-modal-detail i {
+            color: var(--primary);
+        }
+        
+        .mg-service-select {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background-color: white;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 48px;
+        }
+        
+        .mg-service-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 75, 125, 0.2);
+        }
+        
+        .mg-confirm-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            height: 48px;
+        }
+        
+        .mg-confirm-btn:active {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 75, 125, 0.4);
+        }
+        
+        /* Indicador de disponibilidad */
+        .mg-availability {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-top: 5px;
+        }
+        
+        .mg-availability.high {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+        
+        .mg-availability.medium {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+        }
+        
+        .mg-availability.low {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #F44336;
+        }
+        
+        /* Botón flotante para móvil */
+        .mg-floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900;
+            cursor: pointer;
+            display: none;
+        }
+        
+        /* Scroll to top visible sólo en móvil */
+        .mg-scroll-top {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            z-index: 900;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Ajustes específicos para móvil */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .mg-header h1 {
+                font-size: 20px;
+            }
+            
+            .mg-calendar-day {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+            
+            .mg-scroll-top {
+                display: block;
+            }
+            
+            .mg-modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .mg-floating-btn {
+                display: flex;
+            }
+        }
+        
+        /* Estilos para el modal de confirmación mejorado */
+        .mg-progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .mg-progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--gray);
+            z-index: 1;
+        }
+
+        .mg-progress-step {
+            position: relative;
+            background-color: var(--light);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 2;
+            color: var(--secondary);
+            border: 1px solid var(--gray);
+        }
+
+        .mg-progress-step.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .mg-progress-step.completed {
+            background-color: var(--primary-dark);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .mg-step-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .mg-step-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mg-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .mg-input, .mg-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .mg-input:focus, .mg-textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 75, 125, 0.2);
+        }
+
+        .mg-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .mg-button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .mg-back-btn {
+            flex: 1;
+            padding: 15px;
+            background: var(--gray-light);
+            color: var(--secondary);
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 48px;
+        }
+
+        .mg-back-btn:active {
+            background: var(--gray);
+        }
+
+        .mg-confirm-btn {
+            flex: 2;
+        }
+
+        .mg-modal-note {
+            background-color: rgba(255, 248, 225, 0.5);
+            border-left: 3px solid #FFC107;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+
+        .mg-modal-info {
+            background-color: rgba(232, 245, 253, 0.5);
+            border-left: 3px solid #03A9F4;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+
+        .mg-icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .mg-summary {
+            background-color: var(--gray-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mg-summary h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--gray);
+            padding-bottom: 8px;
+        }
+
+        .mg-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .mg-summary-label {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .mg-summary-value {
+            color: var(--text);
+        }
+
+        .mg-payment-methods h4 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .mg-payment-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mg-payment-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Estados de disponibilidad y reserva para botones */
+        .mg-time-btn-available {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        }
+
+        .mg-time-btn-reserved {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+        }
+
+        .mg-time-btn-pending {
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: white;
+        }
+
+        .mg-time-btn-confirmed {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .mg-time-btn-unavailable {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: not-allowed;
+        }
+
+        /* Diseño responsivo para el modal */
+        @media (max-width: 768px) {
+            .mg-progress-step {
+                font-size: 10px;
+                padding: 6px 8px;
+            }
+            
+            .mg-modal-content {
+                padding: 15px;
+            }
+            
+            .mg-payment-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mg-container">
+        <div class="mg-header">
+            <h1>MG STUDIO - Reserva tu Cita</h1>
+            <p>Luce Increíble, Siéntete Única ✨</p>
+        </div>
+        
+        <!-- Tabs para móvil -->
+        <div class="mg-mobile-tabs">
+            <div class="mg-tab active" onclick="showTab('horarios')">Horarios</div>
+            <div class="mg-tab" onclick="showTab('calendario')">Calendario</div>
+            <div class="mg-tab" onclick="showTab('promociones')">Promociones</div>
+            <div class="mg-tab" onclick="showTab('info')">Info</div>
+        </div>
+        
+        <!-- Sección de Calendario (Tab) -->
+        <div id="calendario" class="mg-content-section">
+            <div class="mg-calendar">
+                <h3>
+                    Mayo 2023
+                    <div class="month-nav">
+                        <button>←</button>
+                        <span>Mayo</span>
+                        <button>→</button>
+                    </div>
+                </h3>
+                <div class="mg-calendar-grid">
+                    <div class="mg-calendar-day mg-calendar-header">L</div>
+                    <div class="mg-calendar-day mg-calendar-header">M</div>
+                    <div class="mg-calendar-day mg-calendar-header">X</div>
+                    <div class="mg-calendar-day mg-calendar-header">J</div>
+                    <div class="mg-calendar-day mg-calendar-header">V</div>
+                    <div class="mg-calendar-day mg-calendar-header">S</div>
+                    <div class="mg-calendar-day mg-calendar-header">D</div>
+                    
+                    <div class="mg-calendar-day mg-day-empty">29</div>
+                    <div class="mg-calendar-day mg-day-empty">30</div>
+                    <div class="mg-calendar-day mg-day-past">1</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Jueves 2 Mayo')">2</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Viernes 3 Mayo')">3</div>
+                    <div class="mg-calendar-day mg-day-empty">4</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Domingo 4 Mayo')">4</div>
+                    
+                    <div class="mg-calendar-day mg-day-empty">5</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Martes 6 Mayo')">6</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Miércoles 7 Mayo')">7</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Jueves 8 Mayo')">8</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Viernes 9 Mayo')">9</div>
+                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Sábado 10 Mayo')">10</div>
+                    <div class="mg-calendar-day mg-day-empty">11</div>
+                    
+                    <div class="mg-calendar-day mg-day-empty">12</div>
+                    <div class="mg-calendar-day mg-day-empty">13</div>
+                    <div class="mg-calendar-day mg-day-empty">14</div>
+                    <div class="mg-calendar-day mg-day-empty">15</div>
+                    <div class="mg-calendar-day mg-day-empty">16</div>
+                    <div class="mg-calendar-day mg-day-empty">17</div>
+                    <div class="mg-calendar-day mg-day-empty">18</div>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px; text-align: center;">
+                    Haz clic en un día para ver los horarios disponibles
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Promociones (Tab) -->
+        <div id="promociones" class="mg-content-section">
+            <div class="mg-promotions">
+                <h3>Promociones Especiales</h3>
+                <div class="mg-promo-item">
+                    <div class="mg-promo-icon">1</div>
+                    <div class="mg-promo-content">
+                        <div class="mg-promo-title">Lifting + Laminado</div>
+                        <div class="mg-promo-desc">s/60 (¡Ahorro s/15!) - Tratamiento completo para mirada perfecta</div>
+                    </div>
+                </div>
+                <div class="mg-promo-item">
+                    <div class="mg-promo-icon">2</div>
+                    <div class="mg-promo-content">
+                        <div class="mg-promo-title">Extensiones + Visagismo</div>
+                        <div class="mg-promo-desc">s/70 (¡Ahorro s/10!) - Mirada impactante y cejas perfectas</div>
+                    </div>
+                </div>
+                <div class="mg-promo-item">
+                    <div class="mg-promo-icon">3</div>
+                    <div class="mg-promo-content">
+                        <div class="mg-promo-title">Mamá e Hija</div>
+                        <div class="mg-promo-desc">25% de descuento cuando vienen juntas - Experiencia compartida</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Horarios (Tab) - Por defecto visible -->
+        <div id="horarios" class="mg-content-section active">
+            <!-- JUEVES 2 DE MAYO -->
+            <div class="mg-day-card" data-day="Jueves 2 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">2</div>
+                        Jueves
+                    </div>
+                    <div class="mg-availability high">Alta disponibilidad</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Jueves 2 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VIERNES 3 DE MAYO -->
+            <div class="mg-day-card" data-day="Viernes 3 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">3</div>
+                        Viernes
+                    </div>
+                    <div class="mg-availability high">Alta disponibilidad</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Viernes 3 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DOMINGO 4 DE MAYO -->
+            <div class="mg-day-card" data-day="Domingo 4 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">4</div>
+                        Domingo
+                    </div>
+                    <div class="mg-availability medium">Disponibilidad media</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '9:00 AM')">
+                            <i>⏰</i> 9:00 AM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '11:00 AM')">
+                            <i>⏰</i> 11:00 AM
+                        </button>
+                        <button class="mg-time-btn mg-time-btn-disabled">
+                            <i>🔒</i> 2:00 PM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '5:00 PM')">
+                            <i>⏰</i> 5:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MARTES 6 DE MAYO -->
+            <div class="mg-day-card" data-day="Martes 6 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">6</div>
+                        Martes
+                    </div>
+                    <div class="mg-availability high">Alta disponibilidad</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Martes 6 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Martes 6 Mayo', '5:00 PM')">
+                            <i>⏰</i> 5:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MIÉRCOLES 7 DE MAYO -->
+            <div class="mg-day-card" data-day="Miércoles 7 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">7</div>
+                        Miércoles
+                    </div>
+                    <div class="mg-availability high">Alta disponibilidad</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Miércoles 7 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Miércoles 7 Mayo', '5:00 PM')">
+                            <i>⏰</i> 5:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- JUEVES 8 DE MAYO -->
+            <div class="mg-day-card" data-day="Jueves 8 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">8</div>
+                        Jueves
+                    </div>
+                    <div class="mg-availability high">Alta disponibilidad</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Jueves 8 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Jueves 8 Mayo', '5:00 PM')">
+                            <i>⏰</i> 5:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VIERNES 9 DE MAYO -->
+            <div class="mg-day-card" data-day="Viernes 9 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">9</div>
+                        Viernes
+                    </div>
+                    <div class="mg-availability low">Último espacio</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn mg-time-btn-disabled">
+                            <i>🔒</i> 2:00 PM
+                        </button>
+                        <button class="mg-time-btn mg-time-btn-low" onclick="openModal('Viernes 9 Mayo', '5:00 PM')">
+                            <i>⏰</i> 5:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SÁBADO 10 DE MAYO -->
+            <div class="mg-day-card" data-day="Sábado 10 Mayo">
+                <div class="mg-day-header">
+                    <div class="mg-day-mobile">
+                        <div class="mg-day-icon">10</div>
+                        Sábado
+                    </div>
+                    <div class="mg-availability medium">Disponibilidad media</div>
+                </div>
+                <div class="mg-day-content">
+                    <div class="mg-time-slots">
+                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '9:00 AM')">
+                            <i>⏰</i> 9:00 AM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '11:00 AM')">
+                            <i>⏰</i> 11:00 AM
+                        </button>
+                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '2:00 PM')">
+                            <i>⏰</i> 2:00 PM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Información (Tab) -->
+        <div id="info" class="mg-content-section">
+            <div class="mg-info">
+                <h3>Información Importante</h3>
+                <ul>
+                    <li>Para confirmar tu cita es necesario un adelanto del 50%</li>
+                    <li>Por favor, llega 5-10 minutos antes de tu hora programada</li>
+                    <li>Ven sin maquillaje en la zona de ojos/cejas</li>
+                    <li>Si necesitas cancelar, avísanos con al menos 4 horas de anticipación</li>
+                </ul>
+            </div>
+            
+            <div class="mg-info">
+                <h3>Nuestros Servicios</h3>
+                <ul>
+                    <li><strong>Pestañas:</strong> Lifting (s/40), Extensiones Clásicas (s/50), Efecto Rímel (s/60), Efecto Mojado (s/65), Híbridas (s/70)</li>
+                    <li><strong>Volumen:</strong> Brasileño 2D (s/80), Hawaiano 3D (s/80), Griego 4D (s/80), Egipcio 5D (s/85), Mega Volumen 6D (s/110)</li>
+                    <li><strong>Cejas:</strong> Visagismo (s/10), Depilación con cera (s/15), Laminado (s/35), Pigmentación (s/35)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mg-footer">
+            <p>MG STUDIO | Jr. Bolognesi 265 | 📱 995 904 351</p>
+            <div class="mg-social">
+                <a href="https://www.instagram.com/mg.studio_pe" target="_blank" class="mg-social-icon">📸</a>
+                <a href="https://wa.me/51995904351" target="_blank" class="mg-social-icon">📱</a>
+                <a href="#" class="mg-social-icon">📍</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para selección de servicio -->
+    <div id="serviceModal" class="mg-modal">
+        <div class="mg-modal-content">
+            <span class="mg-close" onclick="closeModal()">&times;</span>
+            
+            <!-- Encabezado del modal con progreso -->
+            <div class="mg-modal-header">
+                <div class="mg-progress-bar">
+                    <div class="mg-progress-step active">1. Servicio</div>
+                    <div class="mg-progress-step">2. Datos</div>
+                    <div class="mg-progress-step">3. Confirmar</div>
+                </div>
+                <h3>Detalle de tu reserva</h3>
+            </div>
+            
+            <!-- Sección 1: Selección de servicio -->
+            <div id="step-1" class="mg-step-section active">
+                <div class="mg-modal-details">
+                    <div class="mg-modal-detail">
+                        <i class="mg-icon">📅</i> <span id="selectedDay">Día</span>
+                    </div>
+                    <div class="mg-modal-detail">
+                        <i class="mg-icon">⏰</i> <span id="selectedTime">Hora</span>
+                    </div>
+                </div>
+                
+                <label for="serviceSelect" class="mg-label">Servicio:</label>
+                <select id="serviceSelect" class="mg-service-select">
+                    <optgroup label="Pestañas">
+                        <option value="Lifting de Pestañas">Lifting de Pestañas - s/40</option>
+                        <option value="Extensiones Clásicas">Extensiones Clásicas - s/50</option>
+                        <option value="Efecto Rímel">Efecto Rímel - s/60</option>
+                        <option value="Efecto Mojado">Efecto Mojado - s/65</option>
+                        <option value="Extensiones Híbridas">Extensiones Híbridas - s/70</option>
+                    </optgroup>
+                    <optgroup label="Volumen">
+                        <option value="Volumen Brasileño 2D">Volumen Brasileño 2D - s/80</option>
+                        <option value="Volumen Hawaiano 3D">Volumen Hawaiano 3D - s/80</option>
+                        <option value="Volumen Griego 4D">Volumen Griego 4D - s/80</option>
+                        <option value="Volumen Egipcio 5D">Volumen Egipcio 5D - s/85</option>
+                        <option value="Mega Volumen Egipcio 6D">Mega Volumen Egipcio 6D - s/110</option>
+                    </optgroup>
+                    <optgroup label="Cejas">
+                        <option value="Visagismo">Visagismo - s/10</option>
+                        <option value="Depilación con cera">Depilación con cera - s/15</option>
+                        <option value="Laminado de cejas">Laminado de cejas - s/35</option>
+                        <option value="Pigmentación con henna">Pigmentación con henna - s/35</option>
+                    </optgroup>
+                    <optgroup label="Paquetes Especiales">
+                        <option value="Paquete 1: Lifting + Laminado">Paquete 1: Lifting + Laminado - s/60</option>
+                        <option value="Paquete 2: Extensiones + Visagismo">Paquete 2: Extensiones + Visagismo - s/70</option>
+                        <option value="Paquete 3: Mamá e Hija">Paquete 3: Mamá e Hija - 25% descuento</option>
+                    </optgroup>
+                </select>
+                
+                <div class="mg-modal-note">
+                    <p><i class="mg-icon">💡</i> Duración aproximada: <span id="serviceDuration">45 min</span></p>
+                </div>
+                
+                <button class="mg-confirm-btn" onclick="nextStep(1)">Siguiente</button>
+            </div>
+            
+            <!-- Sección 2: Datos del cliente -->
+            <div id="step-2" class="mg-step-section">
+                <div class="mg-form-group">
+                    <label for="clientName" class="mg-label">Nombre completo:</label>
+                    <input type="text" id="clientName" class="mg-input" placeholder="Ingresa tu nombre">
+                </div>
+                
+                <div class="mg-form-group">
+                    <label for="clientPhone" class="mg-label">Teléfono:</label>
+                    <input type="tel" id="clientPhone" class="mg-input" placeholder="Ej. 995 904 351">
+                </div>
+                
+                <div class="mg-form-group">
+                    <label for="clientComments" class="mg-label">Observaciones (opcional):</label>
+                    <textarea id="clientComments" class="mg-textarea" placeholder="¿Primera vez? ¿Alguna alergia? ¿Consultas?"></textarea>
+                </div>
+                
+                <div class="mg-button-group">
+                    <button class="mg-back-btn" onclick="prevStep(2)">Volver</button>
+                    <button class="mg-confirm-btn" onclick="nextStep(2)">Siguiente</button>
+                </div>
+            </div>
+            
+            <!-- Sección 3: Resumen y confirmación -->
+            <div id="step-3" class="mg-step-section">
+                <div class="mg-summary">
+                    <h4>Resumen de tu reserva</h4>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Servicio:</span>
+                        <span id="summaryService" class="mg-summary-value">Lifting de Pestañas</span>
+                    </div>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Fecha:</span>
+                        <span id="summaryDay" class="mg-summary-value">Miércoles 7 Mayo</span>
+                    </div>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Hora:</span>
+                        <span id="summaryTime" class="mg-summary-value">2:00 PM</span>
+                    </div>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Duración:</span>
+                        <span id="summaryDuration" class="mg-summary-value">45 min</span>
+                    </div>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Precio:</span>
+                        <span id="summaryPrice" class="mg-summary-value">s/40</span>
+                    </div>
+                    
+                    <div class="mg-summary-item">
+                        <span class="mg-summary-label">Pago adelantado:</span>
+                        <span id="summaryPayment" class="mg-summary-value">s/20 (50%)</span>
+                    </div>
+                </div>
+                
+                <div class="mg-payment-methods">
+                    <h4>Métodos de pago para adelanto</h4>
+                    <div class="mg-payment-options">
+                        <div class="mg-payment-option">
+                            <input type="radio" id="yape" name="paymentMethod" checked>
+                            <label for="yape">Yape</label>
+                        </div>
+                        <div class="mg-payment-option">
+                            <input type="radio" id="plin" name="paymentMethod">
+                            <label for="plin">Plin</label>
+                        </div>
+                        <div class="mg-payment-option">
+                            <input type="radio" id="bcp" name="paymentMethod">
+                            <label for="bcp">Transferencia BCP</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mg-modal-info">
+                    <p><i class="mg-icon">ℹ️</i> Para confirmar tu cita necesitamos un adelanto del 50%. Te enviaremos los datos para el pago por WhatsApp.</p>
+                </div>
+                
+                <div class="mg-button-group">
+                    <button class="mg-back-btn" onclick="prevStep(3)">Volver</button>
+                    <button class="mg-confirm-btn" onclick="confirmReservation()">Confirmar Reserva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botón scroll to top para móviles -->
+    <div class="mg-scroll-top" onclick="scrollToTop()">↑</div>
+    
+    <!-- Enlace al panel admin -->
+    <a href="admin.html" class="mg-admin-link" style="position: fixed; bottom: 20px; left: 20px; background: #333; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 12px; z-index: 900;">Admin</a>
+    
+    <script>
+        // Variables para almacenar la selección
+        let selectedDay = '';
+        let selectedTime = '';
+        let selectedService = '';
+        let clientData = {
+            name: '',
+            phone: '',
+            comments: ''
+        };
+
+        // Datos de servicios (para mostrar duración y precio)
+        const serviceDetails = {
+            'Lifting de Pestañas': {duration: '45 min', price: 's/40', payment: 's/20'},
+            'Extensiones Clásicas': {duration: '60 min', price: 's/50', payment: 's/25'},
+            'Efecto Rímel': {duration: '70 min', price: 's/60', payment: 's/30'},
+            'Efecto Mojado': {duration: '75 min', price: 's/65', payment: 's/32.50'},
+            'Extensiones Híbridas': {duration: '90 min', price: 's/70', payment: 's/35'},
+            'Volumen Brasileño 2D': {duration: '90 min', price: 's/80', payment: 's/40'},
+            'Volumen Hawaiano 3D': {duration: '100 min', price: 's/80', payment: 's/40'},
+            'Volumen Griego 4D': {duration: '110 min', price: 's/80', payment: 's/40'},
+            'Volumen Egipcio 5D': {duration: '120 min', price: 's/85', payment: 's/42.50'},
+            'Mega Volumen Egipcio 6D': {duration: '150 min', price: 's/110', payment: 's/55'},
+            'Visagismo': {duration: '20 min', price: 's/10', payment: 's/5'},
+            'Depilación con cera': {duration: '15 min', price: 's/15', payment: 's/7.50'},
+            'Laminado de cejas': {duration: '45 min', price: 's/35', payment: 's/17.50'},
+            'Pigmentación con henna': {duration: '30 min', price: 's/35', payment: 's/17.50'},
+            'Paquete 1: Lifting + Laminado': {duration: '90 min', price: 's/60', payment: 's/30'},
+            'Paquete 2: Extensiones + Visagismo': {duration: '80 min', price: 's/70', payment: 's/35'},
+            'Paquete 3: Mamá e Hija': {duration: '120 min', price: 'Varía', payment: '50% del total'}
+        };
+
+        // Gestión de tabs para móvil
+        function showTab(tabId) {
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.mg-content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(tabId).classList.add('active');
+            
+            // Actualizar las tabs
+            const tabs = document.querySelectorAll('.mg-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la tab seleccionada
+            event.currentTarget.classList.add('active');
+            
+            // Scroll al inicio de la sección
+            window.scrollTo(0, 0);
+        }
+
+        // Abrir el modal con la información del día y hora
+        function openModal(day, time) {
+            selectedDay = day;
+            selectedTime = time;
+            
+            document.getElementById('selectedDay').textContent = day;
+            document.getElementById('selectedTime').textContent = time;
+            document.getElementById('serviceModal').style.display = 'block';
+            
+            // Actualizar el paso activo
+            updateStepUI(1);
+            
+            // Obtener el servicio seleccionado y actualizar duración
+            updateServiceDetails();
+            
+            // Bloquear scroll del body
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Cerrar el modal
+        function closeModal() {
+            document.getElementById('serviceModal').style.display = 'none';
+            
+            // Restaurar scroll del body
+            document.body.style.overflow = 'auto';
+            
+            // Resetear el proceso
+            resetReservationProcess();
+        }
+
+        // Resetear el proceso de reserva
+        function resetReservationProcess() {
+            // Resetear las secciones
+            const steps = document.querySelectorAll('.mg-step-section');
+            steps.forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Activar el paso 1
+            document.getElementById('step-1').classList.add('active');
+            
+            // Resetear el progreso
+            const progressSteps = document.querySelectorAll('.mg-progress-step');
+            progressSteps.forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            progressSteps[0].classList.add('active');
+            
+            // Resetear los datos del cliente
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientComments').value = '';
+            
+            // Resetear los datos de selección
+            clientData = {
+                name: '',
+                phone: '',
+                comments: ''
+            };
+        }
+
+        // Actualizar la interfaz para el paso actual
+        function updateStepUI(step) {
+            // Quitar clase active de todos los pasos
+            const steps = document.querySelectorAll('.mg-step-section');
+            steps.forEach(s => s.classList.remove('active'));
+            
+            // Activar el paso actual
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            // Actualizar la barra de progreso
+            const progressSteps = document.querySelectorAll('.mg-progress-step');
+            progressSteps.forEach((s, i) => {
+                if (i + 1 < step) {
+                    s.classList.add('completed');
+                    s.classList.remove('active');
+                } else if (i + 1 === step) {
+                    s.classList.add('active');
+                    s.classList.remove('completed');
+                } else {
+                    s.classList.remove('active', 'completed');
+                }
+            });
+            
+            // Si estamos en el paso 3, actualizar el resumen
+            if (step === 3) {
+                updateSummary();
+            }
+        }
+
+        // Ir al siguiente paso
+        function nextStep(currentStep) {
+            // Validar dependiendo del paso
+            if (currentStep === 1) {
+                // Actualizar servicio seleccionado
+                const serviceSelect = document.getElementById('serviceSelect');
+                selectedService = serviceSelect.options[serviceSelect.selectedIndex].value;
+                
+                // Ir al paso 2
+                updateStepUI(2);
+            } else if (currentStep === 2) {
+                // Validar datos del cliente
+                const nameInput = document.getElementById('clientName');
+                const phoneInput = document.getElementById('clientPhone');
+                const commentsInput = document.getElementById('clientComments');
+                
+                if (!nameInput.value.trim()) {
+                    alert('Por favor, ingresa tu nombre');
+                    nameInput.focus();
+                    return;
+                }
+                
+                if (!phoneInput.value.trim()) {
+                    alert('Por favor, ingresa tu número de teléfono');
+                    phoneInput.focus();
+                    return;
+                }
+                
+                // Guardar datos del cliente
+                clientData.name = nameInput.value.trim();
+                clientData.phone = phoneInput.value.trim();
+                clientData.comments = commentsInput.value.trim();
+                
+                // Ir al paso 3
+                updateStepUI(3);
+            }
+        }
+
+        // Ir al paso anterior
+        function prevStep(currentStep) {
+            updateStepUI(currentStep - 1);
+        }
+
+        // Actualizar detalles del servicio seleccionado
+        function updateServiceDetails() {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+            
+            if (serviceDetails[serviceName]) {
+                document.getElementById('serviceDuration').textContent = serviceDetails[serviceName].duration;
+            } else {
+                document.getElementById('serviceDuration').textContent = '60 min';
+            }
+        }
+
+        // Actualizar el resumen antes de confirmar
+        function updateSummary() {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+            
+            document.getElementById('summaryService').textContent = serviceName;
+            document.getElementById('summaryDay').textContent = selectedDay;
+            document.getElementById('summaryTime').textContent = selectedTime;
+            
+            if (serviceDetails[serviceName]) {
+                document.getElementById('summaryDuration').textContent = serviceDetails[serviceName].duration;
+                document.getElementById('summaryPrice').textContent = serviceDetails[serviceName].price;
+                document.getElementById('summaryPayment').textContent = serviceDetails[serviceName].payment + ' (50%)';
+            } else {
+                document.getElementById('summaryDuration').textContent = '60 min';
+                document.getElementById('summaryPrice').textContent = 'Consultar';
+                document.getElementById('summaryPayment').textContent = '50% del total';
+            }
+        }
+
+        // Confirmar la reserva (redireccionar a WhatsApp)
+        function confirmReservation() {
+            const serviceSelect = document.getElementById('serviceSelect');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+            
+            // Obtener método de pago seleccionado
+            let paymentMethod = 'Yape';
+            if (document.getElementById('plin').checked) {
+                paymentMethod = 'Plin';
+            } else if (document.getElementById('bcp').checked) {
+                paymentMethod = 'Transferencia BCP';
+            }
+            
+            // Crear mensaje para WhatsApp
+            let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
+            message += `👤 Nombre: ${clientData.name}\n`;
+            message += `📱 Teléfono: ${clientData.phone}\n`;
+            message += `💅 Servicio: ${serviceName}\n`;
+            message += `📅 Fecha: ${selectedDay}\n`;
+            message += `⏰ Hora: ${selectedTime}\n`;
+            message += `💳 Método de pago preferido: ${paymentMethod}\n`;
+            
+            if (clientData.comments) {
+                message += `\n📝 Comentarios: ${clientData.comments}\n`;
+            }
+            
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Crear el enlace de WhatsApp
+            const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
+            
+            // Redireccionar
+            window.open(whatsappLink, '_blank');
+            
+            // Cerrar el modal
+            closeModal();
+            
+            // Opcional: Mostrar mensaje de éxito
+            showSuccessMessage();
+        }
+
+        // Mostrar mensaje de éxito después de la reserva
+        function showSuccessMessage() {
+            // Crear elemento para mensaje
+            const successMsg = document.createElement('div');
+            successMsg.className = 'mg-success-message';
+            successMsg.innerHTML = `
+                <div class="mg-success-content">
+                    <div class="mg-success-icon">✓</div>
+                    <h3>¡Reserva en proceso!</h3>
+                    <p>Te hemos redirigido a WhatsApp para finalizar tu reserva.</p>
+                    <p>Recuerda realizar el pago del 50% para confirmar tu cita.</p>
+                    <button onclick="this.parentElement.parentElement.remove()">Entendido</button>
+                </div>
+            `;
+            
+            // Añadir estilos
+            const style = document.createElement('style');
+            style.textContent = `
+                .mg-success-message {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                    animation: fadeIn 0.3s ease;
+                }
+                .mg-success-content {
+                    background-color: white;
+                    border-radius: 15px;
+                    padding: 30px 20px;
+                    text-align: center;
+                    max-width: 80%;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                }
+                .mg-success-icon {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    background-color: #4CAF50;
+                    color: white;
+                    font-size: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 15px;
+                }
+                .mg-success-content h3 {
+                    color: #4CAF50;
+                    margin-bottom: 10px;
+                }
+                .mg-success-content p {
+                    margin-bottom: 15px;
+                    color: #666;
+                }
+                .mg-success-content button {
+                    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 25px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .mg-success-content button:active {
+                    transform: scale(0.98);
+                }
+            `;
+            
+            // Añadir a la página
+            document.body.appendChild(style);
+            document.body.appendChild(successMsg);
+            
+            // Auto-eliminar después de 8 segundos
+            setTimeout(() => {
+                if (document.body.contains(successMsg)) {
+                    document.body.removeChild(successMsg);
+                }
+                if (document.body.contains(style)) {
+                    document.body.removeChild(style);
+                }
+            }, 8000);
+        }
+
+        // Filtrar horarios por día seleccionado en el calendario
+        function filterByDay(day) {
+            // Cambiar a la tab de horarios
+            showTab('horarios');
+            
+            // Resaltar el día seleccionado en el calendario
+            const calendarDays = document.querySelectorAll('.mg-calendar-day');
+            calendarDays.forEach(calDay => {
+                if (calDay.classList.contains('mg-day-selected')) {
+                    calDay.classList.remove('mg-day-selected');
+                }
+            });
+            
+            // Añadir clase al día seleccionado
+            event.target.classList.add('mg-day-selected');
+            
+            // Mostrar u ocultar tarjetas según el día seleccionado
+            const cards = document.querySelectorAll('.mg-day-card');
+            cards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    card.style.display = 'block';
+                    // Scroll hasta la tarjeta
+                    setTimeout(() => {
+                        card.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Función para volver arriba
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Mostrar/ocultar botón de scroll según posición
+        window.onscroll = function() {
+            const scrollBtn = document.querySelector('.mg-scroll-top');
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        }
+
+        // Eventos cuando la página se carga
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar eventos para cambios en el servicio
+            const serviceSelect = document.getElementById('serviceSelect');
+            serviceSelect.addEventListener('change', updateServiceDetails);
+            
+            // Iniciar con el primer servicio seleccionado
+            updateServiceDetails();
+            
+            // Cerrar el modal si se hace clic fuera de él
+            window.onclick = function(event) {
+                const modal = document.getElementById('serviceModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            }
+        });
+
+        // Sistema de administración de citas
+        // Estas funciones serían utilizadas por el administrador
+
+        // Marcar una hora como reservada
+        function markAsReserved(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase reservada
+                            btn.classList.add('mg-time-btn-reserved');
+                            
+                            // Cambiar el icono y deshabilitar el botón
+                            btn.innerHTML = `<i>🔒</i> ${time}`;
+                            btn.onclick = null;
+                            btn.disabled = true;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Marcar una hora como pendiente de confirmación
+        function markAsPending(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase pendiente
+                            btn.classList.add('mg-time-btn-pending');
+                            
+                            // Cambiar el icono pero mantener habilitado el botón
+                            btn.innerHTML = `<i>⏳</i> ${time}`;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Marcar una hora como confirmada
+        function markAsConfirmed(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase confirmada
+                            btn.classList.add('mg-time-btn-confirmed');
+                            
+                            // Cambiar el icono y deshabilitar el botón
+                            btn.innerHTML = `<i>✓</i> ${time}`;
+                            btn.onclick = null;
+                            btn.disabled = true;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Ejemplo de uso: 
+        // markAsReserved('Sábado 10 Mayo', '11:00 AM');
+        // markAsPending('Viernes 9 Mayo', '5:00 PM');
+        // markAsConfirmed('Domingo 4 Mayo', '9:00 AM');
+    </script>
+</body>
+</html>
