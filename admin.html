@@ -14,29 +14,23 @@
             --gray-light: #f8f8f8;
             --gray: #eaeaea;
             --text: #333333;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --info: #3498db;
         }
         
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
         }
         
         body {
             font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            color: var(--text);
             background-color: #f5f5f5;
-            font-size: 16px;
-            line-height: 1.5;
-            overflow-x: hidden;
+            color: var(--text);
+            line-height: 1.6;
         }
         
         .admin-container {
+            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
@@ -47,13 +41,10 @@
             color: var(--light);
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            margin-bottom: 20px;
         }
         
         .admin-header h1 {
@@ -61,67 +52,49 @@
             font-size: 24px;
         }
         
-        .admin-header .admin-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .admin-btn {
-            padding: 10px 15px;
-            border: none;
+        .view-site {
+            background-color: white;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 8px 15px;
             border-radius: 5px;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s;
         }
         
-        .admin-btn-primary {
-            background-color: var(--light);
-            color: var(--primary);
-        }
-        
-        .admin-btn-primary:hover {
-            background-color: rgba(255, 255, 255, 0.9);
+        .view-site:hover {
+            background-color: rgba(255, 255, 255, 0.8);
         }
         
         .admin-panel {
             display: grid;
             grid-template-columns: 250px 1fr;
             gap: 20px;
-            position: relative;
-            min-height: calc(100vh - 140px);
         }
         
         .admin-sidebar {
-            background-color: var(--light);
+            background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 100px;
-            height: fit-content;
-            max-height: calc(100vh - 140px);
-            overflow-y: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .admin-menu {
             list-style: none;
-            padding: 0;
-            margin: 0;
         }
         
         .admin-menu-item {
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         
         .admin-menu-link {
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            text-decoration: none;
             color: var(--text);
+            text-decoration: none;
             border-radius: 5px;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s;
         }
         
         .admin-menu-link:hover {
@@ -130,7 +103,7 @@
         
         .admin-menu-link.active {
             background-color: var(--primary-light);
-            color: var(--light);
+            color: white;
         }
         
         .admin-menu-icon {
@@ -139,61 +112,73 @@
         }
         
         .admin-content {
-            background-color: var(--light);
+            background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: none;
-            min-height: 600px;
-            overflow: hidden;
         }
         
         .admin-content.active {
             display: block;
         }
         
-        .admin-content-header {
+        .admin-section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--gray);
-            position: sticky;
-            top: 0;
-            background-color: var(--light);
-            z-index: 10;
         }
         
-        .admin-content-header h2 {
-            margin: 0;
-            font-size: 22px;
+        .admin-section-header h2 {
+            font-size: 20px;
+            color: var(--text);
+        }
+        
+        .admin-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .admin-card-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        
+        .admin-card-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .admin-card-footer {
+            font-size: 14px;
+            color: #999;
         }
         
         .admin-tabs {
             display: flex;
             border-bottom: 1px solid var(--gray);
             margin-bottom: 20px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            position: sticky;
-            top: 60px;
-            background-color: var(--light);
-            z-index: 5;
-            padding-bottom: 1px;
-        }
-        
-        .admin-tabs::-webkit-scrollbar {
-            display: none;
         }
         
         .admin-tab {
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            white-space: nowrap;
         }
         
         .admin-tab.active {
@@ -202,44 +187,51 @@
             font-weight: bold;
         }
         
-        /* Tablas */
-        .admin-table-container {
-            overflow-x: auto;
+        .admin-search {
+            display: flex;
             margin-bottom: 20px;
+        }
+        
+        .admin-search input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--gray);
+            border-radius: 5px 0 0 5px;
+            font-size: 14px;
+        }
+        
+        .admin-search button {
+            padding: 10px 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
         }
         
         .admin-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
-        }
-        
-        .admin-table th, .admin-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--gray);
         }
         
         .admin-table th {
             background-color: var(--gray-light);
+            padding: 12px 15px;
+            text-align: left;
             font-weight: bold;
-            position: sticky;
-            top: 120px;
-            z-index: 2;
         }
         
-        .admin-table tr:hover {
-            background-color: var(--gray-light);
+        .admin-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--gray);
         }
         
-        /* Badges para estados */
         .admin-badge {
             display: inline-block;
             padding: 5px 10px;
-            border-radius: 15px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
-            text-align: center;
         }
         
         .admin-badge-pending {
@@ -257,12 +249,6 @@
             color: #e74c3c;
         }
         
-        .admin-badge-completed {
-            background-color: rgba(52, 152, 219, 0.2);
-            color: #3498db;
-        }
-        
-        /* Botones de acción */
         .admin-action-btn {
             width: 30px;
             height: 30px;
@@ -273,7 +259,6 @@
             border: none;
             cursor: pointer;
             margin-right: 5px;
-            transition: all 0.3s ease;
         }
         
         .admin-action-edit {
@@ -296,227 +281,9 @@
             color: #25d366;
         }
         
-        /* Buscador */
-        .admin-search {
-            display: flex;
-            margin-bottom: 20px;
-            position: sticky;
-            top: 100px;
-            z-index: 3;
-            padding: 5px 0;
-            background-color: var(--light);
-        }
-        
-        .admin-search input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid var(--gray);
-            border-radius: 5px 0 0 5px;
-            font-size: 16px;
-        }
-        
-        .admin-search button {
-            padding: 10px 15px;
-            background-color: var(--primary);
-            color: var(--light);
-            border: none;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        
-        /* Dashboard cards */
-        .admin-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .admin-card {
-            background-color: var(--light);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--primary);
-            transition: transform 0.3s ease;
-        }
-        
-        .admin-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .admin-card-title {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 10px;
-        }
-        
-        .admin-card-value {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .admin-card-footer {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-        }
-        
-        /* Formularios */
-        .admin-form-group {
-            margin-bottom: 20px;
-        }
-        
-        .admin-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        
-        .admin-input, .admin-select, .admin-textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--gray);
-            border-radius: 5px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .admin-input:focus, .admin-select:focus, .admin-textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 75, 125, 0.2);
-        }
-        
-        .admin-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .admin-form-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        /* Modal para editar/añadir citas */
-        .admin-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow-y: auto;
-        }
-        
-        .admin-modal-content {
-            background-color: var(--light);
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: modalFadeIn 0.3s;
-        }
-        
-        @keyframes modalFadeIn {
-            from {opacity: 0; transform: translateY(-30px);}
-            to {opacity: 1; transform: translateY(0);}
-        }
-        
-        .admin-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--gray);
-        }
-        
-        .admin-modal-title {
-            margin: 0;
-            font-size: 20px;
-            color: var(--secondary);
-        }
-        
-        .admin-modal-close {
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #aaa;
-            transition: all 0.2s;
-        }
-        
-        .admin-modal-close:hover {
-            color: var(--primary);
-        }
-        
-        .admin-modal-body {
-            margin-bottom: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        
-        .admin-modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .admin-btn-secondary {
-            background-color: var(--gray);
-            color: var(--text);
-        }
-        
-        .admin-btn-danger {
-            background-color: var(--danger);
-            color: var(--light);
-        }
-        
-        .admin-btn-success {
-            background-color: var(--success);
-            color: var(--light);
-        }
-        
-        /* Loader */
-        .admin-loader {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255,255,255,0.7);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .admin-loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--gray);
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Empty state */
         .admin-empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 0;
             color: #999;
         }
         
@@ -531,83 +298,142 @@
             margin-bottom: 20px;
         }
         
-        /* Responsive */
+        .admin-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .admin-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .admin-modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .admin-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .admin-modal-title {
+            font-size: 20px;
+            color: var(--text);
+            margin: 0;
+        }
+        
+        .admin-modal-close {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .admin-form-group {
+            margin-bottom: 15px;
+        }
+        
+        .admin-form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .admin-form-input, .admin-form-select, .admin-form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .admin-form-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .admin-form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
         @media (max-width: 768px) {
             .admin-panel {
                 grid-template-columns: 1fr;
             }
             
             .admin-sidebar {
-                position: static;
                 margin-bottom: 20px;
-                max-height: none;
-            }
-            
-            .admin-content-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
             }
             
             .admin-cards {
                 grid-template-columns: 1fr;
             }
-            
-            .admin-modal-content {
-                width: 95%;
-                margin: 20px auto;
-            }
-            
-            .admin-table th {
-                position: static;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Loader (oculto por defecto) -->
-    <div class="admin-loader" id="adminLoader" style="display: none;">
-        <div class="admin-loader-spinner"></div>
-    </div>
-    
     <div class="admin-container">
         <div class="admin-header">
             <h1>MG STUDIO - Panel de Administración</h1>
-            <div class="admin-actions">
-                <a href="index.html" target="_blank" class="admin-btn admin-btn-primary">Ver Sitio</a>
-            </div>
+            <a href="index.html" class="view-site">Ver Sitio</a>
         </div>
         
         <div class="admin-panel">
             <div class="admin-sidebar">
                 <ul class="admin-menu">
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link active" onclick="showAdminSection('dashboard'); return false;">
+                        <a href="#" class="admin-menu-link active" onclick="showSection('dashboard')">
                             <span class="admin-menu-icon">📊</span> Dashboard
                         </a>
                     </li>
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link" onclick="showAdminSection('appointments'); return false;">
+                        <a href="#" class="admin-menu-link" onclick="showSection('appointments')">
                             <span class="admin-menu-icon">📅</span> Citas
                         </a>
                     </li>
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link" onclick="showAdminSection('clients'); return false;">
+                        <a href="#" class="admin-menu-link" onclick="showSection('clients')">
                             <span class="admin-menu-icon">👥</span> Clientes
                         </a>
                     </li>
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link" onclick="showAdminSection('services'); return false;">
+                        <a href="#" class="admin-menu-link" onclick="showSection('services')">
                             <span class="admin-menu-icon">💄</span> Servicios
                         </a>
                     </li>
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link" onclick="showAdminSection('promotions'); return false;">
+                        <a href="#" class="admin-menu-link" onclick="showSection('promotions')">
                             <span class="admin-menu-icon">📢</span> Promociones
                         </a>
                     </li>
                     <li class="admin-menu-item">
-                        <a href="#" class="admin-menu-link" onclick="showAdminSection('settings'); return false;">
+                        <a href="#" class="admin-menu-link" onclick="showSection('settings')">
                             <span class="admin-menu-icon">⚙️</span> Configuración
                         </a>
                     </li>
@@ -616,185 +442,134 @@
             
             <!-- DASHBOARD SECTION -->
             <div id="dashboard" class="admin-content active">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Dashboard</h2>
-                    <div>
-                        <span id="currentDate">Hoy: --/--/----</span>
-                    </div>
+                    <div id="current-date">Hoy: --/--/----</div>
                 </div>
                 
                 <div class="admin-cards">
                     <div class="admin-card">
                         <div class="admin-card-title">Citas de Hoy</div>
-                        <div class="admin-card-value" id="todayCounter">0</div>
-                        <div class="admin-card-footer">
-                            <span style="color: #999; margin-right: 5px;">-</span> Citas programadas
-                        </div>
+                        <div class="admin-card-value" id="today-counter">0</div>
+                        <div class="admin-card-footer">Citas programadas</div>
                     </div>
                     
                     <div class="admin-card">
                         <div class="admin-card-title">Citas Pendientes</div>
-                        <div class="admin-card-value" id="pendingCounter">0</div>
-                        <div class="admin-card-footer">
-                            <span style="color: #999; margin-right: 5px;">-</span> Por confirmar
-                        </div>
+                        <div class="admin-card-value" id="pending-counter">0</div>
+                        <div class="admin-card-footer">Por confirmar</div>
                     </div>
                     
                     <div class="admin-card">
                         <div class="admin-card-title">Clientes Totales</div>
-                        <div class="admin-card-value" id="clientsCounter">0</div>
-                        <div class="admin-card-footer">
-                            <span style="color: #999; margin-right: 5px;">-</span> En la base de datos
-                        </div>
+                        <div class="admin-card-value" id="clients-counter">0</div>
+                        <div class="admin-card-footer">En la base de datos</div>
                     </div>
                     
                     <div class="admin-card">
                         <div class="admin-card-title">Ingresos (Mes)</div>
-                        <div class="admin-card-value" id="incomeCounter">s/0</div>
-                        <div class="admin-card-footer">
-                            <span style="color: #999; margin-right: 5px;">-</span> Acumulado
-                        </div>
+                        <div class="admin-card-value" id="income-counter">s/0</div>
+                        <div class="admin-card-footer">Acumulado</div>
                     </div>
                 </div>
                 
                 <div class="admin-tabs">
-                    <div class="admin-tab active" onclick="showAppointmentTab('recent')">Citas Recientes</div>
-                    <div class="admin-tab" onclick="showAppointmentTab('pending')">Por Confirmar</div>
-                    <div class="admin-tab" onclick="showAppointmentTab('today')">Hoy</div>
+                    <div class="admin-tab active" onclick="showTab('recent')">Citas Recientes</div>
+                    <div class="admin-tab" onclick="showTab('pending')">Por Confirmar</div>
+                    <div class="admin-tab" onclick="showTab('today')">Hoy</div>
                 </div>
                 
                 <div class="admin-search">
-                    <input type="text" id="appointmentSearch" placeholder="Buscar por nombre, servicio...">
+                    <input type="text" id="search-input" placeholder="Buscar por nombre, servicio...">
                     <button onclick="searchAppointments()">🔍</button>
                 </div>
                 
-                <div class="admin-table-container">
-                    <div id="appointmentsTable">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Servicio</th>
-                                    <th>Fecha</th>
-                                    <th>Hora</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="admin-empty-state">
-                                            <div class="admin-empty-state-icon">📅</div>
-                                            <div class="admin-empty-state-text">No hay citas registradas</div>
-                                            <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-table">
+                        <!-- Las reservas se cargarán aquí -->
+                    </tbody>
+                </table>
             </div>
             
             <!-- APPOINTMENTS SECTION -->
             <div id="appointments" class="admin-content">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Gestión de Citas</h2>
-                    <div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Nueva Cita</button>
-                    </div>
+                    <button class="admin-button" onclick="openNewAppointmentModal()">+ Nueva Cita</button>
                 </div>
                 
                 <div class="admin-search">
-                    <input type="text" placeholder="Buscar cita...">
-                    <button>🔍</button>
+                    <input type="text" id="appointments-search" placeholder="Buscar cita...">
+                    <button onclick="searchAppointmentsData()">🔍</button>
                 </div>
                 
                 <div class="admin-tabs">
-                    <div class="admin-tab active">Todas</div>
-                    <div class="admin-tab">Pendientes</div>
-                    <div class="admin-tab">Confirmadas</div>
-                    <div class="admin-tab">Canceladas</div>
-                    <div class="admin-tab">Completadas</div>
+                    <div class="admin-tab active" onclick="filterAppointments('all')">Todas</div>
+                    <div class="admin-tab" onclick="filterAppointments('pending')">Pendientes</div>
+                    <div class="admin-tab" onclick="filterAppointments('confirmed')">Confirmadas</div>
+                    <div class="admin-tab" onclick="filterAppointments('canceled')">Canceladas</div>
                 </div>
                 
-                <div class="admin-table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Servicio</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="7">
-                                    <div class="admin-empty-state">
-                                        <div class="admin-empty-state-icon">📅</div>
-                                        <div class="admin-empty-state-text">No hay citas registradas</div>
-                                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-data-table">
+                        <!-- Las reservas se cargarán aquí -->
+                    </tbody>
+                </table>
             </div>
             
             <!-- CLIENTS SECTION -->
             <div id="clients" class="admin-content">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Gestión de Clientes</h2>
-                    <div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Nuevo Cliente</button>
-                    </div>
+                    <button class="admin-button" onclick="openNewClientModal()">+ Nuevo Cliente</button>
                 </div>
                 
                 <div class="admin-search">
-                    <input type="text" placeholder="Buscar cliente...">
-                    <button>🔍</button>
+                    <input type="text" id="clients-search" placeholder="Buscar cliente...">
+                    <button onclick="searchClients()">🔍</button>
                 </div>
                 
-                <div class="admin-table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Teléfono</th>
-                                <th>Última Visita</th>
-                                <th>Total Visitas</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6">
-                                    <div class="admin-empty-state">
-                                        <div class="admin-empty-state-icon">👥</div>
-                                        <div class="admin-empty-state-text">No hay clientes registrados</div>
-                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nuevo Cliente</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Última Visita</th>
+                            <th>Total Citas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table">
+                        <!-- Los clientes se cargarán aquí -->
+                    </tbody>
+                </table>
             </div>
             
             <!-- SERVICES SECTION -->
             <div id="services" class="admin-content">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Gestión de Servicios</h2>
-                    <div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Nuevo Servicio</button>
-                    </div>
+                    <button class="admin-button" onclick="openNewServiceModal()">+ Nuevo Servicio</button>
                 </div>
                 
                 <div class="admin-search">
@@ -802,40 +577,46 @@
                     <button>🔍</button>
                 </div>
                 
-                <div class="admin-table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Servicio</th>
-                                <th>Categoría</th>
-                                <th>Duración</th>
-                                <th>Precio</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6">
-                                    <div class="admin-empty-state">
-                                        <div class="admin-empty-state-icon">💄</div>
-                                        <div class="admin-empty-state-text">No hay servicios registrados</div>
-                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nuevo Servicio</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Categoría</th>
+                            <th>Duración</th>
+                            <th>Precio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Lifting de Pestañas</td>
+                            <td>Pestañas</td>
+                            <td>45 min</td>
+                            <td>s/40</td>
+                            <td>
+                                <button class="admin-action-btn admin-action-edit">✎</button>
+                                <button class="admin-action-btn admin-action-cancel">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Extensiones Clásicas</td>
+                            <td>Pestañas</td>
+                            <td>60 min</td>
+                            <td>s/50</td>
+                            <td>
+                                <button class="admin-action-btn admin-action-edit">✎</button>
+                                <button class="admin-action-btn admin-action-cancel">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             
             <!-- PROMOTIONS SECTION -->
             <div id="promotions" class="admin-content">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Gestión de Promociones</h2>
-                    <div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Nueva Promoción</button>
-                    </div>
+                    <button class="admin-button" onclick="openNewPromotionModal()">+ Nueva Promoción</button>
                 </div>
                 
                 <div class="admin-search">
@@ -843,1012 +624,303 @@
                     <button>🔍</button>
                 </div>
                 
-                <div class="admin-table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Descuento</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6">
-                                    <div class="admin-empty-state">
-                                        <div class="admin-empty-state-icon">📢</div>
-                                        <div class="admin-empty-state-text">No hay promociones registradas</div>
-                                        <button class="admin-btn" style="background-color: var(--primary); color: white;">+ Agregar Nueva Promoción</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Descuento</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Lifting + Laminado</td>
+                            <td>Tratamiento completo para mirada perfecta</td>
+                            <td>s/15 (20%)</td>
+                            <td><span class="admin-badge admin-badge-confirmed">Activa</span></td>
+                            <td>
+                                <button class="admin-action-btn admin-action-edit">✎</button>
+                                <button class="admin-action-btn admin-action-cancel">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             
             <!-- SETTINGS SECTION -->
             <div id="settings" class="admin-content">
-                <div class="admin-content-header">
+                <div class="admin-section-header">
                     <h2>Configuración</h2>
                 </div>
                 
                 <div class="admin-form-group">
-                        <label class="admin-label">Información de Contacto</label>
-                    <div style="background-color: var(--gray-light); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <div class="admin-form-group">
-                            <label for="studioName" class="admin-label">Nombre del Estudio:</label>
-                            <input type="text" id="studioName" class="admin-input" value="MG STUDIO">
-                        </div>
-                        
-                        <div class="admin-form-group">
-                            <label for="studioAddress" class="admin-label">Dirección:</label>
-                            <input type="text" id="studioAddress" class="admin-input" value="Jr. Bolognesi 265">
-                        </div>
-                        
-                        <div class="admin-form-group">
-                            <label for="studioPhone" class="admin-label">Teléfono:</label>
-                            <input type="text" id="studioPhone" class="admin-input" value="995 904 351">
-                        </div>
-                    </div>
-                    
-                    <label class="admin-label">Horario de Atención</label>
-                    <div style="background-color: var(--gray-light); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                            <div>
-                                <label class="admin-label">Día</label>
-                                <select class="admin-select" id="workDay">
-                                    <option>Lunes</option>
-                                    <option>Martes</option>
-                                    <option>Miércoles</option>
-                                    <option>Jueves</option>
-                                    <option>Viernes</option>
-                                    <option>Sábado</option>
-                                    <option>Domingo</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="admin-label">Desde</label>
-                                <input type="time" class="admin-input" id="workTimeFrom" value="09:00">
-                            </div>
-                            <div>
-                                <label class="admin-label">Hasta</label>
-                                <input type="time" class="admin-input" id="workTimeTo" value="19:00">
-                            </div>
-                        </div>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white; margin-top: 10px;" onclick="addWorkingHours()">+ Añadir Horario</button>
-                        
-                        <div style="margin-top: 15px;" id="workingHoursList">
-                            <!-- Los horarios se cargarán dinámicamente -->
-                            <div class="admin-empty-state" style="padding: 20px 0;">
-                                <div class="admin-empty-state-text" style="font-size: 14px;">No hay horarios configurados</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <label class="admin-label">Redes Sociales</label>
-                    <div style="background-color: var(--gray-light); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <div class="admin-form-group">
-                            <label for="instagram" class="admin-label">Instagram:</label>
-                            <input type="text" id="instagram" class="admin-input" value="https://www.instagram.com/mg.studio_pe">
-                        </div>
-                        
-                        <div class="admin-form-group">
-                            <label for="facebook" class="admin-label">Facebook:</label>
-                            <input type="text" id="facebook" class="admin-input" value="">
-                        </div>
-                        
-                        <div class="admin-form-group">
-                            <label for="whatsapp" class="admin-label">WhatsApp para reservas:</label>
-                            <input type="text" id="whatsapp" class="admin-input" value="51995904351">
-                        </div>
-                    </div>
-                    
-                    <div class="admin-form-buttons">
-                        <button class="admin-btn" style="background-color: var(--gray);">Cancelar</button>
-                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="saveSettings()">Guardar Cambios</button>
-                    </div>
+                    <label class="admin-form-label">Nombre del Estudio:</label>
+                    <input type="text" class="admin-form-input" value="MG STUDIO">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Dirección:</label>
+                    <input type="text" class="admin-form-input" value="Jr. Bolognesi 265">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Teléfono:</label>
+                    <input type="text" class="admin-form-input" value="995 904 351">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Instagram:</label>
+                    <input type="text" class="admin-form-input" value="https://www.instagram.com/mg.studio_pe">
+                </div>
+                
+                <div class="admin-form-buttons">
+                    <button class="admin-button" style="background-color: #ccc; color: black;">Cancelar</button>
+                    <button class="admin-button">Guardar Cambios</button>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Modal para editar cita -->
-    <div id="editAppointmentModal" class="admin-modal">
+    <div id="edit-appointment-modal" class="admin-modal">
         <div class="admin-modal-content">
             <div class="admin-modal-header">
                 <h3 class="admin-modal-title">Editar Cita</h3>
                 <span class="admin-modal-close" onclick="closeEditModal()">&times;</span>
             </div>
             
-            <div class="admin-modal-body">
-                <div class="admin-form-group">
-                    <label class="admin-label">Cliente:</label>
-                    <input type="text" id="editClientName" class="admin-input" placeholder="Nombre del cliente">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Teléfono:</label>
-                    <input type="text" id="editClientPhone" class="admin-input" placeholder="Teléfono del cliente">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Servicio:</label>
-                    <select id="editService" class="admin-select">
-                        <option>Lifting de Pestañas</option>
-                        <option>Extensiones Clásicas</option>
-                        <option>Efecto Rímel</option>
-                        <option>Laminado de cejas</option>
-                        <option>Visagismo</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Fecha:</label>
-                    <input type="date" id="editDate" class="admin-input">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Hora:</label>
-                    <select id="editTime" class="admin-select">
-                        <option>9:00 AM</option>
-                        <option>11:00 AM</option>
-                        <option>2:00 PM</option>
-                        <option>5:00 PM</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Estado:</label>
-                    <select id="editStatus" class="admin-select">
-                        <option value="pending">Pendiente</option>
-                        <option value="confirmed">Confirmado</option>
-                        <option value="canceled">Cancelado</option>
-                        <option value="completed">Completado</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Observaciones:</label>
-                    <textarea id="editNotes" class="admin-textarea" placeholder="Añadir observaciones"></textarea>
-                </div>
+            <div class="admin-form-group">
+                <label class="admin-form-label">Cliente:</label>
+                <input type="text" id="edit-client-name" class="admin-form-input">
             </div>
             
-            <div class="admin-modal-footer">
-                <button class="admin-btn admin-btn-secondary" onclick="closeEditModal()">Cancelar</button>
-                <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="saveAppointment()">Guardar Cambios</button>
+            <div class="admin-form-group">
+                <label class="admin-form-label">Teléfono:</label>
+                <input type="text" id="edit-client-phone" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Servicio:</label>
+                <select id="edit-service" class="admin-form-select">
+                    <option>Lifting de Pestañas</option>
+                    <option>Extensiones Clásicas</option>
+                    <option>Efecto Rímel</option>
+                    <option>Laminado de cejas</option>
+                    <option>Visagismo</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Fecha:</label>
+                <input type="date" id="edit-date" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora:</label>
+                <select id="edit-time" class="admin-form-select">
+                    <option>9:00 AM</option>
+                    <option>11:00 AM</option>
+                    <option>2:00 PM</option>
+                    <option>5:00 PM</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Estado:</label>
+                <select id="edit-status" class="admin-form-select">
+                    <option value="pending">Pendiente</option>
+                    <option value="confirmed">Confirmado</option>
+                    <option value="canceled">Cancelado</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Observaciones:</label>
+                <textarea id="edit-notes" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditModal()">Cancelar</button>
+                <button class="admin-button" onclick="saveAppointment()">Guardar Cambios</button>
             </div>
         </div>
     </div>
     
     <!-- Modal para nueva cita -->
-    <div id="newAppointmentModal" class="admin-modal">
+    <div id="new-appointment-modal" class="admin-modal">
         <div class="admin-modal-content">
             <div class="admin-modal-header">
                 <h3 class="admin-modal-title">Nueva Cita</h3>
                 <span class="admin-modal-close" onclick="closeNewAppointmentModal()">&times;</span>
             </div>
             
-            <div class="admin-modal-body">
-                <div class="admin-form-group">
-                    <label class="admin-label">Cliente:</label>
-                    <input type="text" id="newClientName" class="admin-input" placeholder="Nombre del cliente">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Teléfono:</label>
-                    <input type="text" id="newClientPhone" class="admin-input" placeholder="Teléfono del cliente">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Servicio:</label>
-                    <select id="newService" class="admin-select">
-                        <option>Lifting de Pestañas</option>
-                        <option>Extensiones Clásicas</option>
-                        <option>Efecto Rímel</option>
-                        <option>Laminado de cejas</option>
-                        <option>Visagismo</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Fecha:</label>
-                    <input type="date" id="newDate" class="admin-input">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Hora:</label>
-                    <select id="newTime" class="admin-select">
-                        <option>9:00 AM</option>
-                        <option>11:00 AM</option>
-                        <option>2:00 PM</option>
-                        <option>5:00 PM</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Estado:</label>
-                    <select id="newStatus" class="admin-select">
-                        <option value="pending">Pendiente</option>
-                        <option value="confirmed">Confirmado</option>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-label">Observaciones:</label>
-                    <textarea id="newNotes" class="admin-textarea" placeholder="Añadir observaciones"></textarea>
-                </div>
+            <div class="admin-form-group">
+                <label class="admin-form-label">Cliente:</label>
+                <input type="text" id="new-client-name" class="admin-form-input">
             </div>
             
-            <div class="admin-modal-footer">
-                <button class="admin-btn admin-btn-secondary" onclick="closeNewAppointmentModal()">Cancelar</button>
-                <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="createAppointment()">Crear Cita</button>
+            <div class="admin-form-group">
+                <label class="admin-form-label">Teléfono:</label>
+                <input type="text" id="new-client-phone" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Servicio:</label>
+                <select id="new-service" class="admin-form-select">
+                    <option>Lifting de Pestañas</option>
+                    <option>Extensiones Clásicas</option>
+                    <option>Efecto Rímel</option>
+                    <option>Laminado de cejas</option>
+                    <option>Visagismo</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Fecha:</label>
+                <input type="date" id="new-date" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora:</label>
+                <select id="new-time" class="admin-form-select">
+                    <option>9:00 AM</option>
+                    <option>11:00 AM</option>
+                    <option>2:00 PM</option>
+                    <option>5:00 PM</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Estado:</label>
+                <select id="new-status" class="admin-form-select">
+                    <option value="pending">Pendiente</option>
+                    <option value="confirmed">Confirmado</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Observaciones:</label>
+                <textarea id="new-notes" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewAppointmentModal()">Cancelar</button>
+                <button class="admin-button" onclick="createAppointment()">Crear Cita</button>
             </div>
         </div>
     </div>
+    
     <script>
-        // Mostrar la fecha actual
+        // Variables globales
+        let currentTab = 'recent';
+        let currentFilter = 'all';
+        let appointments = [];
+        let clients = [];
+        
+// Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            document.getElementById('currentDate').textContent = 'Hoy: ' + now.toLocaleDateString('es-ES', options);
+            // Mostrar fecha actual
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = 'Hoy: ' + today.toLocaleDateString('es-ES', options);
             
-            // Configurar fechas en modales
-            if (document.getElementById('newDate')) {
-                const formattedDate = now.toISOString().split('T')[0];
-                document.getElementById('newDate').value = formattedDate;
-                if (document.getElementById('editDate')) {
-                    document.getElementById('editDate').value = formattedDate;
-                }
+            // Establecer fecha actual en los inputs de fecha
+            const formattedDate = today.toISOString().split('T')[0];
+            if (document.getElementById('new-date')) {
+                document.getElementById('new-date').value = formattedDate;
+            }
+            if (document.getElementById('edit-date')) {
+                document.getElementById('edit-date').value = formattedDate;
             }
             
-            // Cargar las reservas desde localStorage
-            loadReservationsAdmin();
+            // Cargar datos
+            loadData();
         });
         
-        // Mostrar/ocultar secciones del panel (versión simplificada sin efectos)
-        function showAdminSection(sectionId) {
-            // Ocultar todas las secciones inmediatamente
-            const sections = document.querySelectorAll('.admin-content');
-            sections.forEach(section => {
-                section.classList.remove('active');
-            });
+        // Función para cargar datos desde localStorage
+        function loadData() {
+            // Cargar reservas
+            appointments = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
             
-            // Mostrar la sección seleccionada inmediatamente
-            document.getElementById(sectionId).classList.add('active');
+            // Extraer clientes únicos de las reservas
+            clients = extractClients(appointments);
             
-            // Actualizar menú lateral
-            const menuLinks = document.querySelectorAll('.admin-menu-link');
-            menuLinks.forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Activar link del menú
-            event.currentTarget.classList.add('active');
-            
-            // Asegurarse de que el loader esté oculto
-            const loader = document.getElementById('adminLoader');
-            if (loader) {
-                loader.style.display = 'none';
-            }
-            
-            // Scroll al inicio
-            window.scrollTo(0, 0);
-            
-            return false; // Prevenir comportamiento por defecto
+            // Actualizar UI
+            updateDashboard();
+            loadAppointmentsTable();
+            loadClientsTable();
         }
         
-        // Mostrar diferentes tabs de citas
-        function showAppointmentTab(tabId) {
-            // Actualizar tabs
-            const tabs = document.querySelectorAll('.admin-tab');
-            tabs.forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Activar la tab seleccionada
-            event.currentTarget.classList.add('active');
-            
-            // Cargar las reservas filtradas según la tab
-            loadReservationsFiltered(tabId);
-        }
-        
-        // Cargar reservas según el filtro seleccionado
-        function loadReservationsFiltered(tabId) {
-            // Obtener todas las reservas
-            const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Variable para almacenar las reservas filtradas
-            let filteredReservations = [];
-            
-            // Obtener la fecha actual
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            // Filtrar según el criterio
-            if (tabId === 'recent') {
-                // Mostrar todas ordenadas por fecha (más recientes primero)
-                filteredReservations = [...reservations].sort((a, b) => {
-                    return new Date(b.date || 0) - new Date(a.date || 0);
-                });
-            } else if (tabId === 'pending') {
-                // Mostrar solo pendientes
-                filteredReservations = reservations.filter(r => r.status === 'pending');
-            } else if (tabId === 'today') {
-                // Mostrar solo las de hoy
-                filteredReservations = reservations.filter(r => {
-                    // Intentar extraer la fecha del formato "Lunes 1 Mayo"
-                    try {
-                        const dayParts = r.day.split(' ');
-                        const day = parseInt(dayParts[1]);
-                        
-                        const currentDay = today.getDate();
-                        
-                        // Comprobar si el día coincide con hoy
-                        return day === currentDay;
-                    } catch (e) {
-                        return false;
-                    }
-                });
-            }
-            
-            // Actualizar la tabla con las reservas filtradas
-            updateAppointmentsTable(filteredReservations);
-        }
-        
-        // Actualizar la tabla de citas con las reservas filtradas
-        function updateAppointmentsTable(reservations) {
-            // Obtener el elemento de la tabla
-            const tableBody = document.querySelector('#appointmentsTable tbody');
-            
-            // Limpiar la tabla
-            tableBody.innerHTML = '';
-            
-            // Si no hay reservas después del filtro, mostrar mensaje
-            if (!reservations || reservations.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6">
-                            <div class="admin-empty-state">
-                                <div class="admin-empty-state-icon">📅</div>
-                                <div class="admin-empty-state-text">No hay citas que mostrar</div>
-                                <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // Llenar la tabla con los datos filtrados
-            reservations.forEach(reservation => {
-                // Crear elemento de fila
-                const row = document.createElement('tr');
-                
-                // Definir estado con su clase correspondiente
-                let statusBadge = getStatusBadge(reservation.status);
-                
-                // Definir botones de acción según el estado
-                let actionButtons = getActionButtons(reservation);
-                
-                // Llenar contenido de la fila
-                row.innerHTML = `
-                    <td>${reservation.client?.name || 'Cliente sin nombre'}</td>
-                    <td>${reservation.service || 'Servicio no especificado'}</td>
-                    <td>${reservation.day || 'Fecha no especificada'}</td>
-                    <td>${reservation.time || 'Hora no especificada'}</td>
-                    <td>${statusBadge}</td>
-                    <td>${actionButtons}</td>
-                `;
-                
-                // Añadir fila a la tabla
-                tableBody.appendChild(row);
-            });
-        }
-        
-        // Buscar citas
-        function searchAppointments() {
-            const searchText = document.getElementById('appointmentSearch').value.toLowerCase();
-            
-            if (!searchText.trim()) {
-                // Si está vacío, mostrar todas las citas recientes
-                showAppointmentTab('recent');
-                return;
-            }
-            
-            // Obtener todas las reservas
-            const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Filtrar según el texto de búsqueda
-            const filteredReservations = reservations.filter(r => {
-                const clientName = r.client?.name?.toLowerCase() || '';
-                const service = r.service?.toLowerCase() || '';
-                const day = r.day?.toLowerCase() || '';
-                const time = r.time?.toLowerCase() || '';
-                
-                return clientName.includes(searchText) || 
-                       service.includes(searchText) || 
-                       day.includes(searchText) || 
-                       time.includes(searchText);
-            });
-            
-            // Actualizar la tabla con los resultados
-            updateAppointmentsTable(filteredReservations);
-        }
-        
-        // Abrir modal de edición de cita
-        function openEditModal(appointmentId) {
-            document.getElementById('editAppointmentModal').style.display = 'block';
-            
-            // Convertir a número si viene como string
-            appointmentId = parseInt(appointmentId);
-            
-            // Obtener todas las reservas
-            const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Encontrar la reserva por ID
-            const reservation = reservations.find(r => r.id === appointmentId);
-            
-            if (!reservation) {
-                alert('No se encontró la reserva');
-                return;
-            }
-            
-            // Llenar el formulario con los datos de la reserva
-            document.getElementById('editClientName').value = reservation.client?.name || '';
-            document.getElementById('editClientPhone').value = reservation.client?.phone || '';
-            
-            // Seleccionar el servicio
-            const serviceSelect = document.getElementById('editService');
-            for (let i = 0; i < serviceSelect.options.length; i++) {
-                if (serviceSelect.options[i].value === reservation.service) {
-                    serviceSelect.selectedIndex = i;
-                    break;
-                }
-            }
-            
-            // Convertir día a fecha para el input date
-            try {
-                // Para formato como "Lunes 10 Mayo"
-                const parts = reservation.day.split(' ');
-                const day = parseInt(parts[1]);
-                const monthName = parts[2];
-                
-                // Convertir nombre de mes a número
-                const months = {
-                    'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3, 'Mayo': 4, 'Junio': 5,
-                    'Julio': 6, 'Agosto': 7, 'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
-                };
-                
-                const month = months[monthName] || 0;
-                const year = new Date().getFullYear();
-                
-                const date = new Date(year, month, day);
-                const dateString = date.toISOString().split('T')[0];
-                
-                document.getElementById('editDate').value = dateString;
-            } catch (e) {
-                // Si hay error, usar la fecha actual
-                const now = new Date();
-                document.getElementById('editDate').value = now.toISOString().split('T')[0];
-            }
-            
-            // Seleccionar la hora
-            const timeSelect = document.getElementById('editTime');
-            for (let i = 0; i < timeSelect.options.length; i++) {
-                if (timeSelect.options[i].text === reservation.time) {
-                    timeSelect.selectedIndex = i;
-                    break;
-                }
-            }
-            
-            // Seleccionar el estado
-            document.getElementById('editStatus').value = reservation.status || 'pending';
-            
-            // Establecer observaciones si existen
-            document.getElementById('editNotes').value = reservation.client?.comments || '';
-            
-            // Guardar el ID de la reserva en un atributo data
-            document.getElementById('editAppointmentModal').setAttribute('data-reservation-id', appointmentId);
-        }
-        
-        // Cerrar modal de edición
-        function closeEditModal() {
-            document.getElementById('editAppointmentModal').style.display = 'none';
-        }
-        
-        // Guardar cambios en la cita
-        function saveAppointment() {
-            // Obtener el ID de la reserva
-            const appointmentId = parseInt(document.getElementById('editAppointmentModal').getAttribute('data-reservation-id'));
-            
-            // Obtener todas las reservas
-            let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Encontrar la reserva por ID
-            const index = reservations.findIndex(r => r.id === appointmentId);
-            
-            if (index === -1) {
-                alert('No se encontró la reserva');
-                return;
-            }
-            
-            // Obtener los valores del formulario
-            const clientName = document.getElementById('editClientName').value;
-            const clientPhone = document.getElementById('editClientPhone').value;
-            const service = document.getElementById('editService').value;
-            const date = document.getElementById('editDate').value;
-            const time = document.getElementById('editTime').value;
-            const status = document.getElementById('editStatus').value;
-            const notes = document.getElementById('editNotes').value;
-            
-            // Validar datos
-            if (!clientName) {
-                alert('Por favor, ingresa el nombre del cliente');
-                return;
-            }
-            
-            // Convertir fecha a formato de día (formato: "Lunes 1 Mayo")
-            const dateObj = new Date(date);
-            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            
-            const dayOfWeek = weekdays[dateObj.getDay()];
-            const dayOfMonth = dateObj.getDate();
-            const monthName = months[dateObj.getMonth()];
-            
-            const formattedDay = `${dayOfWeek} ${dayOfMonth} ${monthName}`;
-            
-            // Actualizar la reserva
-            reservations[index] = {
-                ...reservations[index],
-                day: formattedDay,
-                time: time,
-                service: service,
-                status: status,
-                client: {
-                    name: clientName,
-                    phone: clientPhone,
-                    comments: notes
-                },
-                lastUpdated: new Date().toISOString()
-            };
-            
-            // Guardar los cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
-            
-            // Cerrar el modal
-            closeEditModal();
-            
-            // Recargar la lista de reservas
-            loadReservationsAdmin();
-            
-            // Mostrar mensaje de éxito
-            alert('Cita actualizada correctamente');
-        }
-        
-        // Abrir modal de nueva cita
-        function openNewAppointmentModal() {
-            // Limpiar el formulario
-            document.getElementById('newClientName').value = '';
-            document.getElementById('newClientPhone').value = '';
-            document.getElementById('newNotes').value = '';
-            
-            // Establecer la fecha actual
-            const now = new Date();
-            document.getElementById('newDate').value = now.toISOString().split('T')[0];
-            
-            // Mostrar el modal
-            document.getElementById('newAppointmentModal').style.display = 'block';
-        }
-        
-        // Cerrar modal de nueva cita
-        function closeNewAppointmentModal() {
-            document.getElementById('newAppointmentModal').style.display = 'none';
-        }
-        
-        // Crear nueva cita
-        function createAppointment() {
-            // Recoger los datos del formulario
-            const clientName = document.getElementById('newClientName').value;
-            const clientPhone = document.getElementById('newClientPhone').value;
-            const service = document.getElementById('newService').value;
-            const date = document.getElementById('newDate').value;
-            const time = document.getElementById('newTime').value;
-            const status = document.getElementById('newStatus').value;
-            const notes = document.getElementById('newNotes').value;
-            
-            // Validar datos
-            if (!clientName || !clientPhone) {
-                alert('Por favor, completa los campos obligatorios');
-                return;
-            }
-            
-            // Convertir fecha a formato de día (formato: "Lunes 1 Mayo")
-            const dateObj = new Date(date);
-            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            
-            const dayOfWeek = weekdays[dateObj.getDay()];
-            const dayOfMonth = dateObj.getDate();
-            const monthName = months[dateObj.getMonth()];
-            
-            const formattedDay = `${dayOfWeek} ${dayOfMonth} ${monthName}`;
-            
-            // Crear nueva reserva
-            const newReservation = {
-                id: Date.now(), // Usar timestamp como ID único
-                day: formattedDay,
-                time: time,
-                service: service,
-                status: status,
-                client: {
-                    name: clientName,
-                    phone: clientPhone,
-                    comments: notes
-                },
-                date: new Date().toISOString() // Fecha de creación
-            };
-            
-            // Obtener todas las reservas
-            let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Añadir la nueva reserva
-            reservations.push(newReservation);
-            
-            // Guardar en localStorage
-            localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
-            
-            // Cerrar el modal
-            closeNewAppointmentModal();
-            
-            // Recargar la lista de reservas
-            loadReservationsAdmin();
-            
-            // Mostrar mensaje de éxito
-            alert('Cita creada correctamente');
-        }
-        
-        // Confirmar una cita
-        function confirmAppointment(appointmentId) {
-            // Pedir confirmación
-            if (confirm('¿Confirmar esta cita?')) {
-                confirmReservationAdmin(appointmentId);
-            }
-        }
-        
-        // Cancelar una cita
-        function cancelAppointment(appointmentId) {
-            // Pedir confirmación
-            if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-                cancelReservationAdmin(appointmentId);
-            }
-        }
-        
-        // Contactar con cliente por WhatsApp
-        function contactClient(name, phone) {
-            if (!phone) {
-                alert('No hay número de teléfono registrado para este cliente');
-                return;
-            }
-            
-            // Crear mensaje predeterminado
-            const message = `Hola ${name}, te contactamos desde MG STUDIO para confirmar tu cita próxima.`;
-            
-            // Abrir WhatsApp con el número y mensaje
-            window.open(`https://wa.me/51${phone}?text=${encodeURIComponent(message)}`, '_blank');
-        }
-        
-        // Agregar horario de trabajo
-        function addWorkingHours() {
-            const day = document.getElementById('workDay').value;
-            const timeFrom = document.getElementById('workTimeFrom').value;
-            const timeTo = document.getElementById('workTimeTo').value;
-            
-            // Validar datos
-            if (!day || !timeFrom || !timeTo) {
-                alert('Por favor, completa todos los campos del horario');
-                return;
-            }
-            
-            // Formatear las horas para mostrar AM/PM
-            const formatTime = (timeStr) => {
-                const [hours, minutes] = timeStr.split(':');
-                const h = parseInt(hours);
-                return `${h % 12 || 12}:${minutes} ${h < 12 ? 'AM' : 'PM'}`;
-            };
-            
-            // Crear elemento HTML para el nuevo horario
-            const scheduleItem = document.createElement('div');
-            scheduleItem.style.display = 'flex';
-            scheduleItem.style.justifyContent = 'space-between';
-            scheduleItem.style.padding = '8px';
-            scheduleItem.style.backgroundColor = 'white';
-            scheduleItem.style.borderRadius = '5px';
-            scheduleItem.style.marginBottom = '5px';
-            
-            scheduleItem.innerHTML = `
-                <span>${day}</span>
-                <span>${formatTime(timeFrom)} - ${formatTime(timeTo)}</span>
-                <button class="admin-action-btn admin-action-cancel" onclick="this.parentElement.remove()">✕</button>
-            `;
-            
-            // Eliminar mensaje de "no hay horarios" si existe
-            const emptyState = document.querySelector('#workingHoursList .admin-empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-            
-            // Añadir al contenedor
-            document.getElementById('workingHoursList').appendChild(scheduleItem);
-        }
-        
-        // Guardar la configuración
-        function saveSettings() {
-            // Recoger los datos del formulario
-            const studioName = document.getElementById('studioName').value;
-            const studioAddress = document.getElementById('studioAddress').value;
-            const studioPhone = document.getElementById('studioPhone').value;
-            const instagram = document.getElementById('instagram').value;
-            const facebook = document.getElementById('facebook').value;
-            const whatsapp = document.getElementById('whatsapp').value;
-            
-            // Recoger los horarios
-            const workingHours = [];
-            const hourItems = document.querySelectorAll('#workingHoursList > div:not(.admin-empty-state)');
-            hourItems.forEach(item => {
-                const day = item.querySelector('span:first-child').textContent;
-                const timeRange = item.querySelector('span:nth-child(2)').textContent;
-                workingHours.push({ day, timeRange });
-            });
-            
-            // Guardar la configuración en localStorage
-            const config = {
-                studioName,
-                studioAddress,
-                studioPhone,
-                instagram,
-                facebook,
-                whatsapp,
-                workingHours,
-                lastUpdated: new Date().toISOString()
-            };
-            
-            localStorage.setItem('mgStudioConfig', JSON.stringify(config));
-            
-            // Mostrar mensaje de éxito
-            alert('Configuración guardada correctamente');
-        }
-        
-    // Función para cargar reservas desde localStorage
-// Función para cargar reservas desde localStorage
-function loadReservationsAdmin() {
-    // Obtener las reservas
-    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-    
-    // Actualizar contadores del dashboard
-    document.getElementById('todayCounter').textContent = countTodayReservations(reservations);
-    document.getElementById('pendingCounter').textContent = countPendingReservations(reservations);
-    
-    // Obtener el elemento de la tabla
-    const tableBody = document.querySelector('#appointmentsTable tbody');
-    
-    // Si no hay elemento tbody, crearlo
-    if (!tableBody) {
-        console.error('No se encontró el elemento tbody en la tabla');
-        return;
-    }
-    
-    // Limpiar la tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay reservas, mostrar mensaje
-    if (reservations.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 40px 20px;">
-                    <div style="font-size: 48px; margin-bottom: 20px; color: #eaeaea;">📅</div>
-                    <div style="font-size: 18px; margin-bottom: 20px; color: #999;">No hay citas registradas</div>
-                    <button style="background-color: #ff4b7d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    // Ordenar reservas (más recientes primero)
-    reservations.sort((a, b) => {
-        // Intentar ordenar por fecha
-        try {
-            return new Date(b.date) - new Date(a.date);
-        } catch (e) {
-            // Si falla, ordenar por ID
-            return b.id - a.id;
-        }
-    });
-
-    // Agregar cada reserva a la tabla
-    reservations.forEach(reservation => {
-        // Crear fila
-        const row = document.createElement('tr');
-        
-        // Crear celda para nombre de cliente
-        const clientCell = document.createElement('td');
-        clientCell.textContent = reservation.client ? (reservation.client.name || 'Cliente sin nombre') : 'Cliente sin nombre';
-        row.appendChild(clientCell);
-        
-        // Crear celda para servicio
-        const serviceCell = document.createElement('td');
-        serviceCell.textContent = reservation.service || 'Servicio no especificado';
-        row.appendChild(serviceCell);
-        
-        // Crear celda para fecha
-        const dateCell = document.createElement('td');
-        dateCell.textContent = reservation.day || formatReservationDate(reservation.date);
-        row.appendChild(dateCell);
-        
-        // Crear celda para hora
-        const timeCell = document.createElement('td');
-        timeCell.textContent = reservation.time || '00:00';
-        row.appendChild(timeCell);
-        
-        // Crear celda para estado
-        const statusCell = document.createElement('td');
-        let statusBadge = '';
-        if (reservation.status === 'pending') {
-            statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-        } else if (reservation.status === 'confirmed') {
-            statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-        } else if (reservation.status === 'canceled') {
-            statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-        } else {
-            statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-        }
-        statusCell.innerHTML = statusBadge;
-        row.appendChild(statusCell);
-        
-        // Crear celda para acciones
-        const actionsCell = document.createElement('td');
-        let actionButtons = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${reservation.id})">✎</button>
-            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${reservation.client ? reservation.client.name || 'Cliente' : 'Cliente'}', '${reservation.client ? reservation.client.phone || '' : ''}')">📱</button>
-        `;
-        
-        if (reservation.status === 'pending') {
-            actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${reservation.id})">✓</button>`;
-        }
-        
-        if (reservation.status !== 'canceled' && reservation.status !== 'completed') {
-            actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${reservation.id})">✕</button>`;
-        }
-        
-        actionsCell.innerHTML = actionButtons;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-    
-    // Actualizar los contadores en las tarjetas del dashboard
-    updateDashboardCounters(reservations);
-}
-
-// Función auxiliar para formatear fechas
-function formatReservationDate(dateString) {
-    try {
-        const date = new Date(dateString);
-        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-    } catch (e) {
-        return 'Fecha desconocida';
-    }
-}
-
-// Función para contar reservas de hoy
-function countTodayReservations(reservations) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return reservations.filter(r => {
-        // Intentar parsear la fecha de la reserva
-        try {
-            if (r.day) {
-                const parts = r.day.split(' ');
-                if (parts.length >= 2) {
-                    const reservationDay = parseInt(parts[1]);
-                    const currentDay = today.getDate();
-                    return reservationDay === currentDay;
-                }
-            }
-            
-            // Si no hay día o no se puede parsear, intentar con la fecha de creación
-            const creationDate = new Date(r.date);
-            creationDate.setHours(0, 0, 0, 0);
-            return creationDate.getTime() === today.getTime();
-        } catch (e) {
-            return false;
-        }
-    }).length;
-}
-
-// Función para contar reservas pendientes
-function countPendingReservations(reservations) {
-    return reservations.filter(r => r.status === 'pending').length;
-}
-
-// Función para actualizar los contadores en el dashboard
-function updateDashboardCounters(reservations) {
-    if (document.getElementById('todayCounter')) {
-        document.getElementById('todayCounter').textContent = countTodayReservations(reservations);
-    }
-    
-    if (document.getElementById('pendingCounter')) {
-        document.getElementById('pendingCounter').textContent = countPendingReservations(reservations);
-    }
-    
-    if (document.getElementById('clientsCounter')) {
-        // Contar clientes únicos
-        const uniqueClients = new Set();
-        reservations.forEach(r => {
-            if (r.client && r.client.name) {
-                uniqueClients.add(r.client.name);
-            }
-        });
-        document.getElementById('clientsCounter').textContent = uniqueClients.size;
-    }
-}
-		
-        
-        // Función para contar reservas de hoy
-        function countTodayReservations(reservations) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            return reservations.filter(r => {
-                // Intentar parsear la fecha de la reserva
-                try {
-                    // Para formato como "Lunes 10 Mayo"
-                    const parts = r.day.split(' ');
-                    const day = parseInt(parts[1]);
+        // Extraer clientes únicos de las reservas
+        function extractClients(appointments) {
+            const clientsMap = new Map();
+            
+            appointments.forEach(appointment => {
+                if (appointment.client && appointment.client.name) {
+                    const clientName = appointment.client.name;
                     
-                    // Comparar si el día es hoy
-                    return day === today.getDate();
-                } catch (e) {
-                    // Si hay error, intentar con la fecha de creación
-                    try {
-                        const creationDate = new Date(r.date);
-                        creationDate.setHours(0, 0, 0, 0);
-                        return creationDate.getTime() === today.getTime();
-                    } catch (e2) {
-                        return false;
+                    if (!clientsMap.has(clientName)) {
+                        clientsMap.set(clientName, {
+                            name: clientName,
+                            phone: appointment.client.phone || '',
+                            appointments: [],
+                            lastAppointment: appointment.date || ''
+                        });
                     }
-                }
-            }).length;
-        }
-        
-        // Función para contar reservas pendientes
-        function countPendingReservations(reservations) {
-            return reservations.filter(r => r.status === 'pending').length;
-        }
-        
-        // Función para contar clientes únicos
-        function countUniqueClients(reservations) {
-            const uniqueClients = new Set();
-            
-            reservations.forEach(r => {
-                if (r.client && r.client.name) {
-                    uniqueClients.add(r.client.name.toLowerCase().trim());
+                    
+                    const client = clientsMap.get(clientName);
+                    client.appointments.push(appointment);
+                    
+                    // Actualizar última cita si es más reciente
+                    const appointmentDate = new Date(appointment.date || 0);
+                    const lastDate = new Date(client.lastAppointment || 0);
+                    
+                    if (appointmentDate > lastDate) {
+                        client.lastAppointment = appointment.date;
+                    }
                 }
             });
             
-            return uniqueClients.size;
+            return Array.from(clientsMap.values());
         }
         
-        // Función para calcular ingresos mensuales (estimación)
-        function calculateMonthlyIncome(reservations) {
-            // Precios de los servicios
+        // Actualizar dashboard
+        function updateDashboard() {
+            // Contar citas de hoy
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayAppointments = appointments.filter(appointment => {
+                if (!appointment.day) return false;
+                
+                const parts = appointment.day.split(' ');
+                if (parts.length < 2) return false;
+                
+                const day = parseInt(parts[1]);
+                return day === today.getDate();
+            });
+            
+            // Contar citas pendientes
+            const pendingAppointments = appointments.filter(appointment => 
+                appointment.status === 'pending'
+            );
+            
+            // Actualizar contadores
+            document.getElementById('today-counter').textContent = todayAppointments.length;
+            document.getElementById('pending-counter').textContent = pendingAppointments.length;
+            document.getElementById('clients-counter').textContent = clients.length;
+            
+            // Calcular ingresos (simulado)
+            document.getElementById('income-counter').textContent = 's/' + calculateIncome();
+        }
+        
+        // Calcular ingresos totales (ejemplo)
+        function calculateIncome() {
+            let totalIncome = 0;
+            
+            // Precios de servicios
             const prices = {
                 'Lifting de Pestañas': 40,
                 'Extensiones Clásicas': 50,
@@ -1868,138 +940,728 @@ function updateDashboardCounters(reservations) {
                 'Paquete 2: Extensiones + Visagismo': 70
             };
             
-            const now = new Date();
-            const currentMonth = now.getMonth();
+            // Solo contar citas confirmadas
+            const confirmedAppointments = appointments.filter(appointment => 
+                appointment.status === 'confirmed'
+            );
             
-            // Filtrar reservas del mes actual que estén confirmadas o completadas
-            const confirmedMonthlyReservations = reservations.filter(r => {
-                const isConfirmed = r.status === 'confirmed' || r.status === 'completed';
-                
-                // Verificar si es del mes actual
-                try {
-                    const reservationDate = new Date(r.date);
-                    return reservationDate.getMonth() === currentMonth && isConfirmed;
-                } catch (e) {
-                    // Si no se puede determinar el mes, intentar con el día
-                    try {
-                        // Asumimos que las reservas son del mes actual
-                        return isConfirmed;
-                    } catch (e2) {
-                        return false;
-                    }
+            confirmedAppointments.forEach(appointment => {
+                if (appointment.service && prices[appointment.service]) {
+                    totalIncome += prices[appointment.service];
                 }
             });
             
-            // Calcular el total
-            let total = 0;
-            confirmedMonthlyReservations.forEach(r => {
-                const price = prices[r.service] || 0;
-                total += price;
+            return totalIncome;
+        }
+        
+        // Cargar tabla de citas
+        function loadAppointmentsTable() {
+            const tablesIds = ['appointments-table', 'appointments-data-table'];
+            
+            tablesIds.forEach(tableId => {
+                const tableBody = document.getElementById(tableId);
+                if (!tableBody) return;
+                
+                // Limpiar tabla
+                tableBody.innerHTML = '';
+                
+                // Filtrar según la tab actual
+                let filteredAppointments = filterAppointmentsByTab(appointments, currentTab);
+                
+                // Filtrar según búsqueda adicional
+                if (currentFilter !== 'all' && tableId === 'appointments-data-table') {
+                    filteredAppointments = filteredAppointments.filter(appointment => 
+                        appointment.status === currentFilter
+                    );
+                }
+                
+                // Si no hay citas, mostrar mensaje
+                if (filteredAppointments.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="admin-empty-state">
+                                    <div class="admin-empty-state-icon">📅</div>
+                                    <div class="admin-empty-state-text">No hay citas para mostrar</div>
+                                    <button class="admin-button" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Ordenar citas (más recientes primero)
+                filteredAppointments.sort((a, b) => {
+                    // Intentar ordenar por fecha
+                    const dateA = new Date(a.date || 0);
+                    const dateB = new Date(b.date || 0);
+                    
+                    return dateB - dateA;
+                });
+                
+                // Cargar citas en la tabla
+                filteredAppointments.forEach(appointment => {
+                    const row = document.createElement('tr');
+                    
+                    // Cliente
+                    const clientCell = document.createElement('td');
+                    clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                    row.appendChild(clientCell);
+                    
+                    // Servicio
+                    const serviceCell = document.createElement('td');
+                    serviceCell.textContent = appointment.service || 'No especificado';
+                    row.appendChild(serviceCell);
+                    
+                    // Fecha
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = appointment.day || formatDate(appointment.date);
+                    row.appendChild(dateCell);
+                    
+                    // Hora
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = appointment.time || 'No especificada';
+                    row.appendChild(timeCell);
+                    
+                    // Estado
+                    const statusCell = document.createElement('td');
+                    const status = appointment.status || 'pending';
+                    let statusBadge = '';
+                    
+                    if (status === 'pending') {
+                        statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                    } else if (status === 'confirmed') {
+                        statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                    } else if (status === 'canceled') {
+                        statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+                    }
+                    
+                    statusCell.innerHTML = statusBadge;
+                    row.appendChild(statusCell);
+                    
+                    // Acciones
+                    const actionsCell = document.createElement('td');
+                    let actionButtons = `
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${appointment.id})">✎</button>
+                        <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                    `;
+                    
+                    if (status === 'pending') {
+                        actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${appointment.id})">✓</button>`;
+                    }
+                    
+                    if (status !== 'canceled') {
+                        actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${appointment.id})">✕</button>`;
+                    }
+                    
+                    actionsCell.innerHTML = actionButtons;
+                    row.appendChild(actionsCell);
+                    
+                    // Agregar fila a la tabla
+                    tableBody.appendChild(row);
+                });
             });
-            
-            return `s/${total}`;
         }
         
-        // Función para generar el HTML del badge de estado
-        function getStatusBadge(status) {
-            switch (status) {
-                case 'pending':
-                    return '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-                case 'confirmed':
-                    return '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-                case 'canceled':
-                    return '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-                case 'completed':
-                    return '<span class="admin-badge admin-badge-completed">Completado</span>';
-                default:
-                    return '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+        // Filtrar citas según la tab actual
+        function filterAppointmentsByTab(appointments, tab) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (tab === 'recent') {
+                return appointments; // Todas las citas
+            } else if (tab === 'pending') {
+                return appointments.filter(appointment => 
+                    appointment.status === 'pending'
+                );
+            } else if (tab === 'today') {
+                return appointments.filter(appointment => {
+                    if (!appointment.day) return false;
+                    
+                    const parts = appointment.day.split(' ');
+                    if (parts.length < 2) return false;
+                    
+                    const day = parseInt(parts[1]);
+                    return day === today.getDate();
+                });
             }
+            
+            return appointments;
         }
         
-        // Función para generar los botones de acción según el estado
-        function getActionButtons(reservation) {
-            let buttons = `
-                <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${reservation.id})">✎</button>
-                <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${reservation.client?.name || 'Cliente'}', '${reservation.client?.phone || ''}')">📱</button>
-            `;
+        // Cargar tabla de clientes
+        function loadClientsTable() {
+            const tableBody = document.getElementById('clients-table');
+            if (!tableBody) return;
             
-            if (reservation.status === 'pending') {
-                buttons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${reservation.id})">✓</button>`;
-            }
+            // Limpiar tabla
+            tableBody.innerHTML = '';
             
-            if (reservation.status !== 'canceled' && reservation.status !== 'completed') {
-                buttons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${reservation.id})">✕</button>`;
-            }
-            
-            return buttons;
-        }
-        
-        // Función para confirmar una reserva (actualizar estado)
-        function confirmReservationAdmin(reservationId) {
-            // Obtener todas las reservas
-            let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Encontrar la reserva por ID
-            const index = reservations.findIndex(r => r.id === parseInt(reservationId));
-            
-            if (index === -1) {
-                alert('No se encontró la reserva');
+            // Si no hay clientes, mostrar mensaje
+            if (clients.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-icon">👥</div>
+                                <div class="admin-empty-state-text">No hay clientes registrados</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
             
-            // Actualizar el estado
-            reservations[index].status = 'confirmed';
+            // Ordenar clientes por nombre
+            clients.sort((a, b) => a.name.localeCompare(b.name));
             
-            // Guardar los cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+            // Cargar clientes en la tabla
+            clients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = client.name;
+                row.appendChild(nameCell);
+                
+                // Teléfono
+                const phoneCell = document.createElement('td');
+                phoneCell.textContent = client.phone || 'No especificado';
+                row.appendChild(phoneCell);
+                
+                // Última visita
+                const lastVisitCell = document.createElement('td');
+                lastVisitCell.textContent = formatDate(client.lastAppointment);
+                row.appendChild(lastVisitCell);
+                
+                // Total citas
+                const totalAppointmentsCell = document.createElement('td');
+                totalAppointmentsCell.textContent = client.appointments.length;
+                row.appendChild(totalAppointmentsCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'No registrada';
             
-            // Recargar la lista de reservas
-            loadReservationsAdmin();
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES');
+            } catch (e) {
+                return 'Fecha inválida';
+            }
+        }
+        
+        // Mostrar sección
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.admin-content');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
             
-            // Mostrar mensaje de éxito
+            // Mostrar la sección seleccionada
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Actualizar menú
+            const menuLinks = document.querySelectorAll('.admin-menu-link');
+            menuLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Activar el enlace actual
+            event.currentTarget.classList.add('active');
+            
+            // Cargar datos específicos de la sección
+            if (sectionId === 'dashboard' || sectionId === 'appointments') {
+                loadAppointmentsTable();
+            } else if (sectionId === 'clients') {
+                loadClientsTable();
+            }
+        }
+        
+        // Mostrar tab
+        function showTab(tabId) {
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('.admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la tab seleccionada
+            event.currentTarget.classList.add('active');
+            
+            // Actualizar tab actual
+            currentTab = tabId;
+            
+            // Recargar tabla de citas
+            loadAppointmentsTable();
+        }
+        
+        // Filtrar citas en la sección de citas
+        function filterAppointments(filter) {
+            // Actualizar filtro actual
+            currentFilter = filter;
+            
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('#appointments .admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la tab seleccionada
+            event.currentTarget.classList.add('active');
+            
+            // Recargar tabla de citas
+            loadAppointmentsTable();
+        }
+        
+        // Buscar citas
+        function searchAppointments() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las citas
+                loadAppointmentsTable();
+                return;
+            }
+            
+            // Filtrar citas según el texto de búsqueda
+            const filteredAppointments = appointments.filter(appointment => {
+                const clientName = appointment.client ? appointment.client.name || '' : '';
+                const service = appointment.service || '';
+                const day = appointment.day || '';
+                
+                return (
+                    clientName.toLowerCase().includes(searchText) ||
+                    service.toLowerCase().includes(searchText) ||
+                    day.toLowerCase().includes(searchText)
+                );
+            });
+            
+            // Actualizar tabla con las citas filtradas
+            const tableBody = document.getElementById('appointments-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredAppointments.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar citas filtradas
+            filteredAppointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                
+                // Cliente
+                const clientCell = document.createElement('td');
+                clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                row.appendChild(clientCell);
+                
+                // Servicio
+                const serviceCell = document.createElement('td');
+                serviceCell.textContent = appointment.service || 'No especificado';
+                row.appendChild(serviceCell);
+                
+                // Fecha
+                const dateCell = document.createElement('td');
+                dateCell.textContent = appointment.day || formatDate(appointment.date);
+                row.appendChild(dateCell);
+                
+                // Hora
+                const timeCell = document.createElement('td');
+                timeCell.textContent = appointment.time || 'No especificada';
+                row.appendChild(timeCell);
+                
+                // Estado
+                const statusCell = document.createElement('td');
+                const status = appointment.status || 'pending';
+                let statusBadge = '';
+                
+                if (status === 'pending') {
+                    statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                } else if (status === 'confirmed') {
+                    statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                } else if (status === 'canceled') {
+                    statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+                }
+                
+                statusCell.innerHTML = statusBadge;
+                row.appendChild(statusCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                let actionButtons = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${appointment.id})">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                `;
+                
+                if (status === 'pending') {
+                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${appointment.id})">✓</button>`;
+                }
+                
+                if (status !== 'canceled') {
+                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${appointment.id})">✕</button>`;
+                }
+                
+                actionsCell.innerHTML = actionButtons;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Abrir modal de edición
+        function openEditModal(appointmentId) {
+            // Buscar cita por ID
+            const appointment = appointments.find(a => a.id === appointmentId);
+            
+            if (!appointment) {
+                alert('No se encontró la cita');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-client-name').value = appointment.client ? appointment.client.name || '' : '';
+            document.getElementById('edit-client-phone').value = appointment.client ? appointment.client.phone || '' : '';
+            
+            // Seleccionar servicio
+            const serviceSelect = document.getElementById('edit-service');
+            for (let i = 0; i < serviceSelect.options.length; i++) {
+                if (serviceSelect.options[i].text === appointment.service) {
+                    serviceSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Establecer fecha
+            // Para simplificar, usamos la fecha actual
+            const today = new Date();
+            document.getElementById('edit-date').value = today.toISOString().split('T')[0];
+            
+            // Seleccionar hora
+            const timeSelect = document.getElementById('edit-time');
+            for (let i = 0; i < timeSelect.options.length; i++) {
+                if (timeSelect.options[i].text === appointment.time) {
+                    timeSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Seleccionar estado
+            document.getElementById('edit-status').value = appointment.status || 'pending';
+            
+            // Establecer observaciones
+            document.getElementById('edit-notes').value = appointment.client && appointment.client.comments ? appointment.client.comments : '';
+            
+            // Guardar ID de la cita
+            document.getElementById('edit-appointment-modal').setAttribute('data-appointment-id', appointmentId);
+            
+            // Mostrar modal
+            document.getElementById('edit-appointment-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición
+        function closeEditModal() {
+            document.getElementById('edit-appointment-modal').style.display = 'none';
+        }
+        
+        // Guardar cambios de la cita
+        function saveAppointment() {
+            // Obtener ID de la cita
+            const appointmentId = parseInt(document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id'));
+            
+            // Buscar índice de la cita
+            const index = appointments.findIndex(a => a.id === appointmentId);
+            
+            if (index === -1) {
+                alert('No se encontró la cita');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const clientName = document.getElementById('edit-client-name').value;
+            const clientPhone = document.getElementById('edit-client-phone').value;
+            const service = document.getElementById('edit-service').value;
+            const status = document.getElementById('edit-status').value;
+            const notes = document.getElementById('edit-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Actualizar cita
+            appointments[index] = {
+                ...appointments[index],
+                service: service,
+                status: status,
+                client: {
+                    name: clientName,
+                    phone: clientPhone,
+                    comments: notes
+                }
+            };
+            
+            // Guardar cambios
+            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
+            
+            // Cerrar modal
+            closeEditModal();
+            
+            // Recargar datos
+            loadData();
+            
+            // Mostrar mensaje
+            alert('Cita actualizada correctamente');
+        }
+        
+        // Abrir modal de nueva cita
+        function openNewAppointmentModal() {
+            // Limpiar formulario
+            document.getElementById('new-client-name').value = '';
+            document.getElementById('new-client-phone').value = '';
+            document.getElementById('new-notes').value = '';
+            
+            // Establecer fecha actual
+            const today = new Date();
+            document.getElementById('new-date').value = today.toISOString().split('T')[0];
+            
+            // Mostrar modal
+            document.getElementById('new-appointment-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nueva cita
+        function closeNewAppointmentModal() {
+            document.getElementById('new-appointment-modal').style.display = 'none';
+        }
+        
+        // Crear nueva cita
+        function createAppointment() {
+            // Obtener datos del formulario
+            const clientName = document.getElementById('new-client-name').value;
+            const clientPhone = document.getElementById('new-client-phone').value;
+            const service = document.getElementById('new-service').value;
+            const date = document.getElementById('new-date').value;
+            const time = document.getElementById('new-time').value;
+            const status = document.getElementById('new-status').value;
+            const notes = document.getElementById('new-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Crear nueva cita
+            const newAppointment = {
+                id: Date.now(), // ID único basado en timestamp
+                day: getDayFromDate(date), // Convertir fecha a formato "Lunes 1 Mayo"
+                time: time,
+                service: service,
+                status: status,
+                client: {
+                    name: clientName,
+                    phone: clientPhone,
+                    comments: notes
+                },
+                date: new Date().toISOString() // Fecha de creación
+            };
+            
+            // Añadir a la lista de citas
+            appointments.push(newAppointment);
+            
+            // Guardar cambios
+            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
+            
+            // Cerrar modal
+            closeNewAppointmentModal();
+            
+            // Recargar datos
+            loadData();
+            
+            // Mostrar mensaje
+            alert('Cita creada correctamente');
+        }
+        
+        // Convertir fecha a formato "Lunes 1 Mayo"
+        function getDayFromDate(dateString) {
+            const date = new Date(dateString);
+            
+            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            const weekday = weekdays[date.getDay()];
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            
+            return `${weekday} ${day} ${month}`;
+        }
+        
+        // Confirmar cita
+        function confirmAppointment(appointmentId) {
+            // Buscar índice de la cita
+            const index = appointments.findIndex(a => a.id === appointmentId);
+            
+            if (index === -1) {
+                alert('No se encontró la cita');
+                return;
+            }
+            
+            // Actualizar estado
+            appointments[index].status = 'confirmed';
+            
+            // Guardar cambios
+            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
+            
+            // Recargar datos
+            loadData();
+            
+            // Mostrar mensaje
             alert('Cita confirmada correctamente');
         }
         
-        // Función para cancelar una reserva
-        function cancelReservationAdmin(reservationId) {
-            // Obtener todas las reservas
-            let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Encontrar la reserva por ID
-            const index = reservations.findIndex(r => r.id === parseInt(reservationId));
-            
-            if (index === -1) {
-                alert('No se encontró la reserva');
+        // Cancelar cita
+        function cancelAppointment(appointmentId) {
+            // Confirmar cancelación
+            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
                 return;
             }
             
-            // Actualizar el estado
-            reservations[index].status = 'canceled';
+            // Buscar índice de la cita
+            const index = appointments.findIndex(a => a.id === appointmentId);
             
-            // Guardar los cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+            if (index === -1) {
+                alert('No se encontró la cita');
+                return;
+            }
             
-            // Recargar la lista de reservas
-            loadReservationsAdmin();
+            // Actualizar estado
+            appointments[index].status = 'canceled';
             
-            // Mostrar mensaje de éxito
+            // Guardar cambios
+            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
+            
+            // Recargar datos
+            loadData();
+            
+            // Mostrar mensaje
             alert('Cita cancelada correctamente');
         }
         
-        // Cerrar los modales si se hace clic fuera
-        window.onclick = function(event) {
-            if (event.target.classList.contains('admin-modal')) {
-                event.target.style.display = 'none';
+        // Contactar cliente por WhatsApp
+        function contactClient(name, phone) {
+            if (!phone) {
+                alert('El cliente no tiene número de teléfono registrado');
+                return;
             }
+            
+            // Crear mensaje
+            const message = `Hola ${name}, te contactamos desde MG STUDIO para confirmar tu cita.`;
+            
+            // Abrir WhatsApp
+            window.open(`https://wa.me/51${phone}?text=${encodeURIComponent(message)}`, '_blank');
         }
         
-        // Script de emergencia para ocultar el loader después de 5 segundos en caso de problemas
-        setTimeout(function() {
-            var loader = document.getElementById('adminLoader');
-            if (loader && loader.style.display !== 'none') {
-                loader.style.display = 'none';
+        // Buscar clientes
+        function searchClients() {
+            const searchText = document.getElementById('clients-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todos los clientes
+                loadClientsTable();
+                return;
             }
-        }, 5000);
+            
+            // Filtrar clientes según el texto de búsqueda
+            const filteredClients = clients.filter(client => 
+                client.name.toLowerCase().includes(searchText) ||
+                (client.phone && client.phone.includes(searchText))
+            );
+            
+            // Actualizar tabla con los clientes filtrados
+            const tableBody = document.getElementById('clients-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredClients.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar clientes filtrados
+            filteredClients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = client.name;
+                row.appendChild(nameCell);
+                
+                // Teléfono
+                const phoneCell = document.createElement('td');
+                phoneCell.textContent = client.phone || 'No especificado';
+                row.appendChild(phoneCell);
+                
+                // Última visita
+                const lastVisitCell = document.createElement('td');
+                lastVisitCell.textContent = formatDate(client.lastAppointment);
+                row.appendChild(lastVisitCell);
+                
+                // Total citas
+                const totalAppointmentsCell = document.createElement('td');
+                totalAppointmentsCell.textContent = client.appointments.length;
+                row.appendChild(totalAppointmentsCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
     </script>
 </body>
 </html>
