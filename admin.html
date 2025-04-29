@@ -1623,71 +1623,101 @@
             alert('Configuración guardada correctamente');
         }
         
-        // Función para cargar reservas desde localStorage
-        function loadReservationsAdmin() {
-            // Obtener las reservas
-            const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-            
-            // Actualizar contadores del dashboard
-            document.getElementById('todayCounter').textContent = countTodayReservations(reservations);
-            document.getElementById('pendingCounter').textContent = countPendingReservations(reservations);
-            document.getElementById('clientsCounter').textContent = countUniqueClients(reservations);
-            document.getElementById('incomeCounter').textContent = calculateMonthlyIncome(reservations);
-            
-            // Obtener el elemento de la tabla
-            const tableBody = document.querySelector('#appointmentsTable tbody');
-            
-            // Limpiar la tabla
-            tableBody.innerHTML = '';
-            
-            // Si no hay reservas, mostrar mensaje
-            if (reservations.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6">
-                            <div class="admin-empty-state">
-                                <div class="admin-empty-state-icon">📅</div>
-                                <div class="admin-empty-state-text">No hay citas registradas</div>
-                                <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // Ordenar reservas (más recientes primero)
-            const sortedReservations = [...reservations].sort((a, b) => {
-                return new Date(b.date || 0) - new Date(a.date || 0);
-            });
-            
-            // Llenar la tabla con los datos más recientes (limitado a 10)
-            const recentReservations = sortedReservations.slice(0, 10);
-            
-            recentReservations.forEach(reservation => {
-                // Crear elemento de fila
-                const row = document.createElement('tr');
-                
-                // Definir estado con su clase correspondiente
-                let statusBadge = getStatusBadge(reservation.status);
-                
-                // Definir botones de acción según el estado
-                let actionButtons = getActionButtons(reservation);
-                
-                // Llenar contenido de la fila
-                row.innerHTML = `
-                    <td>${reservation.client?.name || 'Cliente sin nombre'}</td>
-                    <td>${reservation.service || 'Servicio no especificado'}</td>
-                    <td>${reservation.day || 'Fecha no especificada'}</td>
-                    <td>${reservation.time || 'Hora no especificada'}</td>
-                    <td>${statusBadge}</td>
-                    <td>${actionButtons}</td>
-                `;
-                
-                // Añadir fila a la tabla
-                tableBody.appendChild(row);
-            });
+    // Función para cargar reservas desde localStorage
+function loadReservationsAdmin() {
+    // Obtener las reservas
+    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Si no hay reservas, mostrar mensaje
+    if (reservations.length === 0) {
+        const appointmentsTable = document.querySelector('#appointmentsTable tbody');
+        appointmentsTable.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📅</div>
+                        <div class="admin-empty-state-text">No hay citas registradas</div>
+                        <button class="admin-btn" style="background-color: var(--primary); color: white;" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    // Ordenar reservas (más recientes primero)
+    reservations.sort((a, b) => b.id - a.id);
+
+    // Preparar HTML para la tabla
+    let tableHTML = '';
+
+    // Generar filas para cada reserva
+    reservations.forEach(reservation => {
+        let statusBadge = '';
+        if (reservation.status === 'pending') {
+            statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+        } else if (reservation.status === 'confirmed') {
+            statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+        } else if (reservation.status === 'canceled') {
+            statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
         }
+
+        let actionButtons = `
+            <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${reservation.id})">✎</button>
+            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${reservation.client.name}', '${reservation.client.phone}')">📱</button>
+        `;
+
+        if (reservation.status === 'pending') {
+            actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${reservation.id})">✓</button>`;
+        }
+
+        tableHTML += `
+            <tr>
+                <td>${reservation.client.name}</td>
+                <td>${reservation.service}</td>
+                <td>${reservation.day}</td>
+                <td>${reservation.time}</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+            </tr>
+        `;
+    });
+
+    // Actualizar la tabla
+    document.querySelector('#appointmentsTable tbody').innerHTML = tableHTML;
+}
+
+function confirmAppointment(reservationId) {
+    // Obtener todas las reservas
+    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Encontrar la reserva por ID
+    const index = reservations.findIndex(r => r.id === parseInt(reservationId));
+    
+    if (index === -1) {
+        alert('No se encontró la reserva');
+        return;
+    }
+    
+    // Guardar el día y hora para actualizar la UI
+    const day = reservations[index].day;
+    const time = reservations[index].time;
+    
+    // Actualizar el estado
+    reservations[index].status = 'confirmed';
+    
+    // Guardar los cambios
+    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+    
+    // Actualizar la UI para marcar el horario como confirmado
+    markAsConfirmed(day, time);
+    
+    // Recargar la tabla
+    loadReservationsAdmin();
+    
+    // Mostrar mensaje de éxito
+    alert('Cita confirmada correctamente');
+}
         
         // Función para contar reservas de hoy
         function countTodayReservations(reservations) {
