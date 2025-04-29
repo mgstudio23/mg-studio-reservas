@@ -1812,6 +1812,32 @@
                 }
             });
         }
+        // Función para guardar los horarios reservados en el almacenamiento local
+function saveReservation(day, time, client, service) {
+    // Obtener las reservas existentes o inicializar un array
+    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+    
+    // Añadir la nueva reserva
+    const newReservation = {
+        id: Date.now(), // Usar timestamp como ID único
+        day: day,
+        time: time,
+        client: client,
+        service: service,
+        status: 'pending', // Estado inicial: pendiente
+        date: new Date().toISOString() // Fecha de creación
+    };
+    
+    reservations.push(newReservation);
+    
+    // Guardar en localStorage
+    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
+    
+    // Actualizar la UI para reflejar la reserva
+    markAsPending(day, time);
+    
+    return newReservation.id; // Devolver el ID de la reserva
+}
 
         // Marcar una hora como confirmada
         function markAsConfirmed(day, time) {
