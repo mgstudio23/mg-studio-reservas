@@ -1112,38 +1112,48 @@
             }
         });
         
-        // Mostrar/ocultar secciones del panel
-        function showAdminSection(sectionId) {
-            // Mostrar el loader
-            document.getElementById('adminLoader').style.display = 'flex';
-            
-            // Pequeño delay para mostrar la animación de carga
-            setTimeout(() => {
-                // Ocultar todas las secciones
-                const sections = document.querySelectorAll('.admin-content');
-                sections.forEach(section => {
-                    section.classList.remove('active');
-                });
-                
-                // Mostrar la sección seleccionada
-                document.getElementById(sectionId).classList.add('active');
-                
-                // Actualizar menú lateral
-                const menuLinks = document.querySelectorAll('.admin-menu-link');
-                menuLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // Activar link del menú
-                event.currentTarget.classList.add('active');
-                
-                // Scroll al inicio
-                window.scrollTo(0, 0);
-                
-                // Ocultar el loader
-                document.getElementById('adminLoader').style.display = 'none';
-            }, 300);
-        }
+        // Función modificada para mostrar/ocultar secciones
+function showAdminSection(sectionId) {
+    // Mostrar el loader
+    document.getElementById('adminLoader').style.display = 'flex';
+    
+    // Establecer un timeout máximo para el loader (5 segundos)
+    const loaderTimeout = setTimeout(() => {
+        document.getElementById('adminLoader').style.display = 'none';
+    }, 5000);
+    
+    try {
+        // Ocultar todas las secciones
+        const sections = document.querySelectorAll('.admin-content');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Mostrar la sección seleccionada
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Actualizar menú lateral
+        const menuLinks = document.querySelectorAll('.admin-menu-link');
+        menuLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Activar link del menú
+        event.currentTarget.classList.add('active');
+        
+        // Scroll al inicio
+        window.scrollTo(0, 0);
+        
+        // Ocultar el loader manualmente (cancelar el timeout)
+        clearTimeout(loaderTimeout);
+        document.getElementById('adminLoader').style.display = 'none';
+    } catch (error) {
+        console.error('Error al cambiar de sección:', error);
+        // Asegurar que el loader se oculte en caso de error
+        document.getElementById('adminLoader').style.display = 'none';
+        clearTimeout(loaderTimeout);
+    }
+}
         
         // Mostrar diferentes tabs de citas
         function showAppointmentTab(tabId) {
