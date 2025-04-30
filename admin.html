@@ -864,7 +864,9 @@ function listenForAdminChanges() {
             // Actualizar array de citas
             appointments = [];
             snapshot.forEach((doc) => {
-                appointments.push(doc.data());
+                const data = doc.data();
+                // Asegúrate de que el ID esté presente
+                appointments.push({...data, id: doc.id});
             });
             
             // Extraer clientes únicos de las reservas
@@ -1420,56 +1422,67 @@ function listenForAdminChanges() {
             document.getElementById('edit-appointment-modal').style.display = 'none';
         }
         
-        // Guardar cambios de la cita
-        function saveAppointment() {
-            // Obtener ID de la cita
-            const appointmentId = parseInt(document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id'));
-            
-            // Buscar índice de la cita
-            const index = appointments.findIndex(a => a.id === appointmentId);
-            
-            if (index === -1) {
-                alert('No se encontró la cita');
-                return;
-            }
-            
-            // Obtener datos del formulario
-            const clientName = document.getElementById('edit-client-name').value;
-            const clientPhone = document.getElementById('edit-client-phone').value;
-            const service = document.getElementById('edit-service').value;
-            const status = document.getElementById('edit-status').value;
-            const notes = document.getElementById('edit-notes').value;
-            
-            // Validar datos
-            if (!clientName) {
-                alert('El nombre del cliente es obligatorio');
-                return;
-            }
-            
-            // Actualizar cita
-            appointments[index] = {
-                ...appointments[index],
-                service: service,
-                status: status,
-                client: {
-                    name: clientName,
-                    phone: clientPhone,
-                    comments: notes
-                }
-            };
-            
-            // Guardar cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
-            
+       // Editar cita
+function saveAppointment() {
+    // Obtener ID de la cita
+    const appointmentId = document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id');
+    
+    // Validar ID
+    if (!appointmentId) {
+        alert('No se encontró el ID de la cita');
+        return;
+    }
+    
+    // Obtener datos del formulario
+    const clientName = document.getElementById('edit-client-name').value;
+    const clientPhone = document.getElementById('edit-client-phone').value;
+    const service = document.getElementById('edit-service').value;
+    const date = document.getElementById('edit-date').value;
+    const time = document.getElementById('edit-time').value;
+    const status = document.getElementById('edit-status').value;
+    const notes = document.getElementById('edit-notes').value;
+    
+    // Validar datos
+    if (!clientName) {
+        alert('El nombre del cliente es obligatorio');
+        return;
+    }
+    
+    // Calcular día formateado (ej. "Lunes 1 Mayo")
+    const day = getDayFromDate(date);
+    
+    // Preparar datos para actualizar
+    const updatedData = {
+        service: service,
+        day: day,
+        time: time,
+        status: status,
+        client: {
+            name: clientName,
+            phone: clientPhone,
+            comments: notes
+        },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    // Actualizar en Firestore
+    db.collection('reservations').doc(appointmentId.toString())
+        .update(updatedData)
+        .then(() => {
+            console.log("Cita actualizada con éxito");
             // Cerrar modal
             closeEditModal();
-            
             // Recargar datos
-            loadData();
-            
+            loadAppointmentsTable();
             // Mostrar mensaje
             alert('Cita actualizada correctamente');
-        }
+        })
+        .catch((error) => {
+            console.error("Error al actualizar la cita: ", error);
+            alert('Error al actualizar la cita. Inténtalo de nuevo.');
+        });
+}
+
         
         // Abrir modal de nueva cita
         function openNewAppointmentModal() {
@@ -1491,53 +1504,62 @@ function listenForAdminChanges() {
             document.getElementById('new-appointment-modal').style.display = 'none';
         }
         
-        // Crear nueva cita
-        function createAppointment() {
-            // Obtener datos del formulario
-            const clientName = document.getElementById('new-client-name').value;
-            const clientPhone = document.getElementById('new-client-phone').value;
-            const service = document.getElementById('new-service').value;
-            const date = document.getElementById('new-date').value;
-            const time = document.getElementById('new-time').value;
-            const status = document.getElementById('new-status').value;
-            const notes = document.getElementById('new-notes').value;
-            
-            // Validar datos
-            if (!clientName) {
-                alert('El nombre del cliente es obligatorio');
-                return;
-            }
-            
-            // Crear nueva cita
-            const newAppointment = {
-                id: Date.now(), // ID único basado en timestamp
-                day: getDayFromDate(date), // Convertir fecha a formato "Lunes 1 Mayo"
-                time: time,
-                service: service,
-                status: status,
-                client: {
-                    name: clientName,
-                    phone: clientPhone,
-                    comments: notes
-                },
-                date: new Date().toISOString() // Fecha de creación
-            };
-            
-            // Añadir a la lista de citas
-            appointments.push(newAppointment);
-            
-            // Guardar cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
-            
+       // Crear nueva cita
+function createAppointment() {
+    // Obtener datos del formulario
+    const clientName = document.getElementById('new-client-name').value;
+    const clientPhone = document.getElementById('new-client-phone').value;
+    const service = document.getElementById('new-service').value;
+    const date = document.getElementById('new-date').value;
+    const time = document.getElementById('new-time').value;
+    const status = document.getElementById('new-status').value;
+    const notes = document.getElementById('new-notes').value;
+    
+    // Validar datos
+    if (!clientName) {
+        alert('El nombre del cliente es obligatorio');
+        return;
+    }
+    
+    // Calcular día formateado
+    const day = getDayFromDate(date);
+    
+    // ID único basado en timestamp
+    const appointmentId = Date.now().toString();
+    
+    // Crear nueva cita
+    const newAppointment = {
+        id: appointmentId,
+        day: day,
+        time: time,
+        service: service,
+        status: status,
+        client: {
+            name: clientName,
+            phone: clientPhone,
+            comments: notes
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        date: date // Fecha seleccionada en formato ISO
+    };
+    
+    // Guardar en Firestore
+    db.collection('reservations').doc(appointmentId)
+        .set(newAppointment)
+        .then(() => {
+            console.log("Cita creada con éxito");
             // Cerrar modal
             closeNewAppointmentModal();
-            
             // Recargar datos
-            loadData();
-            
+            loadAppointmentsTable();
             // Mostrar mensaje
             alert('Cita creada correctamente');
-        }
+        })
+        .catch((error) => {
+            console.error("Error al crear la cita: ", error);
+            alert('Error al crear la cita. Inténtalo de nuevo.');
+        });
+}
         
         // Convertir fecha a formato "Lunes 1 Mayo"
         function getDayFromDate(dateString) {
@@ -1554,55 +1576,51 @@ function listenForAdminChanges() {
         }
         
         // Confirmar cita
-        function confirmAppointment(appointmentId) {
-            // Buscar índice de la cita
-            const index = appointments.findIndex(a => a.id === appointmentId);
-            
-            if (index === -1) {
-                alert('No se encontró la cita');
-                return;
-            }
-            
-            // Actualizar estado
-            appointments[index].status = 'confirmed';
-            
-            // Guardar cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
-            
-            // Recargar datos
-            loadData();
-            
-            // Mostrar mensaje
+function confirmAppointment(appointmentId) {
+    return db.collection('reservations').doc(appointmentId.toString())
+        .update({
+            status: 'confirmed',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            console.log("Cita confirmada con éxito");
+            // Opcional: Mostrar un mensaje de éxito
             alert('Cita confirmada correctamente');
-        }
-        
+            // Recargar datos o actualizar UI
+            loadAppointmentsTable();
+        })
+        .catch((error) => {
+            console.error("Error al confirmar la cita: ", error);
+            alert('Error al confirmar la cita. Inténtalo de nuevo.');
+        });
+}
         // Cancelar cita
-        function cancelAppointment(appointmentId) {
-            // Confirmar cancelación
-            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-                return;
-            }
-            
-            // Buscar índice de la cita
-            const index = appointments.findIndex(a => a.id === appointmentId);
-            
-            if (index === -1) {
-                alert('No se encontró la cita');
-                return;
-            }
-            
-            // Actualizar estado
-            appointments[index].status = 'canceled';
-            
-            // Guardar cambios
-            localStorage.setItem('mgStudioReservations', JSON.stringify(appointments));
-            
-            // Recargar datos
-            loadData();
-            
-            // Mostrar mensaje
+function cancelAppointment(appointmentId) {
+    // Confirmar cancelación
+    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+        return Promise.resolve(false);
+    }
+    
+    return db.collection('reservations').doc(appointmentId.toString())
+        .update({
+            status: 'canceled',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            console.log("Cita cancelada con éxito");
+            // Opcional: Mostrar un mensaje de éxito
             alert('Cita cancelada correctamente');
-        }
+            // Recargar datos o actualizar UI
+            loadAppointmentsTable();
+            return true;
+        })
+        .catch((error) => {
+            console.error("Error al cancelar la cita: ", error);
+            alert('Error al cancelar la cita. Inténtalo de nuevo.');
+            return false;
+        });
+}
+
         
         // Contactar cliente por WhatsApp
         function contactClient(name, phone) {
