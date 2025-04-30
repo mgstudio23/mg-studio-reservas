@@ -821,28 +821,51 @@
         
 // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar fecha actual
-            const today = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = 'Hoy: ' + today.toLocaleDateString('es-ES', options);
+    // Comprobar si el usuario está autenticado
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (!user) {
+            // Si no hay usuario autenticado, redirigir a login.html
+            window.location.href = 'login.html';
+        } else {
+            // Usuario autenticado, mostrar el contenido
+            document.querySelector('.admin-container').style.display = 'block';
             
-            // Establecer fecha actual en los inputs de fecha
-            const formattedDate = today.toISOString().split('T')[0];
-            if (document.getElementById('new-date')) {
-                document.getElementById('new-date').value = formattedDate;
-            }
-            if (document.getElementById('edit-date')) {
-                document.getElementById('edit-date').value = formattedDate;
-            }
+            // Opcional: mostrar información del usuario
+            const adminHeader = document.querySelector('.admin-header');
+            const userInfo = document.createElement('span');
+            userInfo.textContent = user.email;
+            userInfo.style.marginRight = '10px';
+            userInfo.style.fontSize = '14px';
             
-            // Cargar datos
-            loadData();
-        });
+            const logoutBtn = document.createElement('button');
+            logoutBtn.className = 'view-site';
+            logoutBtn.style.backgroundColor = '#eee';
+            logoutBtn.style.color = '#333';
+            logoutBtn.textContent = 'Cerrar Sesión';
+            logoutBtn.addEventListener('click', function() {
+                firebase.auth().signOut().then(function() {
+                    window.location.href = 'login.html';
+                });
+            });
+            
+            adminHeader.appendChild(userInfo);
+            adminHeader.appendChild(logoutBtn);
+            
+            // Cargar datos en tiempo real
+            listenForAdminChanges();
+        }
+    });
+});
         
-        // Función para cargar datos desde localStorage
-        function loadData() {
-            // Cargar reservas
-            appointments = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+        // Escuchar cambios en tiempo real para la administración
+function listenForAdminChanges() {
+    db.collection('reservations')
+        .onSnapshot((snapshot) => {
+            // Actualizar array de citas
+            appointments = [];
+            snapshot.forEach((doc) => {
+                appointments.push(doc.data());
+            });
             
             // Extraer clientes únicos de las reservas
             clients = extractClients(appointments);
@@ -850,9 +873,15 @@
             // Actualizar UI
             updateDashboard();
             loadAppointmentsTable();
-            loadClientsTable();
-        }
-        
+            
+            // Solo actualizar la tabla de clientes si estamos en esa sección
+            if (document.getElementById('clients').classList.contains('active')) {
+                loadClientsTable();
+            }
+        }, (error) => {
+            console.error("Error al escuchar cambios en admin: ", error);
+        });
+}
         // Extraer clientes únicos de las reservas
         function extractClients(appointments) {
             const clientsMap = new Map();
