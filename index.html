@@ -1915,6 +1915,53 @@ function saveReservation(day, time, client, service) {
             return null;
         });
 }
+
+        // Función para escuchar cambios en tiempo real de las reservas
+function listenForReservationChanges() {
+    // Referencia a la colección de reservas
+    db.collection('reservations')
+        .onSnapshot((snapshot) => {
+            // Procesar cambios
+            snapshot.docChanges().forEach((change) => {
+                const reservation = change.doc.data();
+                
+                // Si es un documento nuevo o modificado
+                if (change.type === 'added' || change.type === 'modified') {
+                    updateUIBasedOnReservation(reservation);
+                }
+                
+                // Si es un documento eliminado
+                if (change.type === 'removed') {
+                    // Podría implementar alguna lógica específica si es necesario
+                }
+            });
+        }, (error) => {
+            console.error("Error al escuchar cambios en reservas: ", error);
+        });
+}
+
+// Actualizar la UI basada en una reserva
+function updateUIBasedOnReservation(reservation) {
+    const { day, time, status } = reservation;
+    
+    // Actualizar UI según el estado
+    switch(status) {
+        case 'pending':
+            markAsPending(day, time);
+            break;
+        case 'confirmed':
+            markAsConfirmed(day, time);
+            break;
+        case 'canceled':
+            markAsReserved(day, time); // Una cita cancelada se muestra como no disponible
+            break;
+        default:
+            break;
+    }
+}
+
+// Colocar al final de document.addEventListener('DOMContentLoaded', function() {...}
+// listenForReservationChanges();
     </script>
     <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
