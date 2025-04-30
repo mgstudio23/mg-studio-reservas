@@ -1571,25 +1571,23 @@ function updateUIBasedOnReservation(reservation) {
             }
         }
 
-     // Confirmar la reserva (redireccionar a WhatsApp)
-// Función mejorada para confirmar una reserva
 function confirmReservation() {
     // Obtener datos del formulario
     const serviceSelect = document.getElementById('serviceSelect');
     const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
     
     // Validar datos del cliente
-    const clientName = document.getElementById('clientName').value.trim();
-    const clientPhone = document.getElementById('clientPhone').value.trim();
-    const clientComments = document.getElementById('clientComments').value.trim();
+    const clientName = document.getElementById('clientName').value || '';
+    const clientPhone = document.getElementById('clientPhone').value || '';
+    const clientComments = document.getElementById('clientComments').value || '';
     
     // Validación básica
-    if (!clientName) {
+    if (!clientName.trim()) {
         alert('Por favor, ingresa tu nombre');
         return;
     }
     
-    if (!clientPhone) {
+    if (!clientPhone.trim()) {
         alert('Por favor, ingresa tu número de teléfono');
         return;
     }
@@ -1602,89 +1600,115 @@ function confirmReservation() {
         paymentMethod = 'Transferencia BCP';
     }
     
-    // Crear ID único
+    // Generar ID único
     const reservationId = Date.now().toString();
     
-    // Preparar datos para guardar
-    const reservationData = {
-        id: reservationId,
-        day: selectedDay,
-        time: selectedTime,
-        client: {
-            name: clientName,
-            phone: clientPhone,
-            comments: clientComments
-        },
-        service: serviceName,
-        status: 'pending',
-        paymentMethod: paymentMethod,
-        date: new Date().toISOString(),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    // Mostrar botón guardando...
+    const confirmBtn = document.querySelector('.mg-confirm-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Guardando...';
+    }
     
-    // Mostrar indicador de carga
-    const confirmBtn = document.querySelector('#step-3 .mg-confirm-btn');
-    const originalBtnText = confirmBtn.textContent;
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Guardando...';
+    try {
+        console.log("Iniciando proceso de reserva...");
+        
+        // Crear datos de la reserva - ADAPTADO a tu estructura actual de BD
+        const reservationData = {
+            fecha: selectedDay,
+            hora: selectedTime,
+            nombre: clientName.trim(),
+            telefono: clientPhone.trim(),
+            servicio: serviceName,
+            estado: 'pendiente',
+            comentarios: clientComments.trim(),
+            metodoPago: paymentMethod,
+            fechaCreacion: new Date().toISOString()
+        };
+        
+        console.log("Datos de reserva:", reservationData);
+        
+        // Guardar en Firestore (usando tu colección "reservas" en lugar de "reservations")
+        firebase.firestore().collection('reservas').doc(reservationId)
+            .set(reservationData)
+            .then(() => {
+                console.log("Reserva guardada exitosamente");
+                
+                // Restaurar botón si existe
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Confirmar Reserva';
+                }
+                
+                // Cerrar modal
+                closeModal();
+                
+                // Crear mensaje de WhatsApp
+                createWhatsAppMessage();
+            })
+            .catch((error) => {
+                console.error("Error al guardar reserva:", error);
+                
+                // Restaurar botón si existe
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Confirmar Reserva';
+                }
+                
+                // Mostrar error y detalles en consola
+                console.error("Detalles del error:", error);
+                alert('Error al procesar tu reserva. Por favor, inténtalo de nuevo.');
+                
+                // Intentar crear mensaje de WhatsApp de todos modos
+                createWhatsAppMessage();
+            });
+    } catch (e) {
+        console.error("Error en el proceso de reserva:", e);
+        
+        // Restaurar botón si existe
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirmar Reserva';
+        }
+        
+        // Mostrar error
+        alert('Error inesperado: ' + e.message);
+        
+        // Intentar crear mensaje de WhatsApp de todos modos
+        createWhatsAppMessage();
+    }
     
-    // Guardar en Firestore
-    db.collection('reservations').doc(reservationId)
-        .set(reservationData)
-        .then(() => {
-            console.log("Reserva creada exitosamente");
-            
-            // Actualizar UI
-            markAsPending(selectedDay, selectedTime);
-            
-            // Crear mensaje para WhatsApp
-            let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
-            message += `👤 Nombre: ${clientName}\n`;
-            message += `📱 Teléfono: ${clientPhone}\n`;
-            message += `💅 Servicio: ${serviceName}\n`;
-            message += `📅 Fecha: ${selectedDay}\n`;
-            message += `⏰ Hora: ${selectedTime}\n`;
-            message += `💳 Método de pago preferido: ${paymentMethod}\n`;
-            message += `🔢 ID de reserva: #${reservationId}\n`;
-            
-            if (clientComments) {
-                message += `\n📝 Comentarios: ${clientComments}\n`;
-            }
-            
-            // Restaurar botón
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = originalBtnText;
-            
-            // Cerrar el modal
-            closeModal();
-            
-            // Codificar el mensaje para URL
-            const encodedMessage = encodeURIComponent(message);
-            
-            // Crear enlace de WhatsApp
-            const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
-            
-            // Mostrar mensaje de éxito
-            showSuccessMessage();
-            
-            // Redireccionar después de un breve retraso
-            setTimeout(() => {
-                window.open(whatsappLink, '_blank');
-            }, 1000);
-        })
-        .catch((error) => {
-            console.error("Error al guardar la reserva:", error);
-            
-            // Restaurar botón
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = originalBtnText;
-            
-            // Mostrar error
-            alert('Error al procesar tu reserva. Por favor, inténtalo de nuevo.');
-        });
-}
-
-        // Mostrar mensaje de éxito después de la reserva
+    // Función para crear mensaje de WhatsApp
+    function createWhatsAppMessage() {
+        // Crear mensaje para WhatsApp
+        let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
+        message += `👤 Nombre: ${clientName}\n`;
+        message += `📱 Teléfono: ${clientPhone}\n`;
+        message += `💅 Servicio: ${serviceName}\n`;
+        message += `📅 Fecha: ${selectedDay}\n`;
+        message += `⏰ Hora: ${selectedTime}\n`;
+        message += `💳 Método de pago preferido: ${paymentMethod}\n`;
+        message += `🔢 ID de reserva: #${reservationId}\n`;
+        
+        if (clientComments.trim()) {
+            message += `\n📝 Comentarios: ${clientComments}\n`;
+        }
+        
+        // Codificar el mensaje para URL
+        const encodedMessage = encodeURIComponent(message);
+        
+        // Crear enlace de WhatsApp
+        const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
+        
+        // Mostrar mensaje de éxito
+        showSuccessMessage();
+        
+        // Redireccionar después de un breve retraso
+        setTimeout(() => {
+            window.open(whatsappLink, '_blank');
+        }, 1000);
+    }
+}        // Mostrar mensaje de éxito después de la reserva
         function showSuccessMessage() {
             // Crear elemento para mensaje
             const successMsg = document.createElement('div');
