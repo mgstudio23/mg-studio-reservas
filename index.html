@@ -1765,7 +1765,8 @@ function confirmReservation() {
             // Configurar eventos para cambios en el servicio
             const serviceSelect = document.getElementById('serviceSelect');
             serviceSelect.addEventListener('change', updateServiceDetails);
-            
+             // Escuchar cambios en tiempo real
+            listenForReservationChanges();
             // Iniciar con el primer servicio seleccionado
             updateServiceDetails();
             
@@ -1829,13 +1830,11 @@ function confirmReservation() {
             });
         }
         // Función para guardar los horarios reservados en el almacenamiento local
+// Guardar una nueva reserva
 function saveReservation(day, time, client, service) {
-    // Obtener las reservas existentes o inicializar un array
-    let reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
-    
-    // Añadir la nueva reserva
+    // Crear nueva reserva
     const newReservation = {
-        id: Date.now(), // Usar timestamp como ID único
+        id: Date.now().toString(), // ID único basado en timestamp
         day: day,
         time: time,
         client: client,
@@ -1844,15 +1843,19 @@ function saveReservation(day, time, client, service) {
         date: new Date().toISOString() // Fecha de creación
     };
     
-    reservations.push(newReservation);
-    
-    // Guardar en localStorage
-    localStorage.setItem('mgStudioReservations', JSON.stringify(reservations));
-    
-    // Actualizar la UI para reflejar la reserva
-    markAsPending(day, time);
-    
-    return newReservation.id; // Devolver el ID de la reserva
+    // Guardar en Firestore
+    return db.collection('reservations').doc(newReservation.id).set(newReservation)
+        .then(() => {
+            console.log("Reserva guardada con éxito");
+            // Actualizar la UI para reflejar la reserva
+            markAsPending(day, time);
+            return newReservation.id; // Devolver el ID de la reserva
+        })
+        .catch((error) => {
+            console.error("Error al guardar la reserva: ", error);
+            alert("Hubo un problema al guardar tu reserva. Por favor, inténtalo de nuevo.");
+            return null;
+        });
 }
 
         // Marcar una hora como confirmada
@@ -1885,28 +1888,33 @@ function saveReservation(day, time, client, service) {
         // markAsPending('Viernes 9 Mayo', '5:00 PM');
         // markAsConfirmed('Domingo 4 Mayo', '9:00 AM');
 
-// Función para cargar todas las reservas existentes al cargar la página
-function loadReservations() {
-    // Obtener las reservas del localStorage
-    const reservations = JSON.parse(localStorage.getItem('mgStudioReservations')) || [];
+// Guardar una nueva reserva
+function saveReservation(day, time, client, service) {
+    // Crear nueva reserva
+    const newReservation = {
+        id: Date.now().toString(), // ID único basado en timestamp
+        day: day,
+        time: time,
+        client: client,
+        service: service,
+        status: 'pending', // Estado inicial: pendiente
+        date: new Date().toISOString() // Fecha de creación
+    };
     
-    // Aplicar cada reserva a la UI
-    reservations.forEach(reservation => {
-        if (reservation.status === 'pending') {
-            markAsPending(reservation.day, reservation.time);
-        } else if (reservation.status === 'confirmed') {
-            markAsConfirmed(reservation.day, reservation.time);
-        }
-    });
+    // Guardar en Firestore
+    return db.collection('reservations').doc(newReservation.id).set(newReservation)
+        .then(() => {
+            console.log("Reserva guardada con éxito");
+            // Actualizar la UI para reflejar la reserva
+            markAsPending(day, time);
+            return newReservation.id; // Devolver el ID de la reserva
+        })
+        .catch((error) => {
+            console.error("Error al guardar la reserva: ", error);
+            alert("Hubo un problema al guardar tu reserva. Por favor, inténtalo de nuevo.");
+            return null;
+        });
 }
-
-// Cargar las reservas existentes al iniciar la página
-document.addEventListener('DOMContentLoaded', function() {
-    // Código existente aquí...
-    
-    // Cargar reservas
-    loadReservations();
-});
     </script>
     <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
