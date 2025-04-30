@@ -885,6 +885,18 @@
                 gap: 10px;
             }
         }
+        
+        /* Estilos para mensajes de error */
+        .mg-error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #c62828;
+            font-size: 14px;
+            animation: fadeIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -905,16 +917,16 @@
         <!-- Sección de Calendario (Tab) -->
         <div id="calendario" class="mg-content-section">
             <div class="mg-calendar">
-<h3>
-    <div class="month-nav">
-        <button id="prevMonth">←</button>
-        <span>Mayo 2025</span>
-        <button id="nextMonth">→</button>
-    </div>
-</h3>
-<div class="mg-calendar-grid">
-    <!-- El calendario se generará dinámicamente aquí -->
-</div>
+                <h3>
+                    <div class="month-nav">
+                        <button id="prevMonth">←</button>
+                        <span>Mayo 2025</span>
+                        <button id="nextMonth">→</button>
+                    </div>
+                </h3>
+                <div class="mg-calendar-grid">
+                    <!-- El calendario se generará dinámicamente aquí -->
+                </div>
                 <div style="margin-top: 10px; font-size: 12px; text-align: center;">
                     Haz clic en un día para ver los horarios disponibles
                 </div>
@@ -1312,6 +1324,34 @@
     <!-- Enlace al panel admin -->
     <a href="admin.html" class="mg-admin-link" style="position: fixed; bottom: 20px; left: 20px; background: #333; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 12px; z-index: 900;">Admin</a>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script>
+        // Configuración de Firebase (API compat)
+        const firebaseConfig = {
+          apiKey: "AIzaSyCE45asTXxtKUJHr6KPXSD33c5Aaviy5EA",
+          authDomain: "mgstudio-cd929.firebaseapp.com",
+          projectId: "mgstudio-cd929",
+          storageBucket: "mgstudio-cd929.firebasestorage.app",
+          messagingSenderId: "1093721779888",
+          appId: "1:1093721779888:web:2e23c89746fa879e585575",
+          measurementId: "G-KZFBBNF871"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Inicializar Firestore y exponerlo globalmente
+        const db = firebase.firestore();
+
+        // Log de confirmación
+        console.log("Firebase inicializado correctamente:", !!firebase.firestore);
+    </script>
+    
+    <!-- Código principal de la aplicación -->
     <script>
         // Variables para almacenar la selección
         let selectedDay = '';
@@ -1322,44 +1362,6 @@
             phone: '',
             comments: ''
         };
-// Función para escuchar cambios en tiempo real de las reservas
-function listenForReservationChanges() {
-    // Referencia a la colección de reservas
-    db.collection('reservations')
-        .onSnapshot((snapshot) => {
-            // Procesar cambios
-            snapshot.docChanges().forEach((change) => {
-                const reservation = change.doc.data();
-                
-                // Si es un documento nuevo o modificado
-                if (change.type === 'added' || change.type === 'modified') {
-                    updateUIBasedOnReservation(reservation);
-                }
-            });
-        }, (error) => {
-            console.error("Error al escuchar cambios en reservas: ", error);
-        });
-}
-
-// Actualizar la UI basada en una reserva
-function updateUIBasedOnReservation(reservation) {
-    const { day, time, status } = reservation;
-    
-    // Actualizar UI según el estado
-    switch(status) {
-        case 'pending':
-            markAsPending(day, time);
-            break;
-        case 'confirmed':
-            markAsConfirmed(day, time);
-            break;
-        case 'canceled':
-            markAsReserved(day, time); // Una cita cancelada se muestra como no disponible
-            break;
-        default:
-            break;
-    }
-}
 
         // Datos de servicios (para mostrar duración y precio)
         const serviceDetails = {
@@ -1382,6 +1384,9 @@ function updateUIBasedOnReservation(reservation) {
             'Paquete 3: Mamá e Hija': {duration: '120 min', price: 'Varía', payment: '50% del total'}
         };
 
+        // Variables para el calendario
+        let currentMonth = new Date();
+        
         // Gestión de tabs para móvil
         function showTab(tabId) {
             // Ocultar todas las secciones
@@ -1571,144 +1576,113 @@ function updateUIBasedOnReservation(reservation) {
             }
         }
 
-function confirmReservation() {
-    // Obtener datos del formulario
-    const serviceSelect = document.getElementById('serviceSelect');
-    const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
-    
-    // Validar datos del cliente
-    const clientName = document.getElementById('clientName').value || '';
-    const clientPhone = document.getElementById('clientPhone').value || '';
-    const clientComments = document.getElementById('clientComments').value || '';
-    
-    // Validación básica
-    if (!clientName.trim()) {
-        alert('Por favor, ingresa tu nombre');
-        return;
-    }
-    
-    if (!clientPhone.trim()) {
-        alert('Por favor, ingresa tu número de teléfono');
-        return;
-    }
-    
-    // Obtener método de pago seleccionado
-    let paymentMethod = 'Yape';
-    if (document.getElementById('plin').checked) {
-        paymentMethod = 'Plin';
-    } else if (document.getElementById('bcp').checked) {
-        paymentMethod = 'Transferencia BCP';
-    }
-    
-    // Generar ID único
-    const reservationId = Date.now().toString();
-    
-    // Mostrar botón guardando...
-    const confirmBtn = document.querySelector('.mg-confirm-btn');
-    if (confirmBtn) {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Guardando...';
-    }
-    
-    try {
-        console.log("Iniciando proceso de reserva...");
-        
-        // Crear datos de la reserva - ADAPTADO a tu estructura actual de BD
-        const reservationData = {
-            fecha: selectedDay,
-            hora: selectedTime,
-            nombre: clientName.trim(),
-            telefono: clientPhone.trim(),
-            servicio: serviceName,
-            estado: 'pendiente',
-            comentarios: clientComments.trim(),
-            metodoPago: paymentMethod,
-            fechaCreacion: new Date().toISOString()
-        };
-        
-        console.log("Datos de reserva:", reservationData);
-        
-        // Guardar en Firestore (usando tu colección "reservas" en lugar de "reservations")
-        firebase.firestore().collection('reservas').doc(reservationId)
-            .set(reservationData)
-            .then(() => {
-                console.log("Reserva guardada exitosamente");
-                
-                // Restaurar botón si existe
-                if (confirmBtn) {
+        // Función para guardar una reserva en Firestore
+        function confirmReservation() {
+            // Obtener datos del formulario
+            const serviceSelect = document.getElementById('serviceSelect');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+            
+            // Validar datos del cliente
+            const clientName = document.getElementById('clientName').value.trim();
+            const clientPhone = document.getElementById('clientPhone').value.trim();
+            const clientComments = document.getElementById('clientComments').value.trim();
+            
+            // Validación básica
+            if (!clientName) {
+                alert('Por favor, ingresa tu nombre');
+                return;
+            }
+            
+            if (!clientPhone) {
+                alert('Por favor, ingresa tu número de teléfono');
+                return;
+            }
+            
+            // Obtener método de pago seleccionado
+            let paymentMethod = 'Yape';
+            if (document.getElementById('plin').checked) {
+                paymentMethod = 'Plin';
+            } else if (document.getElementById('bcp').checked) {
+                paymentMethod = 'Transferencia BCP';
+            }
+            
+            // Generar ID único
+            const reservationId = Date.now().toString();
+            
+            // Mostrar botón guardando...
+            const confirmBtn = document.querySelector('#step-3 .mg-confirm-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Guardando...';
+            
+            // Crear datos de la reserva
+            const reservationData = {
+                fecha: selectedDay,
+                hora: selectedTime,
+                nombre: clientName,
+                telefono: clientPhone,
+                servicio: serviceName,
+                estado: 'pendiente',
+                comentarios: clientComments,
+                metodoPago: paymentMethod,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            console.log("Intentando guardar reserva:", reservationData);
+            
+            // Guardar en Firestore - usamos 'reservas' como nombre de colección
+            firebase.firestore().collection('reservas').doc(reservationId)
+                .set(reservationData)
+                .then(() => {
+                    console.log("✅ Reserva guardada exitosamente");
+                    
+                    // Restaurar botón
                     confirmBtn.disabled = false;
                     confirmBtn.textContent = 'Confirmar Reserva';
-                }
-                
-                // Cerrar modal
-                closeModal();
-                
-                // Crear mensaje de WhatsApp
-                createWhatsAppMessage();
-            })
-            .catch((error) => {
-                console.error("Error al guardar reserva:", error);
-                
-                // Restaurar botón si existe
-                if (confirmBtn) {
+                    
+                    // Cerrar modal
+                    closeModal();
+                    
+                    // Marcar como pendiente en la UI
+                    markAsPending(selectedDay, selectedTime);
+                    
+                    // Crear mensaje de WhatsApp
+                    let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
+                    message += `👤 Nombre: ${clientName}\n`;
+                    message += `📱 Teléfono: ${clientPhone}\n`;
+                    message += `💅 Servicio: ${serviceName}\n`;
+                    message += `📅 Fecha: ${selectedDay}\n`;
+                    message += `⏰ Hora: ${selectedTime}\n`;
+                    message += `💳 Método de pago preferido: ${paymentMethod}\n`;
+                    message += `🔢 ID de reserva: #${reservationId}\n`;
+                    
+                    if (clientComments) {
+                        message += `\n📝 Comentarios: ${clientComments}\n`;
+                    }
+                    
+                    // Codificar el mensaje para URL
+                    const encodedMessage = encodeURIComponent(message);
+                    
+                    // Mostrar mensaje de éxito
+                    showSuccessMessage();
+                    
+                    // Redireccionar a WhatsApp
+                    setTimeout(() => {
+                        window.open(`https://wa.me/51995904351?text=${encodedMessage}`, '_blank');
+                    }, 1000);
+                })
+                .catch((error) => {
+                    console.error("❌ Error al guardar reserva:", error);
+                    
+                    // Restaurar botón
                     confirmBtn.disabled = false;
                     confirmBtn.textContent = 'Confirmar Reserva';
-                }
-                
-                // Mostrar error y detalles en consola
-                console.error("Detalles del error:", error);
-                alert('Error al procesar tu reserva. Por favor, inténtalo de nuevo.');
-                
-                // Intentar crear mensaje de WhatsApp de todos modos
-                createWhatsAppMessage();
-            });
-    } catch (e) {
-        console.error("Error en el proceso de reserva:", e);
-        
-        // Restaurar botón si existe
-        if (confirmBtn) {
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Confirmar Reserva';
+                    
+                    // Mostrar error específico
+                    alert(`Error al guardar la reserva: ${error.message}`);
+                });
         }
         
-        // Mostrar error
-        alert('Error inesperado: ' + e.message);
-        
-        // Intentar crear mensaje de WhatsApp de todos modos
-        createWhatsAppMessage();
-    }
-    
-    // Función para crear mensaje de WhatsApp
-    function createWhatsAppMessage() {
-        // Crear mensaje para WhatsApp
-        let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
-        message += `👤 Nombre: ${clientName}\n`;
-        message += `📱 Teléfono: ${clientPhone}\n`;
-        message += `💅 Servicio: ${serviceName}\n`;
-        message += `📅 Fecha: ${selectedDay}\n`;
-        message += `⏰ Hora: ${selectedTime}\n`;
-        message += `💳 Método de pago preferido: ${paymentMethod}\n`;
-        message += `🔢 ID de reserva: #${reservationId}\n`;
-        
-        if (clientComments.trim()) {
-            message += `\n📝 Comentarios: ${clientComments}\n`;
-        }
-        
-        // Codificar el mensaje para URL
-        const encodedMessage = encodeURIComponent(message);
-        
-        // Crear enlace de WhatsApp
-        const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
-        
-        // Mostrar mensaje de éxito
-        showSuccessMessage();
-        
-        // Redireccionar después de un breve retraso
-        setTimeout(() => {
-            window.open(whatsappLink, '_blank');
-        }, 1000);
-    }
-}        // Mostrar mensaje de éxito después de la reserva
+        // Mostrar mensaje de éxito después de la reserva
         function showSuccessMessage() {
             // Crear elemento para mensaje
             const successMsg = document.createElement('div');
@@ -1797,102 +1771,57 @@ function confirmReservation() {
             }, 8000);
         }
 
-        // Filtrar horarios por día seleccionado en el calendario
-function filterByDay(day) {
-    // Cambiar a la tab de horarios
-    showTab('horarios');
-    
-    // Resaltar el día seleccionado en el calendario
-    const calendarDays = document.querySelectorAll('.mg-calendar-day');
-    calendarDays.forEach(calDay => {
-        if (calDay.classList.contains('mg-day-selected')) {
-            calDay.classList.remove('mg-day-selected');
-        }
-    });
-    
-    // Buscar el elemento del calendario que corresponde a este día
-    calendarDays.forEach(calDay => {
-        if (calDay.getAttribute('data-date') === day) {
-            calDay.classList.add('mg-day-selected');
-        }
-    });
-    
-    // Mostrar u ocultar tarjetas según el día seleccionado
-    const cards = document.querySelectorAll('.mg-day-card');
-    let foundCard = false;
-    
-    cards.forEach(card => {
-        if (card.getAttribute('data-day') === day) {
-            card.style.display = 'block';
-            foundCard = true;
-            // Scroll hasta la tarjeta
-            setTimeout(() => {
-                card.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Si no hay horarios para este día, mostrar mensaje
-    if (!foundCard) {
-        // Puedes implementar un mensaje como "No hay horarios disponibles para esta fecha"
-        console.log("No hay horarios disponibles para:", day);
-    }
-}
-
-        // Función para volver arriba
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+        // Función para escuchar cambios en tiempo real de las reservas
+        function listenForReservationChanges() {
+            console.log("Iniciando escucha de cambios en reservas...");
+            
+            // Usar la misma colección 'reservas' (no 'reservations')
+            firebase.firestore().collection('reservas')
+                .onSnapshot((snapshot) => {
+                    console.log("Cambios detectados en reservas");
+                    
+                    snapshot.docChanges().forEach((change) => {
+                        const reservation = change.doc.data();
+                        console.log("Cambio en documento:", change.type, reservation);
+                        
+                        // Adaptar el formato de datos
+                        const adaptedReservation = {
+                            day: reservation.fecha,
+                            time: reservation.hora,
+                            status: reservation.estado === 'pendiente' ? 'pending' : 
+                                   reservation.estado === 'confirmada' ? 'confirmed' : 'canceled'
+                        };
+                        
+                        if (change.type === 'added' || change.type === 'modified') {
+                            updateUIBasedOnReservation(adaptedReservation);
+                        }
+                    });
+                }, (error) => {
+                    console.error("Error al escuchar cambios en reservas:", error);
+                });
         }
 
-        // Mostrar/ocultar botón de scroll según posición
-        window.onscroll = function() {
-            const scrollBtn = document.querySelector('.mg-scroll-top');
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                scrollBtn.style.display = 'block';
-            } else {
-                scrollBtn.style.display = 'none';
+        // Actualizar la UI basada en una reserva
+        function updateUIBasedOnReservation(reservation) {
+            const { day, time, status } = reservation;
+            
+            // Actualizar UI según el estado
+            switch(status) {
+                case 'pending':
+                    markAsPending(day, time);
+                    break;
+                case 'confirmed':
+                    markAsConfirmed(day, time);
+                    break;
+                case 'canceled':
+                    markAsReserved(day, time); // Una cita cancelada se muestra como no disponible
+                    break;
+                default:
+                    break;
             }
         }
 
-       document.addEventListener('DOMContentLoaded', function() {
-    // Generar el calendario inicial
-    generateCalendar(currentMonth);
-    
-    // Configurar botones de navegación
-    const prevButton = document.querySelector('.month-nav button:first-child');
-    const nextButton = document.querySelector('.month-nav button:last-child');
-    
-    prevButton.addEventListener('click', prevMonth);
-    nextButton.addEventListener('click', nextMonth);
-    
-    // Configurar eventos para cambios en el servicio
-    const serviceSelect = document.getElementById('serviceSelect');
-    serviceSelect.addEventListener('change', updateServiceDetails);
-    
-    // Escuchar cambios en tiempo real
-    listenForReservationChanges();
-    
-    // Iniciar con el primer servicio seleccionado
-    updateServiceDetails();
-    
-    // Cerrar el modal si se hace clic fuera de él
-    window.onclick = function(event) {
-        const modal = document.getElementById('serviceModal');
-        if (event.target === modal) {
-            closeModal();
-        }
-    }
-});
-
-        // Sistema de administración de citas
-        // Estas funciones serían utilizadas por el administrador
-
-        // Marcar una hora como reservada
+        // Marcar una hora como reservada (no disponible)
         function markAsReserved(day, time) {
             const dayCards = document.querySelectorAll('.mg-day-card');
             dayCards.forEach(card => {
@@ -1939,34 +1868,6 @@ function filterByDay(day) {
                 }
             });
         }
-        // Función para guardar los horarios reservados en el almacenamiento local
-// Guardar una nueva reserva
-function saveReservation(day, time, client, service) {
-    // Crear nueva reserva
-    const newReservation = {
-        id: Date.now().toString(), // ID único basado en timestamp
-        day: day,
-        time: time,
-        client: client,
-        service: service,
-        status: 'pending', // Estado inicial: pendiente
-        date: new Date().toISOString() // Fecha de creación
-    };
-    
-    // Guardar en Firestore
-    return db.collection('reservations').doc(newReservation.id).set(newReservation)
-        .then(() => {
-            console.log("Reserva guardada con éxito");
-            // Actualizar la UI para reflejar la reserva
-            markAsPending(day, time);
-            return newReservation.id; // Devolver el ID de la reserva
-        })
-        .catch((error) => {
-            console.error("Error al guardar la reserva: ", error);
-            alert("Hubo un problema al guardar tu reserva. Por favor, inténtalo de nuevo.");
-            return null;
-        });
-}
 
         // Marcar una hora como confirmada
         function markAsConfirmed(day, time) {
@@ -1993,186 +1894,204 @@ function saveReservation(day, time, client, service) {
             });
         }
 
-        // Ejemplo de uso: 
-        // markAsReserved('Sábado 10 Mayo', '11:00 AM');
-        // markAsPending('Viernes 9 Mayo', '5:00 PM');
-        // markAsConfirmed('Domingo 4 Mayo', '9:00 AM');
-
-// Guardar una nueva reserva
-function saveReservation(day, time, client, service) {
-    // Crear nueva reserva
-    const newReservation = {
-        id: Date.now().toString(), // ID único basado en timestamp
-        day: day,
-        time: time,
-        client: client,
-        service: service,
-        status: 'pending', // Estado inicial: pendiente
-        date: new Date().toISOString() // Fecha de creación
-    };
-    
-    // Guardar en Firestore
-    return db.collection('reservations').doc(newReservation.id).set(newReservation)
-        .then(() => {
-            console.log("Reserva guardada con éxito");
-            // Actualizar la UI para reflejar la reserva
-            markAsPending(day, time);
-            return newReservation.id; // Devolver el ID de la reserva
-        })
-        .catch((error) => {
-            console.error("Error al guardar la reserva: ", error);
-            alert("Hubo un problema al guardar tu reserva. Por favor, inténtalo de nuevo.");
-            return null;
-        });
-}
-
-        // Función para escuchar cambios en tiempo real de las reservas
-function listenForReservationChanges() {
-    // Referencia a la colección de reservas
-    db.collection('reservations')
-        .onSnapshot((snapshot) => {
-            // Procesar cambios
-            snapshot.docChanges().forEach((change) => {
-                const reservation = change.doc.data();
-                
-                // Si es un documento nuevo o modificado
-                if (change.type === 'added' || change.type === 'modified') {
-                    updateUIBasedOnReservation(reservation);
-                }
-                
-                // Si es un documento eliminado
-                if (change.type === 'removed') {
-                    // Podría implementar alguna lógica específica si es necesario
+        // Filtrar horarios por día seleccionado en el calendario
+        function filterByDay(day) {
+            // Cambiar a la tab de horarios
+            showTab('horarios');
+            
+            // Resaltar el día seleccionado en el calendario
+            const calendarDays = document.querySelectorAll('.mg-calendar-day');
+            calendarDays.forEach(calDay => {
+                if (calDay.classList.contains('mg-day-selected')) {
+                    calDay.classList.remove('mg-day-selected');
                 }
             });
-        }, (error) => {
-            console.error("Error al escuchar cambios en reservas: ", error);
-        });
-}
-// Variables para el calendario
-let currentMonth = new Date();
+            
+            // Buscar el elemento del calendario que corresponde a este día
+            calendarDays.forEach(calDay => {
+                if (calDay.getAttribute('data-date') === day) {
+                    calDay.classList.add('mg-day-selected');
+                }
+            });
+            
+            // Mostrar u ocultar tarjetas según el día seleccionado
+            const cards = document.querySelectorAll('.mg-day-card');
+            let foundCard = false;
+            
+            cards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    card.style.display = 'block';
+                    foundCard = true;
+                    // Scroll hasta la tarjeta
+                    setTimeout(() => {
+                        card.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Si no hay horarios para este día, mostrar mensaje
+            if (!foundCard) {
+                // Puedes implementar un mensaje como "No hay horarios disponibles para esta fecha"
+                console.log("No hay horarios disponibles para:", day);
+            }
+        }
 
-// Generar calendario para el mes actual
-function generateCalendar(date) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    
-    // Obtener el primer día del mes
-    const firstDay = new Date(year, month, 1);
-    // Obtener el último día del mes
-    const lastDay = new Date(year, month + 1, 0);
-    
-    // Crear array de nombres de meses
-    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
-                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
-    // Actualizar título del calendario
-    document.querySelector('.month-nav span').textContent = `${monthNames[month]} ${year}`;
-    
-    // Obtener contenedor del calendario
-    const calendarGrid = document.querySelector('.mg-calendar-grid');
-    
-    // Limpiar calendario anterior
-    calendarGrid.innerHTML = '';
-    
-    // Añadir encabezados de días de la semana
-    const weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-    weekdays.forEach(day => {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'mg-calendar-day mg-calendar-header';
-        dayElement.textContent = day;
-        calendarGrid.appendChild(dayElement);
-    });
-    
-    // Calcular día de la semana del primer día (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
-    // Ajustar para que la semana comience en lunes (0 = Lunes, ..., 6 = Domingo)
-    let firstDayOfWeek = firstDay.getDay() - 1;
-    if (firstDayOfWeek < 0) firstDayOfWeek = 6; // Si es domingo (0-1=-1), ponerlo al final (6)
-    
-    // Añadir días vacíos al principio
-    for (let i = 0; i < firstDayOfWeek; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'mg-calendar-day mg-day-empty';
-        calendarGrid.appendChild(emptyDay);
-    }
-    
-    // Fecha actual para comparación
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Añadir días del mes
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-        const dayElement = document.createElement('div');
-        const currentDate = new Date(year, month, i);
-        
-        // Clases base
-        dayElement.className = 'mg-calendar-day';
-        dayElement.textContent = i;
-        
-        // Si el día es anterior a hoy, marcarlo como pasado
-        if (currentDate < today) {
-            dayElement.classList.add('mg-day-past');
-        } 
-        // Si es hoy o posterior, marcarlo como disponible
-        else {
-            // Formatear la fecha para el atributo data
-            const weekdayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            const formattedDate = `${weekdayNames[currentDate.getDay()]} ${i} ${monthNames[month]}`;
+        // Funciones para el calendario dinámico
+        function generateCalendar(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
             
-            dayElement.classList.add('mg-day-available');
-            dayElement.setAttribute('data-date', formattedDate);
+            // Obtener el primer día del mes
+            const firstDay = new Date(year, month, 1);
+            // Obtener el último día del mes
+            const lastDay = new Date(year, month + 1, 0);
             
-            // Añadir evento click
-            dayElement.addEventListener('click', function() {
-                filterByDay(formattedDate);
+            // Crear array de nombres de meses
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            // Actualizar título del calendario
+            document.querySelector('.month-nav span').textContent = `${monthNames[month]} ${year}`;
+            
+            // Obtener contenedor del calendario
+            const calendarGrid = document.querySelector('.mg-calendar-grid');
+            
+            // Limpiar calendario anterior
+            calendarGrid.innerHTML = '';
+            
+            // Añadir encabezados de días de la semana
+            const weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+            weekdays.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'mg-calendar-day mg-calendar-header';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+            
+            // Calcular día de la semana del primer día (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+            // Ajustar para que la semana comience en lunes (0 = Lunes, ..., 6 = Domingo)
+            let firstDayOfWeek = firstDay.getDay() - 1;
+            if (firstDayOfWeek < 0) firstDayOfWeek = 6; // Si es domingo (0-1=-1), ponerlo al final (6)
+            
+            // Añadir días vacíos al principio
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'mg-calendar-day mg-day-empty';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Fecha actual para comparación
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Añadir días del mes
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const dayElement = document.createElement('div');
+                const currentDate = new Date(year, month, i);
+                
+                // Clases base
+                dayElement.className = 'mg-calendar-day';
+                dayElement.textContent = i;
+                
+                // Si el día es anterior a hoy, marcarlo como pasado
+                if (currentDate < today) {
+                    dayElement.classList.add('mg-day-past');
+                } 
+                // Si es hoy o posterior, marcarlo como disponible
+                else {
+                    // Formatear la fecha para el atributo data
+                    const weekdayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                    const formattedDate = `${weekdayNames[currentDate.getDay()]} ${i} ${monthNames[month]}`;
+                    
+                    dayElement.classList.add('mg-day-available');
+                    dayElement.setAttribute('data-date', formattedDate);
+                    
+                    // Añadir evento click
+                    dayElement.addEventListener('click', function() {
+                        filterByDay(formattedDate);
+                    });
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // Navegar al mes anterior
+        function prevMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            generateCalendar(currentMonth);
+        }
+
+        // Navegar al mes siguiente
+        function nextMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            generateCalendar(currentMonth);
+        }
+
+        // Función para volver arriba
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
             });
         }
-        
-        calendarGrid.appendChild(dayElement);
-    }
-}
 
-// Navegar al mes anterior
-function prevMonth() {
-    currentMonth.setMonth(currentMonth.getMonth() - 1);
-    generateCalendar(currentMonth);
-}
+        // Mostrar/ocultar botón de scroll según posición
+        window.onscroll = function() {
+            const scrollBtn = document.querySelector('.mg-scroll-top');
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        }
 
-// Navegar al mes siguiente
-function nextMonth() {
-    currentMonth.setMonth(currentMonth.getMonth() + 1);
-    generateCalendar(currentMonth);
-}
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar que Firebase esté inicializado correctamente
+            if (typeof firebase === 'undefined') {
+                console.error("Firebase no está definido. Verifica que los scripts se carguen correctamente.");
+                alert("Error: No se pudo inicializar Firebase. Por favor, recarga la página.");
+                return;
+            }
 
-// Actualizar la UI basada en una reserva
-function updateUIBasedOnReservation(reservation) {
-    const { day, time, status } = reservation;
-    
-    // Actualizar UI según el estado
-    switch(status) {
-        case 'pending':
-            markAsPending(day, time);
-            break;
-        case 'confirmed':
-            markAsConfirmed(day, time);
-            break;
-        case 'canceled':
-            markAsReserved(day, time); // Una cita cancelada se muestra como no disponible
-            break;
-        default:
-            break;
-    }
-}
-
-// Colocar al final de document.addEventListener('DOMContentLoaded', function() {...}
-// listenForReservationChanges();
+            console.log("Firebase disponible:", !!firebase);
+            console.log("Firestore disponible:", !!firebase.firestore);
+            
+            // Generar el calendario inicial
+            generateCalendar(currentMonth);
+            
+            // Configurar botones de navegación
+            const prevButton = document.querySelector('#prevMonth');
+            const nextButton = document.querySelector('#nextMonth');
+            
+            if (prevButton && nextButton) {
+                prevButton.addEventListener('click', prevMonth);
+                nextButton.addEventListener('click', nextMonth);
+            }
+            
+            // Configurar eventos para cambios en el servicio
+            const serviceSelect = document.getElementById('serviceSelect');
+            if (serviceSelect) {
+                serviceSelect.addEventListener('change', updateServiceDetails);
+            }
+            
+            // Escuchar cambios en tiempo real
+            listenForReservationChanges();
+            
+            // Iniciar con el primer servicio seleccionado
+            updateServiceDetails();
+            
+            // Cerrar el modal si se hace clic fuera de él
+            window.onclick = function(event) {
+                const modal = document.getElementById('serviceModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            }
+        });
     </script>
-    <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="config.js"></script>
-<script>
-  // Aquí irá tu código para escuchar cambios en tiempo real
-</script>
 </body>
 </html>
