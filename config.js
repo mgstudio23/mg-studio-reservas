@@ -12,20 +12,8 @@ const firebaseConfig = {
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Inicializar Firestore
+// Inicializar Firestore y exponerlo globalmente
 const db = firebase.firestore();
 
-// Configurar caché para mejorar rendimiento offline
-db.enablePersistence({synchronizeTabs: true})
-  .catch(err => {
-    if (err.code === 'failed-precondition') {
-      // Múltiples pestañas abiertas
-      console.warn('La persistencia de datos solo funciona en una pestaña a la vez');
-    } else if (err.code === 'unimplemented') {
-      // Navegador no compatible
-      console.warn('El navegador no soporta persistencia de datos offline');
-    }
-  });
-
-// Exportar las instancias para uso en otros archivos
-// (Aunque en la API compat, estas están disponibles globalmente)
+// Log de confirmación
+console.log("Firebase inicializado correctamente:", !!firebase.firestore);
