@@ -905,47 +905,16 @@
         <!-- Sección de Calendario (Tab) -->
         <div id="calendario" class="mg-content-section">
             <div class="mg-calendar">
-                <h3>
-                    Mayo 2023
-                    <div class="month-nav">
-                        <button>←</button>
-                        <span>Mayo</span>
-                        <button>→</button>
-                    </div>
-                </h3>
-                <div class="mg-calendar-grid">
-                    <div class="mg-calendar-day mg-calendar-header">L</div>
-                    <div class="mg-calendar-day mg-calendar-header">M</div>
-                    <div class="mg-calendar-day mg-calendar-header">X</div>
-                    <div class="mg-calendar-day mg-calendar-header">J</div>
-                    <div class="mg-calendar-day mg-calendar-header">V</div>
-                    <div class="mg-calendar-day mg-calendar-header">S</div>
-                    <div class="mg-calendar-day mg-calendar-header">D</div>
-                    
-                    <div class="mg-calendar-day mg-day-empty">29</div>
-                    <div class="mg-calendar-day mg-day-empty">30</div>
-                    <div class="mg-calendar-day mg-day-past">1</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Jueves 2 Mayo')">2</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Viernes 3 Mayo')">3</div>
-                    <div class="mg-calendar-day mg-day-empty">4</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Domingo 4 Mayo')">4</div>
-                    
-                    <div class="mg-calendar-day mg-day-empty">5</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Martes 6 Mayo')">6</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Miércoles 7 Mayo')">7</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Jueves 8 Mayo')">8</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Viernes 9 Mayo')">9</div>
-                    <div class="mg-calendar-day mg-day-available" onclick="filterByDay('Sábado 10 Mayo')">10</div>
-                    <div class="mg-calendar-day mg-day-empty">11</div>
-                    
-                    <div class="mg-calendar-day mg-day-empty">12</div>
-                    <div class="mg-calendar-day mg-day-empty">13</div>
-                    <div class="mg-calendar-day mg-day-empty">14</div>
-                    <div class="mg-calendar-day mg-day-empty">15</div>
-                    <div class="mg-calendar-day mg-day-empty">16</div>
-                    <div class="mg-calendar-day mg-day-empty">17</div>
-                    <div class="mg-calendar-day mg-day-empty">18</div>
-                </div>
+<h3>
+    <div class="month-nav">
+        <button id="prevMonth">←</button>
+        <span>Mayo 2025</span>
+        <button id="nextMonth">→</button>
+    </div>
+</h3>
+<div class="mg-calendar-grid">
+    <!-- El calendario se generará dinámicamente aquí -->
+</div>
                 <div style="margin-top: 10px; font-size: 12px; text-align: center;">
                     Haz clic en un día para ver los horarios disponibles
                 </div>
@@ -1353,6 +1322,44 @@
             phone: '',
             comments: ''
         };
+// Función para escuchar cambios en tiempo real de las reservas
+function listenForReservationChanges() {
+    // Referencia a la colección de reservas
+    db.collection('reservations')
+        .onSnapshot((snapshot) => {
+            // Procesar cambios
+            snapshot.docChanges().forEach((change) => {
+                const reservation = change.doc.data();
+                
+                // Si es un documento nuevo o modificado
+                if (change.type === 'added' || change.type === 'modified') {
+                    updateUIBasedOnReservation(reservation);
+                }
+            });
+        }, (error) => {
+            console.error("Error al escuchar cambios en reservas: ", error);
+        });
+}
+
+// Actualizar la UI basada en una reserva
+function updateUIBasedOnReservation(reservation) {
+    const { day, time, status } = reservation;
+    
+    // Actualizar UI según el estado
+    switch(status) {
+        case 'pending':
+            markAsPending(day, time);
+            break;
+        case 'confirmed':
+            markAsConfirmed(day, time);
+            break;
+        case 'canceled':
+            markAsReserved(day, time); // Una cita cancelada se muestra como no disponible
+            break;
+        default:
+            break;
+    }
+}
 
         // Datos de servicios (para mostrar duración y precio)
         const serviceDetails = {
@@ -1565,9 +1572,27 @@
         }
 
      // Confirmar la reserva (redireccionar a WhatsApp)
+// Función mejorada para confirmar una reserva
 function confirmReservation() {
+    // Obtener datos del formulario
     const serviceSelect = document.getElementById('serviceSelect');
     const serviceName = serviceSelect.options[serviceSelect.selectedIndex].value;
+    
+    // Validar datos del cliente
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientPhone = document.getElementById('clientPhone').value.trim();
+    const clientComments = document.getElementById('clientComments').value.trim();
+    
+    // Validación básica
+    if (!clientName) {
+        alert('Por favor, ingresa tu nombre');
+        return;
+    }
+    
+    if (!clientPhone) {
+        alert('Por favor, ingresa tu número de teléfono');
+        return;
+    }
     
     // Obtener método de pago seleccionado
     let paymentMethod = 'Yape';
@@ -1577,49 +1602,86 @@ function confirmReservation() {
         paymentMethod = 'Transferencia BCP';
     }
     
-    // GUARDAR LA RESERVA EN LOCALSTORAGE
-    const reservationId = saveReservation(
-        selectedDay, 
-        selectedTime, 
-        {
-            name: clientData.name,
-            phone: clientData.phone,
-            comments: clientData.comments
-        }, 
-        serviceName
-    );
+    // Crear ID único
+    const reservationId = Date.now().toString();
     
-    // Marcar el horario como pendiente en la UI
-    markAsPending(selectedDay, selectedTime);
+    // Preparar datos para guardar
+    const reservationData = {
+        id: reservationId,
+        day: selectedDay,
+        time: selectedTime,
+        client: {
+            name: clientName,
+            phone: clientPhone,
+            comments: clientComments
+        },
+        service: serviceName,
+        status: 'pending',
+        paymentMethod: paymentMethod,
+        date: new Date().toISOString(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
     
-    // Crear mensaje para WhatsApp con el ID de reserva
-    let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
-    message += `👤 Nombre: ${clientData.name}\n`;
-    message += `📱 Teléfono: ${clientData.phone}\n`;
-    message += `💅 Servicio: ${serviceName}\n`;
-    message += `📅 Fecha: ${selectedDay}\n`;
-    message += `⏰ Hora: ${selectedTime}\n`;
-    message += `💳 Método de pago preferido: ${paymentMethod}\n`;
-    message += `🔢 ID de reserva: #${reservationId}\n`;
+    // Mostrar indicador de carga
+    const confirmBtn = document.querySelector('#step-3 .mg-confirm-btn');
+    const originalBtnText = confirmBtn.textContent;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Guardando...';
     
-    if (clientData.comments) {
-        message += `\n📝 Comentarios: ${clientData.comments}\n`;
-    }
-    
-    // Codificar el mensaje para URL
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Crear el enlace de WhatsApp
-    const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
-    
-    // Redireccionar
-    window.open(whatsappLink, '_blank');
-    
-    // Cerrar el modal
-    closeModal();
-    
-    // Mostrar mensaje de éxito
-    showSuccessMessage();
+    // Guardar en Firestore
+    db.collection('reservations').doc(reservationId)
+        .set(reservationData)
+        .then(() => {
+            console.log("Reserva creada exitosamente");
+            
+            // Actualizar UI
+            markAsPending(selectedDay, selectedTime);
+            
+            // Crear mensaje para WhatsApp
+            let message = `Hola MG STUDIO, me gustaría confirmar una cita:\n\n`;
+            message += `👤 Nombre: ${clientName}\n`;
+            message += `📱 Teléfono: ${clientPhone}\n`;
+            message += `💅 Servicio: ${serviceName}\n`;
+            message += `📅 Fecha: ${selectedDay}\n`;
+            message += `⏰ Hora: ${selectedTime}\n`;
+            message += `💳 Método de pago preferido: ${paymentMethod}\n`;
+            message += `🔢 ID de reserva: #${reservationId}\n`;
+            
+            if (clientComments) {
+                message += `\n📝 Comentarios: ${clientComments}\n`;
+            }
+            
+            // Restaurar botón
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = originalBtnText;
+            
+            // Cerrar el modal
+            closeModal();
+            
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Crear enlace de WhatsApp
+            const whatsappLink = `https://wa.me/51995904351?text=${encodedMessage}`;
+            
+            // Mostrar mensaje de éxito
+            showSuccessMessage();
+            
+            // Redireccionar después de un breve retraso
+            setTimeout(() => {
+                window.open(whatsappLink, '_blank');
+            }, 1000);
+        })
+        .catch((error) => {
+            console.error("Error al guardar la reserva:", error);
+            
+            // Restaurar botón
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = originalBtnText;
+            
+            // Mostrar error
+            alert('Error al procesar tu reserva. Por favor, inténtalo de nuevo.');
+        });
 }
 
         // Mostrar mensaje de éxito después de la reserva
@@ -1712,35 +1774,48 @@ function confirmReservation() {
         }
 
         // Filtrar horarios por día seleccionado en el calendario
-        function filterByDay(day) {
-            // Cambiar a la tab de horarios
-            showTab('horarios');
-            
-            // Resaltar el día seleccionado en el calendario
-            const calendarDays = document.querySelectorAll('.mg-calendar-day');
-            calendarDays.forEach(calDay => {
-                if (calDay.classList.contains('mg-day-selected')) {
-                    calDay.classList.remove('mg-day-selected');
-                }
-            });
-            
-            // Añadir clase al día seleccionado
-            event.target.classList.add('mg-day-selected');
-            
-            // Mostrar u ocultar tarjetas según el día seleccionado
-            const cards = document.querySelectorAll('.mg-day-card');
-            cards.forEach(card => {
-                if (card.getAttribute('data-day') === day) {
-                    card.style.display = 'block';
-                    // Scroll hasta la tarjeta
-                    setTimeout(() => {
-                        card.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+function filterByDay(day) {
+    // Cambiar a la tab de horarios
+    showTab('horarios');
+    
+    // Resaltar el día seleccionado en el calendario
+    const calendarDays = document.querySelectorAll('.mg-calendar-day');
+    calendarDays.forEach(calDay => {
+        if (calDay.classList.contains('mg-day-selected')) {
+            calDay.classList.remove('mg-day-selected');
         }
+    });
+    
+    // Buscar el elemento del calendario que corresponde a este día
+    calendarDays.forEach(calDay => {
+        if (calDay.getAttribute('data-date') === day) {
+            calDay.classList.add('mg-day-selected');
+        }
+    });
+    
+    // Mostrar u ocultar tarjetas según el día seleccionado
+    const cards = document.querySelectorAll('.mg-day-card');
+    let foundCard = false;
+    
+    cards.forEach(card => {
+        if (card.getAttribute('data-day') === day) {
+            card.style.display = 'block';
+            foundCard = true;
+            // Scroll hasta la tarjeta
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Si no hay horarios para este día, mostrar mensaje
+    if (!foundCard) {
+        // Puedes implementar un mensaje como "No hay horarios disponibles para esta fecha"
+        console.log("No hay horarios disponibles para:", day);
+    }
+}
 
         // Función para volver arriba
         function scrollToTop() {
@@ -1760,24 +1835,35 @@ function confirmReservation() {
             }
         }
 
-        // Eventos cuando la página se carga
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configurar eventos para cambios en el servicio
-            const serviceSelect = document.getElementById('serviceSelect');
-            serviceSelect.addEventListener('change', updateServiceDetails);
-             // Escuchar cambios en tiempo real
-            listenForReservationChanges();
-            // Iniciar con el primer servicio seleccionado
-            updateServiceDetails();
-            
-            // Cerrar el modal si se hace clic fuera de él
-            window.onclick = function(event) {
-                const modal = document.getElementById('serviceModal');
-                if (event.target === modal) {
-                    closeModal();
-                }
-            }
-        });
+       document.addEventListener('DOMContentLoaded', function() {
+    // Generar el calendario inicial
+    generateCalendar(currentMonth);
+    
+    // Configurar botones de navegación
+    const prevButton = document.querySelector('.month-nav button:first-child');
+    const nextButton = document.querySelector('.month-nav button:last-child');
+    
+    prevButton.addEventListener('click', prevMonth);
+    nextButton.addEventListener('click', nextMonth);
+    
+    // Configurar eventos para cambios en el servicio
+    const serviceSelect = document.getElementById('serviceSelect');
+    serviceSelect.addEventListener('change', updateServiceDetails);
+    
+    // Escuchar cambios en tiempo real
+    listenForReservationChanges();
+    
+    // Iniciar con el primer servicio seleccionado
+    updateServiceDetails();
+    
+    // Cerrar el modal si se hace clic fuera de él
+    window.onclick = function(event) {
+        const modal = document.getElementById('serviceModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+});
 
         // Sistema de administración de citas
         // Estas funciones serían utilizadas por el administrador
@@ -1938,6 +2024,100 @@ function listenForReservationChanges() {
         }, (error) => {
             console.error("Error al escuchar cambios en reservas: ", error);
         });
+}
+// Variables para el calendario
+let currentMonth = new Date();
+
+// Generar calendario para el mes actual
+function generateCalendar(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    
+    // Obtener el primer día del mes
+    const firstDay = new Date(year, month, 1);
+    // Obtener el último día del mes
+    const lastDay = new Date(year, month + 1, 0);
+    
+    // Crear array de nombres de meses
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    // Actualizar título del calendario
+    document.querySelector('.month-nav span').textContent = `${monthNames[month]} ${year}`;
+    
+    // Obtener contenedor del calendario
+    const calendarGrid = document.querySelector('.mg-calendar-grid');
+    
+    // Limpiar calendario anterior
+    calendarGrid.innerHTML = '';
+    
+    // Añadir encabezados de días de la semana
+    const weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    weekdays.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'mg-calendar-day mg-calendar-header';
+        dayElement.textContent = day;
+        calendarGrid.appendChild(dayElement);
+    });
+    
+    // Calcular día de la semana del primer día (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+    // Ajustar para que la semana comience en lunes (0 = Lunes, ..., 6 = Domingo)
+    let firstDayOfWeek = firstDay.getDay() - 1;
+    if (firstDayOfWeek < 0) firstDayOfWeek = 6; // Si es domingo (0-1=-1), ponerlo al final (6)
+    
+    // Añadir días vacíos al principio
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'mg-calendar-day mg-day-empty';
+        calendarGrid.appendChild(emptyDay);
+    }
+    
+    // Fecha actual para comparación
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Añadir días del mes
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+        const dayElement = document.createElement('div');
+        const currentDate = new Date(year, month, i);
+        
+        // Clases base
+        dayElement.className = 'mg-calendar-day';
+        dayElement.textContent = i;
+        
+        // Si el día es anterior a hoy, marcarlo como pasado
+        if (currentDate < today) {
+            dayElement.classList.add('mg-day-past');
+        } 
+        // Si es hoy o posterior, marcarlo como disponible
+        else {
+            // Formatear la fecha para el atributo data
+            const weekdayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const formattedDate = `${weekdayNames[currentDate.getDay()]} ${i} ${monthNames[month]}`;
+            
+            dayElement.classList.add('mg-day-available');
+            dayElement.setAttribute('data-date', formattedDate);
+            
+            // Añadir evento click
+            dayElement.addEventListener('click', function() {
+                filterByDay(formattedDate);
+            });
+        }
+        
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+// Navegar al mes anterior
+function prevMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() - 1);
+    generateCalendar(currentMonth);
+}
+
+// Navegar al mes siguiente
+function nextMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() + 1);
+    generateCalendar(currentMonth);
 }
 
 // Actualizar la UI basada en una reserva
