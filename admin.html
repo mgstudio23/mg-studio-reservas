@@ -909,12 +909,15 @@
                 <input type="date" id="edit-date" class="admin-form-input">
             </div>
             
-  <div class="admin-form-group">
-    <label class="admin-form-label">Hora:</label>
-    <input type="time" id="edit-time" class="admin-form-input">
-</div>
-
-
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora:</label>
+                <select id="edit-time" class="admin-form-select">
+                    <option>9:00 AM</option>
+                    <option>11:00 AM</option>
+                    <option>2:00 PM</option>
+                    <option>5:00 PM</option>
+                </select>
+            </div>
             
             <div class="admin-form-group">
                 <label class="admin-form-label">Estado:</label>
@@ -972,10 +975,15 @@
             </div>
             
             <div class="admin-form-group">
-    <label class="admin-form-label">Hora:</label>
-    <input type="time" id="new-time" class="admin-form-input">
-</div>
-
+                <label class="admin-form-label">Hora:</label>
+                <select id="new-time" class="admin-form-select">
+                    <option>9:00 AM</option>
+                    <option>11:00 AM</option>
+                    <option>2:00 PM</option>
+                    <option>5:00 PM</option>
+                </select>
+            </div>
+            
             <div class="admin-form-group">
                 <label class="admin-form-label">Estado:</label>
                 <select id="new-status" class="admin-form-select">
@@ -1240,14 +1248,18 @@
             
             <div class="admin-form-group">
                 <label class="admin-form-label">Fecha:</label>
-                <input type="text" id="edit-avail-date" class="admin-form-input" readonly>
+                <input type="date" id="new-avail-date" class="admin-form-input">
             </div>
             
-     <div class="admin-form-group">
-                <label class="admin-form-label">Hora de Inicio:</label>
-                <input type="text" id="edit-avail-time" class="admin-form-input" readonly>
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora de inicio:</label>
+                <select id="new-avail-time" class="admin-form-select">
+                    <option value="9:00 AM">9:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="2:00 PM">2:00 PM</option>
+                    <option value="5:00 PM">5:00 PM</option>
+                </select>
             </div>
-
             
             <div class="admin-form-group">
                 <label class="admin-form-label">Capacidad:</label>
@@ -3288,187 +3300,118 @@
             document.getElementById('currentMonthLabel').textContent = `${monthName} ${year}`;
         }
         
-// Cargar disponibilidad desde Firestore
-function loadAvailability() {
-    // Obtener el primer y último día del mes actual
-    const firstDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth(), 1);
-    const lastDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth() + 1, 0);
-    
-    console.log("Buscando horarios entre:", firstDay.toISOString(), "y", lastDay.toISOString());
-    
-    // CORRECCIÓN: Eliminar los filtros de fecha para verificar si hay datos
-    db.collection('disponibilidad')
-        .get()
-        .then((snapshot) => {
-            console.log("Total de horarios encontrados:", snapshot.size);
+        // Cargar disponibilidad desde Firestore
+        function loadAvailability() {
+            // Obtener el primer y último día del mes actual
+            const firstDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth(), 1);
+            const lastDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth() + 1, 0);
             
-            availableTimes = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                console.log("Horario encontrado:", data);
-                
-                // Agregarlos todos para diagnóstico
-                availableTimes.push({
-                    id: doc.id,
-                    ...data
+            // Consultar Firestore para obtener la disponibilidad del mes actual
+            db.collection('disponibilidad')
+                .where('fecha', '>=', firstDay.toISOString())
+                .where('fecha', '<=', lastDay.toISOString())
+                .get()
+                .then((snapshot) => {
+                    availableTimes = [];
+                    snapshot.forEach((doc) => {
+                        availableTimes.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderAvailabilityList();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar disponibilidad:", error);
                 });
-            });
-            renderAvailabilityList();
-        })
-        .catch((error) => {
-            console.error("Error al cargar disponibilidad:", error);
-        });
-}
-
-// Crear nueva disponibilidad
-function createNewAvailability() {
-    // Obtener datos del formulario
-    const dateInput = document.getElementById('new-avail-date').value;
-    const time = document.getElementById('new-avail-time').value;
-    const capacity = document.getElementById('new-avail-capacity').value;
-    
-    // Validar
-    if (!dateInput) {
-        alert('Por favor, selecciona una fecha');
-        return;
-    }
-    
-    // Convertir a objeto Date para obtener el formato de día
-    const dateObj = new Date(dateInput);
-    const day = getDayFromDate(dateObj);
-    
-    // ID único
-    const availabilityId = 'avail_' + Date.now().toString();
-    
-    // CORRECCIÓN: Crear objeto de disponibilidad con formato consistente
-    const availabilityData = {
-        id: availabilityId,
-        fecha: dateInput,                // Guardar como string ISO
-        dia: day,                       // Formato legible (ej: "Lunes 5 Mayo")
-        hora: time,                     // Formato hora (ej: "2:00 PM")
-        capacidad: capacity,            // high, medium, low
-        fechaCreacion: new Date().toISOString(),
-        timestamp: firebase.firestore.FieldValue.serverTimestamp() // Añadir timestamp para ordenar
-    };
-    
-    console.log("Guardando horario:", availabilityData);
-    
-    // Guardar en Firestore
-    db.collection('disponibilidad').doc(availabilityId)
-        .set(availabilityData)
-        .then(() => {
-            console.log("Horario creado con éxito");
-            // Cerrar modal
-            closeNewAvailabilityModal();
-            // Recargar disponibilidad
-            loadAvailability();
-            // Mostrar mensaje
-            alert('Horario creado correctamente. Recarga la página principal para ver los cambios.');
-        })
-        .catch((error) => {
-            console.error("Error al crear horario:", error);
-            alert('Error al crear horario: ' + error.message);
-        });
-}
-
-// Renderizar lista de disponibilidad
-function renderAvailabilityList() {
-    const container = document.getElementById('availability-list');
-    container.innerHTML = '';
-    
-    if (availableTimes.length === 0) {
-        container.innerHTML = `
-            <div class="admin-empty-state">
-                <div class="admin-empty-state-icon">📅</div>
-                <div class="admin-empty-state-text">No hay horarios disponibles para este mes</div>
-                <button class="admin-button" onclick="openNewAvailabilityModal()">+ Agregar Horario</button>
-            </div>
-        `;
-        return;
-    }
-    
-    // Agrupar por día
-    const dayGroups = {};
-    availableTimes.forEach(slot => {
-        // CORRECCIÓN: Asegurar que tenemos un día válido
-        let dayKey = slot.dia;
+        }
         
-        // Si no hay día, intentar generarlo desde la fecha
-        if (!dayKey && slot.fecha) {
-            try {
+        // Renderizar lista de disponibilidad
+        function renderAvailabilityList() {
+            const container = document.getElementById('availability-list');
+            container.innerHTML = '';
+            
+            if (availableTimes.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📅</div>
+                        <div class="admin-empty-state-text">No hay horarios disponibles para este mes</div>
+                        <button class="admin-button" onclick="openNewAvailabilityModal()">+ Agregar Horario</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Agrupar por día
+            const dayGroups = {};
+            availableTimes.forEach(slot => {
                 const dateObj = new Date(slot.fecha);
-                dayKey = getDayFromDate(dateObj);
-            } catch (e) {
-                console.error("Error al procesar fecha:", slot.fecha, e);
-                dayKey = "Fecha desconocida";
-            }
+                const dayKey = getDayFromDate(dateObj);
+                
+                if (!dayGroups[dayKey]) {
+                    dayGroups[dayKey] = [];
+                }
+                
+                dayGroups[dayKey].push(slot);
+            });
+            
+            // Renderizar cada día con sus horarios
+            Object.keys(dayGroups).sort().forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'availability-day';
+                
+                const slots = dayGroups[day];
+                
+                // Crear cabecera del día
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'availability-day-header';
+                dayHeader.innerHTML = `
+                    <div class="availability-day-date">${day}</div>
+                `;
+                
+                // Crear contenedor de horarios
+                const timesContainer = document.createElement('div');
+                timesContainer.className = 'availability-times';
+                
+                // Ordenar slots por hora
+                slots.sort((a, b) => {
+                    return a.hora.localeCompare(b.hora);
+                });
+                
+                // Agregar cada horario
+                slots.forEach(slot => {
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'availability-time';
+                    
+                    let statusClass = '';
+                    switch (slot.capacidad) {
+                        case 'high': statusClass = 'status-high'; break;
+                        case 'medium': statusClass = 'status-medium'; break;
+                        case 'low': statusClass = 'status-low'; break;
+                        case 'unavailable': statusClass = 'status-unavailable'; break;
+                    }
+                    
+                    timeEl.innerHTML = `
+                        <div class="availability-time-info">
+                            <div class="availability-status ${statusClass}"></div>
+                            <div>${slot.hora}</div>
+                        </div>
+                        <div class="availability-time-actions">
+                            <button class="admin-action-btn admin-action-edit" onclick="openEditAvailabilityModal('${slot.id}')">✎</button>
+                        </div>
+                    `;
+                    
+                    timesContainer.appendChild(timeEl);
+                });
+                
+                // Agregar elementos al día
+                dayEl.appendChild(dayHeader);
+                dayEl.appendChild(timesContainer);
+                
+                // Agregar día al contenedor principal
+                container.appendChild(dayEl);
+            });
         }
-        
-        if (!dayGroups[dayKey]) {
-            dayGroups[dayKey] = [];
-        }
-        
-        dayGroups[dayKey].push(slot);
-    });
-    
-    // Renderizar cada día con sus horarios
-    Object.keys(dayGroups).sort().forEach(day => {
-        const dayEl = document.createElement('div');
-        dayEl.className = 'availability-day';
-        
-        const slots = dayGroups[day];
-        
-        // Crear cabecera del día
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'availability-day-header';
-        dayHeader.innerHTML = `
-            <div class="availability-day-date">${day}</div>
-        `;
-        
-        // Crear contenedor de horarios
-        const timesContainer = document.createElement('div');
-        timesContainer.className = 'availability-times';
-        
-        // Ordenar slots por hora
-        slots.sort((a, b) => {
-            return a.hora.localeCompare(b.hora);
-        });
-        
-        // Agregar cada horario
-        slots.forEach(slot => {
-            const timeEl = document.createElement('div');
-            timeEl.className = 'availability-time';
-            
-            let statusClass = '';
-            switch (slot.capacidad) {
-                case 'high': statusClass = 'status-high'; break;
-                case 'medium': statusClass = 'status-medium'; break;
-                case 'low': statusClass = 'status-low'; break;
-                case 'unavailable': statusClass = 'status-unavailable'; break;
-                default: statusClass = 'status-high'; // Por defecto
-            }
-            
-            timeEl.innerHTML = `
-                <div class="availability-time-info">
-                    <div class="availability-status ${statusClass}"></div>
-                    <div>${slot.hora}</div>
-                </div>
-                <div class="availability-time-actions">
-                    <button class="admin-action-btn admin-action-edit" onclick="openEditAvailabilityModal('${slot.id}')">✎</button>
-                </div>
-            `;
-            
-            timesContainer.appendChild(timeEl);
-        });
-        
-        // Agregar elementos al día
-        dayEl.appendChild(dayHeader);
-        dayEl.appendChild(timesContainer);
-        
-        // Agregar día al contenedor principal
-        container.appendChild(dayEl);
-    });
-}
         
         // Abrir modal para nueva disponibilidad
         function openNewAvailabilityModal() {
@@ -3759,3 +3702,4 @@ function renderAvailabilityList() {
     </script>
 </body>
 </html>
+                    
