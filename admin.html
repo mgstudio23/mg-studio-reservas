@@ -1238,7 +1238,7 @@
     
     <!-- MODALES PARA GESTIÓN DE DISPONIBILIDAD -->
     
-    <!-- Modal para nuevo horario disponible -->
+   <!-- Modal para nuevo horario disponible -->
 <div id="new-availability-modal" class="admin-modal">
     <div class="admin-modal-content">
         <div class="admin-modal-header">
@@ -1252,9 +1252,34 @@
         </div>
         
         <div class="admin-form-group">
-            <label class="admin-form-label">Hora de inicio:</label>
-            <input type="time" id="new-avail-time" class="admin-form-input">
-            <small style="color: #666; margin-top: 5px; display: block;">Formato: 24 horas (Ej: 14:00 para 2:00 PM)</small>
+            <label class="admin-form-label">Hora:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="new-avail-hour" class="admin-form-select" style="width: 80px;">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+                <span>:</span>
+                <select id="new-avail-minute" class="admin-form-select" style="width: 80px;">
+                    <option value="00">00</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select>
+                <select id="new-avail-period" class="admin-form-select" style="width: 80px;">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </div>
         </div>
         
         <div class="admin-form-group">
@@ -3409,30 +3434,39 @@
             });
         }
         
-        // Abrir modal para nueva disponibilidad
-        function openNewAvailabilityModal() {
-            // Establecer fecha actual por defecto
-            const today = new Date();
-            document.getElementById('new-avail-date').value = today.toISOString().split('T')[0];
-            
-            // Resetear otros campos
-            document.getElementById('new-avail-time').selectedIndex = 0;
-            document.getElementById('new-avail-capacity').value = 'high';
-            
-            // Mostrar modal
-            document.getElementById('new-availability-modal').style.display = 'block';
-        }
-        
+       // Abrir modal para nueva disponibilidad
+function openNewAvailabilityModal() {
+    // Establecer fecha actual por defecto
+    const today = new Date();
+    document.getElementById('new-avail-date').value = today.toISOString().split('T')[0];
+    
+    // Establecer hora actual redondeada a la próxima hora completa
+    const currentHour = today.getHours();
+    const period = currentHour >= 12 ? "PM" : "AM";
+    let hour = currentHour % 12;
+    if (hour === 0) hour = 12;
+    
+    // Seleccionar los valores por defecto
+    document.getElementById('new-avail-hour').value = hour;
+    document.getElementById('new-avail-minute').value = "00";
+    document.getElementById('new-avail-period').value = period;
+    document.getElementById('new-avail-capacity').value = 'high';
+    
+    // Mostrar modal
+    document.getElementById('new-availability-modal').style.display = 'block';
+}
         // Cerrar modal de nueva disponibilidad
         function closeNewAvailabilityModal() {
             document.getElementById('new-availability-modal').style.display = 'none';
         }
         
-       // Crear nueva disponibilidad
+   // Crear nueva disponibilidad
 function createNewAvailability() {
     // Obtener datos del formulario
     const dateInput = document.getElementById('new-avail-date').value;
-    const timeInput = document.getElementById('new-avail-time').value;
+    const hour = document.getElementById('new-avail-hour').value;
+    const minute = document.getElementById('new-avail-minute').value;
+    const period = document.getElementById('new-avail-period').value;
     const capacity = document.getElementById('new-avail-capacity').value;
     
     // Validar
@@ -3441,17 +3475,11 @@ function createNewAvailability() {
         return;
     }
     
-    if (!timeInput) {
-        alert('Por favor, ingresa una hora');
-        return;
-    }
+    // Formatear la hora en formato 12h con AM/PM
+    const formattedTime = `${hour}:${minute} ${period}`;
     
-    // Convertir el formato de hora de 24h a 12h con AM/PM
-    let formattedTime = formatTimeTo12Hour(timeInput);
-    
-    // Convertir a objeto Date para obtener el formato de día
-    const dateObj = new Date(dateInput);
-    const day = getDayFromDate(dateObj);
+    // Obtener el día formateado
+    const day = getDayFromDate(dateInput);
     
     // ID único
     const availabilityId = 'avail_' + Date.now().toString();
@@ -3465,6 +3493,9 @@ function createNewAvailability() {
         capacidad: capacity,
         fechaCreacion: new Date().toISOString()
     };
+    
+    // Log del objeto a guardar
+    console.log("Datos a guardar:", availabilityData);
     
     // Guardar en Firestore
     db.collection('disponibilidad').doc(availabilityId)
@@ -3483,7 +3514,34 @@ function createNewAvailability() {
             alert('Error al crear horario. Inténtalo de nuevo.');
         });
 }
-
+// Modificar la función getDayFromDate para manejar correctamente las fechas
+function getDayFromDate(dateString) {
+    // Crear fecha asegurando que se interprete correctamente en zona horaria local
+    let date;
+    
+    if (typeof dateString === 'string' && dateString.includes('-')) {
+        // Si es una cadena de formato YYYY-MM-DD (desde input date)
+        const parts = dateString.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // Meses en JS son 0-indexed
+        const day = parseInt(parts[2]);
+        
+        // Crear fecha específicamente con estos valores
+        date = new Date(year, month, day);
+    } else {
+        // Si ya es un objeto Date u otro formato
+        date = new Date(dateString);
+    }
+    
+    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const weekday = weekdays[date.getDay()];
+    const dayOfMonth = date.getDate();
+    const monthName = months[date.getMonth()];
+    
+    return `${weekday} ${dayOfMonth} ${monthName}`;
+}
 // Función para convertir formato de hora de 24h a 12h con AM/PM
 function formatTimeTo12Hour(time24h) {
     // Verificar si ya tiene formato AM/PM
@@ -3583,40 +3641,7 @@ function formatTimeTo12Hour(time24h) {
                     alert('Error al actualizar horario. Inténtalo de nuevo.');
                 });
         }
-        function getDayFromDate(dateString) {
-    // Crear fecha asegurando que se interprete correctamente en zona horaria local
-    let date;
-    
-    if (typeof dateString === 'string' && dateString.includes('-')) {
-        // Si es una cadena de formato YYYY-MM-DD (desde input date)
-        const parts = dateString.split('-');
-        const year = parseInt(parts[0]);
-        const month = parseInt(parts[1]) - 1; // Meses en JS son 0-indexed
-        const day = parseInt(parts[2]);
         
-        // Crear fecha específicamente con estos valores
-        date = new Date(year, month, day);
-    } else {
-        // Si ya es un objeto Date u otro formato
-        date = new Date(dateString);
-    }
-    
-    // Asegurar que estamos trabajando con la fecha correcta imprimiendo para depuración
-    console.log("Fecha original:", dateString);
-    console.log("Fecha procesada:", date);
-    
-    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
-    const weekday = weekdays[date.getDay()];
-    const dayOfMonth = date.getDate();
-    const monthName = months[date.getMonth()];
-    
-    const resultado = `${weekday} ${dayOfMonth} ${monthName}`;
-    console.log("Resultado:", resultado);
-    
-    return resultado;
-}
         
         // Eliminar disponibilidad
         function deleteAvailability() {
