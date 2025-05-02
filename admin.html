@@ -64,7 +64,7 @@
         }
         
         .view-site:hover {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255,255,255,0.8);
         }
         
         .admin-panel {
@@ -174,12 +174,14 @@
             display: flex;
             border-bottom: 1px solid var(--gray);
             margin-bottom: 20px;
+            overflow-x: auto;
         }
         
         .admin-tab {
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            white-space: nowrap;
         }
         
         .admin-tab.active {
@@ -383,6 +385,178 @@
             margin-top: 20px;
         }
         
+        /* Estilos adicionales para gestión de disponibilidad */
+        .admin-content-box {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-content-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--gray);
+            padding-bottom: 8px;
+        }
+
+        .admin-calendar {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .admin-calendar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .month-nav button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .availability-day {
+            background-color: var(--gray-light);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .availability-day-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .availability-day-date {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .availability-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .availability-time {
+            background-color: white;
+            border-radius: 5px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--gray);
+            width: calc(50% - 5px);
+        }
+
+        .availability-time-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .availability-time-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .availability-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-high {
+            background-color: #4CAF50;
+        }
+
+        .status-medium {
+            background-color: #FF9800;
+        }
+
+        .status-low {
+            background-color: #F44336;
+        }
+
+        .status-unavailable {
+            background-color: #9E9E9E;
+        }
+        
+        /* Estilos para promociones */
+        .promo-card {
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .promo-info {
+            flex: 1;
+        }
+        
+        .promo-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .promo-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .promo-discount {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .promo-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+        
         @media (max-width: 768px) {
             .admin-panel {
                 grid-template-columns: 1fr;
@@ -394,6 +568,10 @@
             
             .admin-cards {
                 grid-template-columns: 1fr;
+            }
+            
+            .availability-time {
+                width: 100%;
             }
         }
     </style>
@@ -519,6 +697,7 @@
                     <div class="admin-tab" onclick="filterAppointments('pending')">Pendientes</div>
                     <div class="admin-tab" onclick="filterAppointments('confirmed')">Confirmadas</div>
                     <div class="admin-tab" onclick="filterAppointments('canceled')">Canceladas</div>
+                    <div class="admin-tab" onclick="showAvailabilitySection()">Disponibilidad</div>
                 </div>
                 
                 <table class="admin-table">
@@ -536,6 +715,31 @@
                         <!-- Las reservas se cargarán aquí -->
                     </tbody>
                 </table>
+                
+                <!-- Sección de Disponibilidad (inicialmente oculta) -->
+                <div id="availability-section" style="display: none;">
+                    <div class="admin-section-header">
+                        <h2>Gestión de Disponibilidad</h2>
+                        <button class="admin-button" onclick="openNewAvailabilityModal()">+ Nuevo Horario</button>
+                    </div>
+                    
+                    <div class="admin-calendar">
+                        <h3>
+                            <div class="month-nav">
+                                <button id="prevMonthAdmin" onclick="changeAdminMonth(-1)">←</button>
+                                <span id="currentMonthLabel">Mayo 2025</span>
+                                <button id="nextMonthAdmin" onclick="changeAdminMonth(1)">→</button>
+                            </div>
+                        </h3>
+                    </div>
+                    
+                    <div class="admin-content-box">
+                        <h3>Días con Horarios Disponibles</h3>
+                        <div id="availability-list">
+                            <!-- Los días disponibles se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- CLIENTS SECTION -->
@@ -574,8 +778,8 @@
                 </div>
                 
                 <div class="admin-search">
-                    <input type="text" placeholder="Buscar servicio...">
-                    <button>🔍</button>
+                    <input type="text" id="services-search" placeholder="Buscar servicio...">
+                    <button onclick="searchServices()">🔍</button>
                 </div>
                 
                 <table class="admin-table">
@@ -588,27 +792,8 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Lifting de Pestañas</td>
-                            <td>Pestañas</td>
-                            <td>45 min</td>
-                            <td>s/40</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Extensiones Clásicas</td>
-                            <td>Pestañas</td>
-                            <td>60 min</td>
-                            <td>s/50</td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
+                    <tbody id="services-table">
+                        <!-- Los servicios se cargarán aquí -->
                     </tbody>
                 </table>
             </div>
@@ -621,33 +806,13 @@
                 </div>
                 
                 <div class="admin-search">
-                    <input type="text" placeholder="Buscar promoción...">
-                    <button>🔍</button>
+                    <input type="text" id="promotions-search" placeholder="Buscar promoción...">
+                    <button onclick="searchPromotions()">🔍</button>
                 </div>
                 
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Descuento</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Lifting + Laminado</td>
-                            <td>Tratamiento completo para mirada perfecta</td>
-                            <td>s/15 (20%)</td>
-                            <td><span class="admin-badge admin-badge-confirmed">Activa</span></td>
-                            <td>
-                                <button class="admin-action-btn admin-action-edit">✎</button>
-                                <button class="admin-action-btn admin-action-cancel">✕</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="promotions-container">
+                    <!-- Las promociones se cargarán aquí -->
+                </div>
             </div>
             
             <!-- SETTINGS SECTION -->
@@ -656,33 +821,59 @@
                     <h2>Configuración</h2>
                 </div>
                 
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Nombre del Estudio:</label>
-                    <input type="text" class="admin-form-input" value="MG STUDIO">
+                <div class="admin-content-box">
+                    <h3>Información del Negocio</h3>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Nombre del Estudio:</label>
+                        <input type="text" id="settings-name" class="admin-form-input" value="MG STUDIO">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Dirección:</label>
+                        <input type="text" id="settings-address" class="admin-form-input" value="Jr. Bolognesi 265">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Teléfono:</label>
+                        <input type="text" id="settings-phone" class="admin-form-input" value="995 904 351">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Instagram:</label>
+                        <input type="text" id="settings-instagram" class="admin-form-input" value="https://www.instagram.com/mg.studio_pe">
+                    </div>
                 </div>
                 
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Dirección:</label>
-                    <input type="text" class="admin-form-input" value="Jr. Bolognesi 265">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Teléfono:</label>
-                    <input type="text" class="admin-form-input" value="995 904 351">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Instagram:</label>
-                    <input type="text" class="admin-form-input" value="https://www.instagram.com/mg.studio_pe">
+                <div class="admin-content-box">
+                    <h3>Personalización</h3>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Color Principal:</label>
+                        <div style="display: flex; align-items: center;">
+                            <div class="color-preview" id="primaryColorPreview" style="background-color: #ff4b7d;"></div>
+                            <input type="text" id="settings-primary-color" class="admin-form-input" value="#ff4b7d">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Color Secundario:</label>
+                        <div style="display: flex; align-items: center;">
+                            <div class="color-preview" id="secondaryColorPreview" style="background-color: #333333;"></div>
+                            <input type="text" id="settings-secondary-color" class="admin-form-input" value="#333333">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="admin-form-buttons">
                     <button class="admin-button" style="background-color: #ccc; color: black;">Cancelar</button>
-                    <button class="admin-button">Guardar Cambios</button>
+                    <button class="admin-button" onclick="saveSettings()">Guardar Cambios</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- MODALES PARA GESTIÓN DE CITAS -->
     
     <!-- Modal para editar cita -->
     <div id="edit-appointment-modal" class="admin-modal">
@@ -813,6 +1004,315 @@
         </div>
     </div>
     
+    <!-- MODALES PARA GESTIÓN DE CLIENTES -->
+    
+    <!-- Modal para editar cliente -->
+    <div id="edit-client-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Editar Cliente</h3>
+                <span class="admin-modal-close" onclick="closeEditClientModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre:</label>
+                <input type="text" id="edit-client-full-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Teléfono:</label>
+                <input type="text" id="edit-client-full-phone" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Notas:</label>
+                <textarea id="edit-client-notes" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditClientModal()">Cancelar</button>
+                <button class="admin-button" onclick="saveClientChanges()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para nuevo cliente -->
+    <div id="new-client-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Nuevo Cliente</h3>
+                <span class="admin-modal-close" onclick="closeNewClientModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre:</label>
+                <input type="text" id="new-client-full-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Teléfono:</label>
+                <input type="text" id="new-client-full-phone" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Notas:</label>
+                <textarea id="new-client-notes" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewClientModal()">Cancelar</button>
+                <button class="admin-button" onclick="createNewClient()">Crear Cliente</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALES PARA GESTIÓN DE SERVICIOS -->
+    
+    <!-- Modal para editar servicio -->
+    <div id="edit-service-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Editar Servicio</h3>
+                <span class="admin-modal-close" onclick="closeEditServiceModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre del Servicio:</label>
+                <input type="text" id="edit-service-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Categoría:</label>
+                <select id="edit-service-category" class="admin-form-select">
+                    <option value="Pestañas">Pestañas</option>
+                    <option value="Cejas">Cejas</option>
+                    <option value="Volumen">Volumen</option>
+                    <option value="Paquetes">Paquetes</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Duración (minutos):</label>
+                <input type="number" id="edit-service-duration" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Precio (S/):</label>
+                <input type="number" id="edit-service-price" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descripción:</label>
+                <textarea id="edit-service-description" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditServiceModal()">Cancelar</button>
+                <button class="admin-button" onclick="saveServiceChanges()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para nuevo servicio -->
+    <div id="new-service-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Nuevo Servicio</h3>
+                <span class="admin-modal-close" onclick="closeNewServiceModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre del Servicio:</label>
+                <input type="text" id="new-service-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Categoría:</label>
+                <select id="new-service-category" class="admin-form-select">
+                    <option value="Pestañas">Pestañas</option>
+                    <option value="Cejas">Cejas</option>
+                    <option value="Volumen">Volumen</option>
+                    <option value="Paquetes">Paquetes</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Duración (minutos):</label>
+                <input type="number" id="new-service-duration" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Precio (S/):</label>
+                <input type="number" id="new-service-price" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descripción:</label>
+                <textarea id="new-service-description" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewServiceModal()">Cancelar</button>
+                <button class="admin-button" onclick="createNewService()">Crear Servicio</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALES PARA GESTIÓN DE PROMOCIONES -->
+    
+    <!-- Modal para editar promoción -->
+    <div id="edit-promotion-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Editar Promoción</h3>
+                <span class="admin-modal-close" onclick="closeEditPromotionModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre de la Promoción:</label>
+                <input type="text" id="edit-promotion-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descripción:</label>
+                <textarea id="edit-promotion-description" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descuento (S/ o %):</label>
+                <input type="text" id="edit-promotion-discount" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Estado:</label>
+                <select id="edit-promotion-status" class="admin-form-select">
+                    <option value="active">Activa</option>
+                    <option value="inactive">Inactiva</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditPromotionModal()">Cancelar</button>
+                <button class="admin-button" onclick="savePromotionChanges()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para nueva promoción -->
+    <div id="new-promotion-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Nueva Promoción</h3>
+                <span class="admin-modal-close" onclick="closeNewPromotionModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Nombre de la Promoción:</label>
+                <input type="text" id="new-promotion-name" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descripción:</label>
+                <textarea id="new-promotion-description" class="admin-form-textarea"></textarea>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Descuento (S/ o %):</label>
+                <input type="text" id="new-promotion-discount" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Estado:</label>
+                <select id="new-promotion-status" class="admin-form-select">
+                    <option value="active">Activa</option>
+                    <option value="inactive">Inactiva</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewPromotionModal()">Cancelar</button>
+                <button class="admin-button" onclick="createNewPromotion()">Crear Promoción</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALES PARA GESTIÓN DE DISPONIBILIDAD -->
+    
+    <!-- Modal para nuevo horario disponible -->
+    <div id="new-availability-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Agregar Nuevo Horario</h3>
+                <span class="admin-modal-close" onclick="closeNewAvailabilityModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Fecha:</label>
+                <input type="date" id="new-avail-date" class="admin-form-input">
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora de inicio:</label>
+                <select id="new-avail-time" class="admin-form-select">
+                    <option value="9:00 AM">9:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="2:00 PM">2:00 PM</option>
+                    <option value="5:00 PM">5:00 PM</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Capacidad:</label>
+                <select id="new-avail-capacity" class="admin-form-select">
+                    <option value="high">Alta disponibilidad</option>
+                    <option value="medium">Disponibilidad media</option>
+                    <option value="low">Último espacio</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewAvailabilityModal()">Cancelar</button>
+                <button class="admin-button" onclick="createNewAvailability()">Agregar Horario</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar horario disponible -->
+    <div id="edit-availability-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 class="admin-modal-title">Editar Horario</h3>
+                <span class="admin-modal-close" onclick="closeEditAvailabilityModal()">&times;</span>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Fecha:</label>
+                <input type="text" id="edit-avail-date" class="admin-form-input" readonly>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hora:</label>
+                <input type="text" id="edit-avail-time" class="admin-form-input" readonly>
+            </div>
+            
+            <div class="admin-form-group">
+                <label class="admin-form-label">Capacidad:</label>
+                <select id="edit-avail-capacity" class="admin-form-select">
+                    <option value="high">Alta disponibilidad</option>
+                    <option value="medium">Disponibilidad media</option>
+                    <option value="low">Último espacio</option>
+                    <option value="unavailable">No disponible</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-buttons">
+                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditAvailabilityModal()">Cancelar</button>
+                <button class="admin-button" onclick="saveAvailabilityChanges()">Guardar Cambios</button>
+                <button class="admin-button" style="background-color: #e74c3c;" onclick="deleteAvailability()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -825,6 +1325,16 @@
         let currentFilter = 'all';
         let appointments = [];
         let clients = [];
+        let services = [];
+        let promotions = [];
+        let availableTimes = [];
+        
+        // Variables para gestión de módulos
+        let currentClientId = null;
+        let currentServiceId = null;
+        let currentPromotionId = null;
+        let currentAvailabilityId = null;
+        let currentAdminMonth = new Date();
         
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
@@ -865,6 +1375,9 @@
                     
                     // Cargar datos en tiempo real
                     listenForAdminChanges();
+                    
+                    // Inicializar funcionamiento de la configuración
+                    initSettings();
                 }
             });
         });
@@ -885,7 +1398,7 @@
                             time: data.hora,
                             date: data.fechaCreacion,
                             status: data.estado === 'pendiente' ? 'pending' : 
-                                data.estado === 'confirmada' ? 'confirmed' : 'canceled',
+                                   data.estado === 'confirmada' ? 'confirmed' : 'canceled',
                             client: {
                                 name: data.nombre,
                                 phone: data.telefono,
@@ -919,9 +1432,11 @@
             appointments.forEach(appointment => {
                 if (appointment.client && appointment.client.name) {
                     const clientName = appointment.client.name;
+                    const clientId = 'client_' + clientName.toLowerCase().replace(/[^a-z0-9]/g, '_');
                     
                     if (!clientsMap.has(clientName)) {
                         clientsMap.set(clientName, {
+                            id: clientId,
                             name: clientName,
                             phone: appointment.client.phone || '',
                             appointments: [],
@@ -1165,6 +1680,7 @@
                             <div class="admin-empty-state">
                                 <div class="admin-empty-state-icon">👥</div>
                                 <div class="admin-empty-state-text">No hay clientes registrados</div>
+                                <button class="admin-button" onclick="openNewClientModal()">+ Nuevo Cliente</button>
                             </div>
                         </td>
                     </tr>
@@ -1202,8 +1718,9 @@
                 // Acciones
                 const actionsCell = document.createElement('td');
                 actionsCell.innerHTML = `
-                    <button class="admin-action-btn admin-action-edit">✎</button>
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
                     <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
                 `;
                 row.appendChild(actionsCell);
                 
@@ -1245,10 +1762,26 @@
             event.currentTarget.classList.add('active');
             
             // Cargar datos específicos de la sección
-            if (sectionId === 'dashboard' || sectionId === 'appointments') {
+            if (sectionId === 'dashboard') {
                 loadAppointmentsTable();
+            } else if (sectionId === 'appointments') {
+                loadAppointmentsTable();
+                // Restablecer la vista de citas (ocultar sección de disponibilidad)
+                hideAvailabilitySection();
+                // Establecer la primera tab como activa
+                const tabs = document.querySelectorAll('#appointments .admin-tab');
+                tabs.forEach((tab, index) => {
+                    tab.classList.toggle('active', index === 0);
+                });
+                currentFilter = 'all';
             } else if (sectionId === 'clients') {
                 loadClientsTable();
+            } else if (sectionId === 'services') {
+                loadServices();
+            } else if (sectionId === 'promotions') {
+                loadPromotions();
+            } else if (sectionId === 'settings') {
+                loadSettings();
             }
         }
         
@@ -1272,6 +1805,9 @@
         
         // Filtrar citas en la sección de citas
         function filterAppointments(filter) {
+            // Si se muestra la sección de disponibilidad, ocultarla
+            hideAvailabilitySection();
+            
             // Actualizar filtro actual
             currentFilter = filter;
             
@@ -1281,8 +1817,11 @@
                 tab.classList.remove('active');
             });
             
-            // Activar la tab seleccionada
-            event.currentTarget.classList.add('active');
+            // Activar la tab seleccionada (excepto la última que es Disponibilidad)
+            if (filter === 'all') tabs[0].classList.add('active');
+            else if (filter === 'pending') tabs[1].classList.add('active');
+            else if (filter === 'confirmed') tabs[2].classList.add('active');
+            else if (filter === 'canceled') tabs[3].classList.add('active');
             
             // Recargar tabla de citas
             loadAppointmentsTable();
@@ -1628,6 +2167,9 @@
             const today = new Date();
             document.getElementById('new-date').value = today.toISOString().split('T')[0];
             
+            // Actualizar select de servicios con los servicios disponibles
+            updateServiceSelects();
+            
             // Mostrar modal
             document.getElementById('new-appointment-modal').style.display = 'block';
         }
@@ -1689,6 +2231,67 @@
                     console.error("Error al crear la cita: ", error);
                     alert('Error al crear la cita. Inténtalo de nuevo.');
                 });
+        }
+        
+        // Actualizar selects de servicios
+        function updateServiceSelects() {
+            // Obtener los selects
+            const newServiceSelect = document.getElementById('new-service');
+            const editServiceSelect = document.getElementById('edit-service');
+            
+            // Si no hay servicios cargados, cargarlos primero
+            if (services.length === 0) {
+                db.collection('servicios')
+                    .get()
+                    .then((snapshot) => {
+                        // Limpiar selects
+                        newServiceSelect.innerHTML = '';
+                        editServiceSelect.innerHTML = '';
+                        
+                        // Si no hay servicios, usar los predeterminados
+                        if (snapshot.empty) {
+                            return;
+                        }
+                        
+                        // Procesar servicios
+                        const servicesByCategory = {};
+                        
+                        snapshot.forEach((doc) => {
+                            const service = doc.data();
+                            
+                            if (!servicesByCategory[service.categoria]) {
+                                servicesByCategory[service.categoria] = [];
+                            }
+                            
+                            servicesByCategory[service.categoria].push(service);
+                        });
+                        
+                        // Agregar opciones agrupadas por categoría
+                        Object.keys(servicesByCategory).forEach(category => {
+                            const optgroup = document.createElement('optgroup');
+                            optgroup.label = category;
+                            
+                            servicesByCategory[category].forEach(service => {
+                                const option = document.createElement('option');
+                                option.value = service.nombre;
+                                option.textContent = `${service.nombre} - s/${service.precio}`;
+                                optgroup.appendChild(option);
+                                
+                                // Clonar para el otro select
+                                const optionClone = option.cloneNode(true);
+                                optgroup.appendChild(optionClone);
+                            });
+                            
+                            newServiceSelect.appendChild(optgroup);
+                            // Clonar para el otro select
+                            const optgroupClone = optgroup.cloneNode(true);
+                            editServiceSelect.appendChild(optgroupClone);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error al cargar servicios: ", error);
+                    });
+            }
         }
         
         // Convertir fecha a formato "Lunes 1 Mayo"
@@ -1830,14 +2433,1271 @@
                 // Acciones
                 const actionsCell = document.createElement('td');
                 actionsCell.innerHTML = `
-                    <button class="admin-action-btn admin-action-edit">✎</button>
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
                     <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
                 `;
                 row.appendChild(actionsCell);
                 
                 // Agregar fila a la tabla
                 tableBody.appendChild(row);
             });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE CLIENTES =====
+        
+        // Abrir modal de edición de cliente
+        function openEditClientModal(clientId) {
+            // Buscar cliente
+            const client = clients.find(c => c.id === clientId);
+            
+            if (!client) {
+                alert('Cliente no encontrado');
+                return;
+            }
+            
+            // Llenar formulario con datos del cliente
+            document.getElementById('edit-client-full-name').value = client.name || '';
+            document.getElementById('edit-client-full-phone').value = client.phone || '';
+            document.getElementById('edit-client-notes').value = client.notes || '';
+            
+            // Guardar ID del cliente actual
+            currentClientId = clientId;
+            
+            // Mostrar modal
+            document.getElementById('edit-client-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de cliente
+        function closeEditClientModal() {
+            document.getElementById('edit-client-modal').style.display = 'none';
+            currentClientId = null;
+        }
+        
+        // Guardar cambios de cliente
+        function saveClientChanges() {
+            // Verificar que hay un cliente seleccionado
+            if (!currentClientId) {
+                alert('No hay cliente seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-client-full-name').value;
+            const phone = document.getElementById('edit-client-full-phone').value;
+            const notes = document.getElementById('edit-client-notes').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                telefono: phone,
+                notas: notes,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('clientes').doc(currentClientId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Cliente actualizado con éxito");
+                    // Cerrar modal
+                    closeEditClientModal();
+                    // Recargar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente actualizado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar el cliente: ", error);
+                    alert('Error al actualizar el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal para nuevo cliente
+        function openNewClientModal() {
+            // Limpiar formulario
+            document.getElementById('new-client-full-name').value = '';
+            document.getElementById('new-client-full-phone').value = '';
+            document.getElementById('new-client-notes').value = '';
+            
+            // Mostrar modal
+            document.getElementById('new-client-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nuevo cliente
+        function closeNewClientModal() {
+            document.getElementById('new-client-modal').style.display = 'none';
+        }
+        
+        // Crear nuevo cliente
+        function createNewClient() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-client-full-name').value;
+            const phone = document.getElementById('new-client-full-phone').value;
+            const notes = document.getElementById('new-client-notes').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // ID único basado en timestamp
+            const clientId = 'client_' + Date.now().toString();
+            
+            // Crear nuevo cliente
+            const newClient = {
+                id: clientId,
+                nombre: name,
+                telefono: phone,
+                notas: notes,
+                fechaCreacion: new Date().toISOString(),
+                citas: []
+            };
+            
+            // Guardar en Firestore
+            db.collection('clientes').doc(clientId)
+                .set(newClient)
+                .then(() => {
+                    console.log("Cliente creado con éxito");
+                    // Cerrar modal
+                    closeNewClientModal();
+                    // Actualizar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente creado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear el cliente: ", error);
+                    alert('Error al crear el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar cliente
+        function deleteClient(clientId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('clientes').doc(clientId)
+                .delete()
+                .then(() => {
+                    console.log("Cliente eliminado con éxito");
+                    // Recargar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente eliminado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar el cliente: ", error);
+                    alert('Error al eliminar el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE SERVICIOS =====
+        
+        // Cargar servicios desde Firestore
+        function loadServices() {
+            db.collection('servicios')
+                .get()
+                .then((snapshot) => {
+                    services = [];
+                    snapshot.forEach((doc) => {
+                        services.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderServicesTable();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar servicios:", error);
+                });
+        }
+        
+        // Renderizar tabla de servicios
+        function renderServicesTable() {
+            const tableBody = document.getElementById('services-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            if (services.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-icon">💄</div>
+                                <div class="admin-empty-state-text">No hay servicios registrados</div>
+                                <button class="admin-button" onclick="openNewServiceModal()">+ Agregar Servicio</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Ordenar servicios por categoría y nombre
+            services.sort((a, b) => {
+                if (a.categoria !== b.categoria) {
+                    return a.categoria.localeCompare(b.categoria);
+                }
+                return a.nombre.localeCompare(b.nombre);
+            });
+            
+            // Renderizar cada servicio
+            services.forEach(service => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = service.nombre;
+                row.appendChild(nameCell);
+                
+                // Categoría
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = service.categoria;
+                row.appendChild(categoryCell);
+                
+                // Duración
+                const durationCell = document.createElement('td');
+                durationCell.textContent = service.duracion + ' min';
+                row.appendChild(durationCell);
+                
+                // Precio
+                const priceCell = document.createElement('td');
+                priceCell.textContent = 's/' + service.precio;
+                row.appendChild(priceCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Abrir modal para nuevo servicio
+        function openNewServiceModal() {
+            // Limpiar formulario
+            document.getElementById('new-service-name').value = '';
+            document.getElementById('new-service-category').value = 'Pestañas';
+            document.getElementById('new-service-duration').value = '60';
+            document.getElementById('new-service-price').value = '';
+            document.getElementById('new-service-description').value = '';
+            
+            // Mostrar modal
+            document.getElementById('new-service-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nuevo servicio
+        function closeNewServiceModal() {
+            document.getElementById('new-service-modal').style.display = 'none';
+        }
+        
+        // Crear nuevo servicio
+        function createNewService() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-service-name').value;
+            const category = document.getElementById('new-service-category').value;
+            const duration = document.getElementById('new-service-duration').value;
+            const price = document.getElementById('new-service-price').value;
+            const description = document.getElementById('new-service-description').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del servicio es obligatorio');
+                return;
+            }
+            
+            if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
+                alert('La duración debe ser un número positivo');
+                return;
+            }
+            
+            if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                alert('El precio debe ser un número positivo');
+                return;
+            }
+            
+            // ID único
+            const serviceId = 'service_' + Date.now().toString();
+            
+            // Crear servicio
+            const newService = {
+                id: serviceId,
+                nombre: name,
+                categoria: category,
+                duracion: parseInt(duration),
+                precio: parseFloat(price),
+                descripcion: description,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('servicios').doc(serviceId)
+                .set(newService)
+                .then(() => {
+                    console.log("Servicio creado con éxito");
+                    // Cerrar modal
+                    closeNewServiceModal();
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio creado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear el servicio: ", error);
+                    alert('Error al crear el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal de edición de servicio
+        function openEditServiceModal(serviceId) {
+            // Buscar servicio
+            const service = services.find(s => s.id === serviceId);
+            
+            if (!service) {
+                alert('Servicio no encontrado');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-service-name').value = service.nombre;
+            document.getElementById('edit-service-category').value = service.categoria;
+            document.getElementById('edit-service-duration').value = service.duracion;
+            document.getElementById('edit-service-price').value = service.precio;
+            document.getElementById('edit-service-description').value = service.descripcion || '';
+            
+            // Guardar ID del servicio actual
+            currentServiceId = serviceId;
+            
+            // Mostrar modal
+            document.getElementById('edit-service-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de servicio
+        function closeEditServiceModal() {
+            document.getElementById('edit-service-modal').style.display = 'none';
+            currentServiceId = null;
+        }
+        
+        // Guardar cambios de servicio
+        function saveServiceChanges() {
+            // Verificar que hay un servicio seleccionado
+            if (!currentServiceId) {
+                alert('No hay servicio seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-service-name').value;
+            const category = document.getElementById('edit-service-category').value;
+            const duration = document.getElementById('edit-service-duration').value;
+            const price = document.getElementById('edit-service-price').value;
+            const description = document.getElementById('edit-service-description').value;
+            
+            // Validar datos (igual que en createNewService)
+            if (!name) {
+                alert('El nombre del servicio es obligatorio');
+                return;
+            }
+            
+            if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
+                alert('La duración debe ser un número positivo');
+                return;
+            }
+            
+            if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                alert('El precio debe ser un número positivo');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                categoria: category,
+                duracion: parseInt(duration),
+                precio: parseFloat(price),
+                descripcion: description,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('servicios').doc(currentServiceId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Servicio actualizado con éxito");
+                    // Cerrar modal
+                    closeEditServiceModal();
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio actualizado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar el servicio: ", error);
+                    alert('Error al actualizar el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar servicio
+        function deleteService(serviceId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('servicios').doc(serviceId)
+                .delete()
+                .then(() => {
+                    console.log("Servicio eliminado con éxito");
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio eliminado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar el servicio: ", error);
+                    alert('Error al eliminar el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Buscar servicios
+        function searchServices() {
+            const searchText = document.getElementById('services-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todos los servicios
+                renderServicesTable();
+                return;
+            }
+            
+            // Filtrar servicios según el texto de búsqueda
+            const filteredServices = services.filter(service => 
+                service.nombre.toLowerCase().includes(searchText) ||
+                service.categoria.toLowerCase().includes(searchText) ||
+                (service.descripcion && service.descripcion.toLowerCase().includes(searchText))
+            );
+            
+            // Actualizar tabla con los servicios filtrados
+            const tableBody = document.getElementById('services-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredServices.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar servicios filtrados
+            filteredServices.forEach(service => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = service.nombre;
+                row.appendChild(nameCell);
+                
+                // Categoría
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = service.categoria;
+                row.appendChild(categoryCell);
+                
+                // Duración
+                const durationCell = document.createElement('td');
+                durationCell.textContent = service.duracion + ' min';
+                row.appendChild(durationCell);
+                
+                // Precio
+                const priceCell = document.createElement('td');
+                priceCell.textContent = 's/' + service.precio;
+                row.appendChild(priceCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE PROMOCIONES =====
+        
+        // Cargar promociones desde Firestore
+        function loadPromotions() {
+            db.collection('promociones')
+                .get()
+                .then((snapshot) => {
+                    promotions = [];
+                    snapshot.forEach((doc) => {
+                        promotions.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderPromotions();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar promociones:", error);
+                });
+        }
+        
+        // Renderizar promociones
+        function renderPromotions() {
+            const container = document.getElementById('promotions-container');
+            if (!container) return;
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            if (promotions.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📢</div>
+                        <div class="admin-empty-state-text">No hay promociones registradas</div>
+                        <button class="admin-button" onclick="openNewPromotionModal()">+ Agregar Promoción</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar promociones por estado (activas primero) y nombre
+            promotions.sort((a, b) => {
+                if (a.estado !== b.estado) {
+                    return a.estado === 'active' ? -1 : 1;
+                }
+                return a.nombre.localeCompare(b.nombre);
+            });
+            
+            // Renderizar cada promoción
+            promotions.forEach(promotion => {
+                const promoCard = document.createElement('div');
+                promoCard.className = 'promo-card';
+                
+                promoCard.innerHTML = `
+                    <div class="promo-info">
+                        <div class="promo-title">${promotion.nombre}</div>
+                        <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
+                        <div class="promo-discount">Descuento: ${promotion.descuento}</div>
+                        <div>
+                            <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
+                                ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
+                        <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
+                    </div>
+                `;
+                
+                container.appendChild(promoCard);
+            });
+        }
+        
+        // Abrir modal para nueva promoción
+        function openNewPromotionModal() {
+            // Limpiar formulario
+            document.getElementById('new-promotion-name').value = '';
+            document.getElementById('new-promotion-description').value = '';
+            document.getElementById('new-promotion-discount').value = '';
+            document.getElementById('new-promotion-status').value = 'active';
+            
+            // Mostrar modal
+            document.getElementById('new-promotion-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nueva promoción
+        function closeNewPromotionModal() {
+            document.getElementById('new-promotion-modal').style.display = 'none';
+        }
+        
+        // Crear nueva promoción
+        function createNewPromotion() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-promotion-name').value;
+            const description = document.getElementById('new-promotion-description').value;
+            const discount = document.getElementById('new-promotion-discount').value;
+            const status = document.getElementById('new-promotion-status').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre de la promoción es obligatorio');
+                return;
+            }
+            
+            if (!discount) {
+                alert('El descuento es obligatorio');
+                return;
+            }
+            
+            // ID único
+            const promotionId = 'promo_' + Date.now().toString();
+            
+            // Crear promoción
+            const newPromotion = {
+                id: promotionId,
+                nombre: name,
+                descripcion: description,
+                descuento: discount,
+                estado: status,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('promociones').doc(promotionId)
+                .set(newPromotion)
+                .then(() => {
+                    console.log("Promoción creada con éxito");
+                    // Cerrar modal
+                    closeNewPromotionModal();
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción creada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear la promoción: ", error);
+                    alert('Error al crear la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal de edición de promoción
+        function openEditPromotionModal(promotionId) {
+            // Buscar promoción
+            const promotion = promotions.find(p => p.id === promotionId);
+            
+            if (!promotion) {
+                alert('Promoción no encontrada');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-promotion-name').value = promotion.nombre;
+            document.getElementById('edit-promotion-description').value = promotion.descripcion || '';
+            document.getElementById('edit-promotion-discount').value = promotion.descuento;
+            document.getElementById('edit-promotion-status').value = promotion.estado || 'active';
+            
+            // Guardar ID de la promoción actual
+            currentPromotionId = promotionId;
+            
+            // Mostrar modal
+            document.getElementById('edit-promotion-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de promoción
+        function closeEditPromotionModal() {
+            document.getElementById('edit-promotion-modal').style.display = 'none';
+            currentPromotionId = null;
+        }
+        
+        // Guardar cambios de promoción
+        function savePromotionChanges() {
+            // Verificar que hay una promoción seleccionada
+            if (!currentPromotionId) {
+                alert('No hay promoción seleccionada');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-promotion-name').value;
+            const description = document.getElementById('edit-promotion-description').value;
+            const discount = document.getElementById('edit-promotion-discount').value;
+            const status = document.getElementById('edit-promotion-status').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre de la promoción es obligatorio');
+                return;
+            }
+            
+            if (!discount) {
+                alert('El descuento es obligatorio');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                descripcion: description,
+                descuento: discount,
+                estado: status,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('promociones').doc(currentPromotionId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Promoción actualizada con éxito");
+                    // Cerrar modal
+                    closeEditPromotionModal();
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción actualizada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar la promoción: ", error);
+                    alert('Error al actualizar la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar promoción
+        function deletePromotion(promotionId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar esta promoción? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('promociones').doc(promotionId)
+                .delete()
+                .then(() => {
+                    console.log("Promoción eliminada con éxito");
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción eliminada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar la promoción: ", error);
+                    alert('Error al eliminar la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Buscar promociones
+        function searchPromotions() {
+            const searchText = document.getElementById('promotions-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las promociones
+                renderPromotions();
+                return;
+            }
+            
+            // Filtrar promociones según el texto de búsqueda
+            const filteredPromotions = promotions.filter(promotion => 
+                promotion.nombre.toLowerCase().includes(searchText) ||
+                (promotion.descripcion && promotion.descripcion.toLowerCase().includes(searchText)) ||
+                promotion.descuento.toLowerCase().includes(searchText)
+            );
+            
+            // Actualizar contenedor con las promociones filtradas
+            const container = document.getElementById('promotions-container');
+            if (!container) return;
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredPromotions.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Cargar promociones filtradas
+            filteredPromotions.forEach(promotion => {
+                const promoCard = document.createElement('div');
+                promoCard.className = 'promo-card';
+                
+                promoCard.innerHTML = `
+                    <div class="promo-info">
+                        <div class="promo-title">${promotion.nombre}</div>
+                        <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
+                        <div class="promo-discount">Descuento: ${promotion.descuento}</div>
+                        <div>
+                            <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
+                                ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
+                        <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
+                    </div>
+                `;
+                
+                container.appendChild(promoCard);
+            });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE DISPONIBILIDAD =====
+        
+        // Mostrar sección de disponibilidad
+        function showAvailabilitySection() {
+            // Ocultar tabla de citas y mostrar sección de disponibilidad
+            document.querySelector('#appointments .admin-table').style.display = 'none';
+            document.getElementById('availability-section').style.display = 'block';
+            
+            // Actualizar UI
+            updateAdminMonthLabel();
+            loadAvailability();
+            
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('#appointments .admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabs[4].classList.add('active'); // La tab de Disponibilidad
+        }
+        
+        // Ocultar sección de disponibilidad
+        function hideAvailabilitySection() {
+            document.querySelector('#appointments .admin-table').style.display = 'table';
+            document.getElementById('availability-section').style.display = 'none';
+        }
+        
+        // Cambiar mes en administrador
+        function changeAdminMonth(offset) {
+            currentAdminMonth.setMonth(currentAdminMonth.getMonth() + offset);
+            updateAdminMonthLabel();
+            loadAvailability();
+        }
+        
+        // Actualizar etiqueta del mes
+        function updateAdminMonthLabel() {
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const monthName = months[currentAdminMonth.getMonth()];
+            const year = currentAdminMonth.getFullYear();
+            
+            document.getElementById('currentMonthLabel').textContent = `${monthName} ${year}`;
+        }
+        
+        // Cargar disponibilidad desde Firestore
+        function loadAvailability() {
+            // Obtener el primer y último día del mes actual
+            const firstDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth(), 1);
+            const lastDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth() + 1, 0);
+            
+            // Consultar Firestore para obtener la disponibilidad del mes actual
+            db.collection('disponibilidad')
+                .where('fecha', '>=', firstDay.toISOString())
+                .where('fecha', '<=', lastDay.toISOString())
+                .get()
+                .then((snapshot) => {
+                    availableTimes = [];
+                    snapshot.forEach((doc) => {
+                        availableTimes.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderAvailabilityList();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar disponibilidad:", error);
+                });
+        }
+        
+        // Renderizar lista de disponibilidad
+        function renderAvailabilityList() {
+            const container = document.getElementById('availability-list');
+            container.innerHTML = '';
+            
+            if (availableTimes.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📅</div>
+                        <div class="admin-empty-state-text">No hay horarios disponibles para este mes</div>
+                        <button class="admin-button" onclick="openNewAvailabilityModal()">+ Agregar Horario</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Agrupar por día
+            const dayGroups = {};
+            availableTimes.forEach(slot => {
+                const dateObj = new Date(slot.fecha);
+                const dayKey = getDayFromDate(dateObj);
+                
+                if (!dayGroups[dayKey]) {
+                    dayGroups[dayKey] = [];
+                }
+                
+                dayGroups[dayKey].push(slot);
+            });
+            
+            // Renderizar cada día con sus horarios
+            Object.keys(dayGroups).sort().forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'availability-day';
+                
+                const slots = dayGroups[day];
+                
+                // Crear cabecera del día
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'availability-day-header';
+                dayHeader.innerHTML = `
+                    <div class="availability-day-date">${day}</div>
+                `;
+                
+                // Crear contenedor de horarios
+                const timesContainer = document.createElement('div');
+                timesContainer.className = 'availability-times';
+                
+                // Ordenar slots por hora
+                slots.sort((a, b) => {
+                    return a.hora.localeCompare(b.hora);
+                });
+                
+                // Agregar cada horario
+                slots.forEach(slot => {
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'availability-time';
+                    
+                    let statusClass = '';
+                    switch (slot.capacidad) {
+                        case 'high': statusClass = 'status-high'; break;
+                        case 'medium': statusClass = 'status-medium'; break;
+                        case 'low': statusClass = 'status-low'; break;
+                        case 'unavailable': statusClass = 'status-unavailable'; break;
+                    }
+                    
+                    timeEl.innerHTML = `
+                        <div class="availability-time-info">
+                            <div class="availability-status ${statusClass}"></div>
+                            <div>${slot.hora}</div>
+                        </div>
+                        <div class="availability-time-actions">
+                            <button class="admin-action-btn admin-action-edit" onclick="openEditAvailabilityModal('${slot.id}')">✎</button>
+                        </div>
+                    `;
+                    
+                    timesContainer.appendChild(timeEl);
+                });
+                
+                // Agregar elementos al día
+                dayEl.appendChild(dayHeader);
+                dayEl.appendChild(timesContainer);
+                
+                // Agregar día al contenedor principal
+                container.appendChild(dayEl);
+            });
+        }
+        
+        // Abrir modal para nueva disponibilidad
+        function openNewAvailabilityModal() {
+            // Establecer fecha actual por defecto
+            const today = new Date();
+            document.getElementById('new-avail-date').value = today.toISOString().split('T')[0];
+            
+            // Resetear otros campos
+            document.getElementById('new-avail-time').selectedIndex = 0;
+            document.getElementById('new-avail-capacity').value = 'high';
+            
+            // Mostrar modal
+            document.getElementById('new-availability-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nueva disponibilidad
+        function closeNewAvailabilityModal() {
+            document.getElementById('new-availability-modal').style.display = 'none';
+        }
+        
+        // Crear nueva disponibilidad
+        function createNewAvailability() {
+            // Obtener datos del formulario
+            const dateInput = document.getElementById('new-avail-date').value;
+            const time = document.getElementById('new-avail-time').value;
+            const capacity = document.getElementById('new-avail-capacity').value;
+            
+            // Validar
+            if (!dateInput) {
+                alert('Por favor, selecciona una fecha');
+                return;
+            }
+            
+            // Convertir a objeto Date para obtener el formato de día
+            const dateObj = new Date(dateInput);
+            const day = getDayFromDate(dateObj);
+            
+            // ID único
+            const availabilityId = 'avail_' + Date.now().toString();
+            
+            // Crear objeto de disponibilidad
+            const availabilityData = {
+                id: availabilityId,
+                fecha: dateInput,
+                dia: day,
+                hora: time,
+                capacidad: capacity,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('disponibilidad').doc(availabilityId)
+                .set(availabilityData)
+                .then(() => {
+                    console.log("Horario creado con éxito");
+                    // Cerrar modal
+                    closeNewAvailabilityModal();
+                    // Recargar disponibilidad
+                    loadAvailability();
+                    // Mostrar mensaje
+                    alert('Horario creado correctamente');
+                    
+                    // Actualizar también la página principal
+                    updateHomepageAvailability(day, time, capacity);
+                })
+                .catch((error) => {
+                    console.error("Error al crear horario:", error);
+                    alert('Error al crear horario. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal para editar disponibilidad
+        function openEditAvailabilityModal(availabilityId) {
+            // Buscar la disponibilidad
+            const availability = availableTimes.find(a => a.id === availabilityId);
+            
+            if (!availability) {
+                alert('Horario no encontrado');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-avail-date').value = availability.dia;
+            document.getElementById('edit-avail-time').value = availability.hora;
+            document.getElementById('edit-avail-capacity').value = availability.capacidad;
+            
+            // Guardar ID actual
+            currentAvailabilityId = availabilityId;
+            
+            // Mostrar modal
+            document.getElementById('edit-availability-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de editar disponibilidad
+        function closeEditAvailabilityModal() {
+            document.getElementById('edit-availability-modal').style.display = 'none';
+            currentAvailabilityId = null;
+        }
+        
+        // Guardar cambios de disponibilidad
+        function saveAvailabilityChanges() {
+            // Verificar que hay una disponibilidad seleccionada
+            if (!currentAvailabilityId) {
+                alert('No hay horario seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const capacity = document.getElementById('edit-avail-capacity').value;
+            
+            // Buscar la disponibilidad actual para obtener día y hora
+            const availability = availableTimes.find(a => a.id === currentAvailabilityId);
+            
+            // Verificar
+            if (!availability) {
+                alert('Horario no encontrado');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                capacidad: capacity,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('disponibilidad').doc(currentAvailabilityId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Horario actualizado con éxito");
+                    // Cerrar modal
+                    closeEditAvailabilityModal();
+                    // Recargar disponibilidad
+                    loadAvailability();
+                    // Mostrar mensaje
+                    alert('Horario actualizado correctamente');
+                    
+                    // Actualizar también la página principal
+                    updateHomepageAvailability(availability.dia, availability.hora, capacity);
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar horario:", error);
+                    alert('Error al actualizar horario. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar disponibilidad
+        function deleteAvailability() {
+            // Verificar que hay una disponibilidad seleccionada
+            if (!currentAvailabilityId) {
+                alert('No hay horario seleccionado');
+                return;
+            }
+            
+            // Confirmar
+            if (!confirm('¿Estás seguro de que deseas eliminar este horario?')) {
+                return;
+            }
+            
+            // Buscar la disponibilidad actual para obtener día y hora
+            const availability = availableTimes.find(a => a.id === currentAvailabilityId);
+            
+            // Eliminar de Firestore
+            db.collection('disponibilidad').doc(currentAvailabilityId)
+                .delete()
+                .then(() => {
+                    console.log("Horario eliminado con éxito");
+                    // Cerrar modal
+                    closeEditAvailabilityModal();
+                    // Recargar disponibilidad
+                    loadAvailability();
+                    // Mostrar mensaje
+                    alert('Horario eliminado correctamente');
+                    
+                    // Actualizar también la página principal si hay disponibilidad
+                    if (availability) {
+                        updateHomepageAvailability(availability.dia, availability.hora, 'unavailable');
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar horario:", error);
+                    alert('Error al eliminar horario. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Actualizar disponibilidad en la página principal
+        // Esta función sería ideal si tuviéramos una base de datos en tiempo real,
+        // pero como estamos usando Firestore, los cambios se reflejarán al recargar la página
+        function updateHomepageAvailability(day, time, capacity) {
+            console.log(`Actualizado en la página principal: Día ${day}, Hora ${time}, Capacidad ${capacity}`);
+            // Aquí se podría implementar una actualización en tiempo real 
+            // a través de sockets o mensajería si se requiere
+        }
+        
+        // ===== FUNCIONES PARA CONFIGURACIÓN =====
+        
+        // Inicializar funcionalidad de configuración
+        function initSettings() {
+            // Inicializar previsualización de colores
+            const primaryColorInput = document.getElementById('settings-primary-color');
+            const secondaryColorInput = document.getElementById('settings-secondary-color');
+            
+            if (primaryColorInput) {
+                primaryColorInput.addEventListener('input', updateColorPreviews);
+            }
+            
+            if (secondaryColorInput) {
+                secondaryColorInput.addEventListener('input', updateColorPreviews);
+            }
+        }
+        
+        // Cargar configuración
+        function loadSettings() {
+            db.collection('configuracion').doc('settings')
+                .get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        // Llenar campos del formulario
+                        document.getElementById('settings-name').value = data.nombre || 'MG STUDIO';
+                        document.getElementById('settings-address').value = data.direccion || 'Jr. Bolognesi 265';
+                        document.getElementById('settings-phone').value = data.telefono || '995 904 351';
+                        document.getElementById('settings-instagram').value = data.instagram || 'https://www.instagram.com/mg.studio_pe';
+                        
+                        // Colores
+                        document.getElementById('settings-primary-color').value = data.colorPrimario || '#ff4b7d';
+                        document.getElementById('settings-secondary-color').value = data.colorSecundario || '#333333';
+                        
+                        // Actualizar previsualizaciones
+                        updateColorPreviews();
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error al cargar configuración:", error);
+                });
+        }
+        
+        // Actualizar previsualizaciones de color
+        function updateColorPreviews() {
+            const primaryColor = document.getElementById('settings-primary-color').value;
+            const secondaryColor = document.getElementById('settings-secondary-color').value;
+            
+            // Actualizar previsualizaciones
+            document.getElementById('primaryColorPreview').style.backgroundColor = primaryColor;
+            document.getElementById('secondaryColorPreview').style.backgroundColor = secondaryColor;
+        }
+        
+        // Guardar configuración
+        function saveSettings() {
+            // Obtener datos del formulario
+            const name = document.getElementById('settings-name').value;
+            const address = document.getElementById('settings-address').value;
+            const phone = document.getElementById('settings-phone').value;
+            const instagram = document.getElementById('settings-instagram').value;
+            const primaryColor = document.getElementById('settings-primary-color').value;
+            const secondaryColor = document.getElementById('settings-secondary-color').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del estudio es obligatorio');
+                return;
+            }
+            
+            // Preparar datos
+            const settingsData = {
+                nombre: name,
+                direccion: address,
+                telefono: phone,
+                instagram: instagram,
+                colorPrimario: primaryColor,
+                colorSecundario: secondaryColor,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('configuracion').doc('settings')
+                .set(settingsData, { merge: true })
+                .then(() => {
+                    console.log("Configuración guardada con éxito");
+                    alert('Configuración guardada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al guardar configuración:", error);
+                    alert('Error al guardar configuración. Inténtalo de nuevo.');
+                });
         }
     </script>
 </body>
