@@ -2047,6 +2047,80 @@
                 scrollBtn.style.display = 'none';
             }
         }
+// Cargar horarios disponibles desde Firestore
+function loadAvailableDays() {
+    // Obtener la fecha actual
+    const today = new Date();
+    
+    // Consultar Firestore para obtener los horarios disponibles
+    db.collection('disponibilidad')
+        .get()
+        .then((snapshot) => {
+            console.log("Horarios disponibles encontrados:", snapshot.size);
+            
+            // Procesar cada horario
+            snapshot.forEach((doc) => {
+                const slot = doc.data();
+                console.log("Procesando horario:", slot);
+                
+                // Verificar que tenemos la información necesaria
+                if (slot.dia && slot.hora) {
+                    // Buscar la tarjeta del día
+                    const dayCards = document.querySelectorAll('.mg-day-card');
+                    dayCards.forEach(card => {
+                        if (card.getAttribute('data-day') === slot.dia) {
+                            console.log("Encontrada tarjeta para:", slot.dia);
+                            
+                            // Buscar si ya existe un botón para esa hora
+                            const timeSlots = card.querySelector('.mg-time-slots');
+                            let timeButton = null;
+                            
+                            // Buscar botones existentes
+                            const buttons = timeSlots.querySelectorAll('.mg-time-btn');
+                            buttons.forEach(btn => {
+                                if (btn.textContent.includes(slot.hora)) {
+                                    timeButton = btn;
+                                }
+                            });
+                            
+                            // Si no existe un botón para esta hora, crear uno nuevo
+                            if (!timeButton) {
+                                timeButton = document.createElement('button');
+                                timeButton.className = 'mg-time-btn';
+                                timeButton.innerHTML = `<i>⏰</i> ${slot.hora}`;
+                                timeButton.onclick = function() {
+                                    openModal(slot.dia, slot.hora);
+                                };
+                                timeSlots.appendChild(timeButton);
+                            }
+                            
+                            // Aplicar estilo según capacidad
+                            if (slot.capacidad === 'medium') {
+                                timeButton.classList.add('mg-time-btn-medium');
+                            } else if (slot.capacidad === 'low') {
+                                timeButton.classList.add('mg-time-btn-low');
+                            } else if (slot.capacidad === 'unavailable') {
+                                timeButton.classList.add('mg-time-btn-disabled');
+                                timeButton.innerHTML = `<i>🔒</i> ${slot.hora}`;
+                                timeButton.onclick = null;
+                            }
+                        }
+                    });
+                }
+            });
+        })
+        .catch((error) => {
+            console.error("Error al cargar horarios disponibles:", error);
+        });
+}
+
+// Llamar a esta función al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Código existente...
+    
+    // Cargar horarios disponibles
+    loadAvailableDays();
+});
 
         // Inicialización cuando el DOM está listo
         document.addEventListener('DOMContentLoaded', function() {
