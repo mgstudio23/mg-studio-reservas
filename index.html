@@ -868,6 +868,25 @@
             color: rgba(255, 255, 255, 0.7);
             cursor: not-allowed;
         }
+        
+        /* Estilos para el botón de recarga */
+        .mg-reload-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .mg-reload-btn:active {
+            background: #222;
+        }
 
         /* Diseño responsivo para el modal */
         @media (max-width: 768px) {
@@ -913,6 +932,9 @@
             <div class="mg-tab" onclick="showTab('promociones')">Promociones</div>
             <div class="mg-tab" onclick="showTab('info')">Info</div>
         </div>
+        
+        <!-- Botón para recargar horarios -->
+        <button class="mg-reload-btn" onclick="loadAvailableDays()">🔄 Actualizar Horarios Disponibles</button>
         
         <!-- Sección de Calendario (Tab) -->
         <div id="calendario" class="mg-content-section">
@@ -963,175 +985,9 @@
         
         <!-- Sección de Horarios (Tab) - Por defecto visible -->
         <div id="horarios" class="mg-content-section active">
-            <!-- JUEVES 2 DE MAYO -->
-            <div class="mg-day-card" data-day="Jueves 2 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">2</div>
-                        Jueves
-                    </div>
-                    <div class="mg-availability high">Alta disponibilidad</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Jueves 2 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- VIERNES 3 DE MAYO -->
-            <div class="mg-day-card" data-day="Viernes 3 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">3</div>
-                        Viernes
-                    </div>
-                    <div class="mg-availability high">Alta disponibilidad</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Viernes 3 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- DOMINGO 4 DE MAYO -->
-            <div class="mg-day-card" data-day="Domingo 4 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">4</div>
-                        Domingo
-                    </div>
-                    <div class="mg-availability medium">Disponibilidad media</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '9:00 AM')">
-                            <i>⏰</i> 9:00 AM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '11:00 AM')">
-                            <i>⏰</i> 11:00 AM
-                        </button>
-                        <button class="mg-time-btn mg-time-btn-disabled">
-                            <i>🔒</i> 2:00 PM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Domingo 4 Mayo', '5:00 PM')">
-                            <i>⏰</i> 5:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- MARTES 6 DE MAYO -->
-            <div class="mg-day-card" data-day="Martes 6 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">6</div>
-                        Martes
-                    </div>
-                    <div class="mg-availability high">Alta disponibilidad</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Martes 6 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Martes 6 Mayo', '5:00 PM')">
-                            <i>⏰</i> 5:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- MIÉRCOLES 7 DE MAYO -->
-            <div class="mg-day-card" data-day="Miércoles 7 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">7</div>
-                        Miércoles
-                    </div>
-                    <div class="mg-availability high">Alta disponibilidad</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Miércoles 7 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Miércoles 7 Mayo', '5:00 PM')">
-                            <i>⏰</i> 5:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- JUEVES 8 DE MAYO -->
-            <div class="mg-day-card" data-day="Jueves 8 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">8</div>
-                        Jueves
-                    </div>
-                    <div class="mg-availability high">Alta disponibilidad</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Jueves 8 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Jueves 8 Mayo', '5:00 PM')">
-                            <i>⏰</i> 5:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- VIERNES 9 DE MAYO -->
-            <div class="mg-day-card" data-day="Viernes 9 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">9</div>
-                        Viernes
-                    </div>
-                    <div class="mg-availability low">Último espacio</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn mg-time-btn-disabled">
-                            <i>🔒</i> 2:00 PM
-                        </button>
-                        <button class="mg-time-btn mg-time-btn-low" onclick="openModal('Viernes 9 Mayo', '5:00 PM')">
-                            <i>⏰</i> 5:00 PM
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- SÁBADO 10 DE MAYO -->
-            <div class="mg-day-card" data-day="Sábado 10 Mayo">
-                <div class="mg-day-header">
-                    <div class="mg-day-mobile">
-                        <div class="mg-day-icon">10</div>
-                        Sábado
-                    </div>
-                    <div class="mg-availability medium">Disponibilidad media</div>
-                </div>
-                <div class="mg-day-content">
-                    <div class="mg-time-slots">
-                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '9:00 AM')">
-                            <i>⏰</i> 9:00 AM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '11:00 AM')">
-                            <i>⏰</i> 11:00 AM
-                        </button>
-                        <button class="mg-time-btn" onclick="openModal('Sábado 10 Mayo', '2:00 PM')">
-                            <i>⏰</i> 2:00 PM
-                        </button>
-                    </div>
-                </div>
+            <!-- Horario dinámico -->
+            <div id="dynamic-schedules">
+                <!-- Los horarios disponibles se cargarán dinámicamente aquí -->
             </div>
         </div>
         
@@ -2047,80 +1903,146 @@
                 scrollBtn.style.display = 'none';
             }
         }
-// Cargar horarios disponibles desde Firestore
-function loadAvailableDays() {
-    // Obtener la fecha actual
-    const today = new Date();
-    
-    // Consultar Firestore para obtener los horarios disponibles
-    db.collection('disponibilidad')
-        .get()
-        .then((snapshot) => {
-            console.log("Horarios disponibles encontrados:", snapshot.size);
+        
+        // FUNCIÓN MEJORADA: Cargar horarios disponibles desde Firestore
+        function loadAvailableDays() {
+            console.log("Cargando horarios disponibles...");
             
-            // Procesar cada horario
-            snapshot.forEach((doc) => {
-                const slot = doc.data();
-                console.log("Procesando horario:", slot);
-                
-                // Verificar que tenemos la información necesaria
-                if (slot.dia && slot.hora) {
-                    // Buscar la tarjeta del día
-                    const dayCards = document.querySelectorAll('.mg-day-card');
-                    dayCards.forEach(card => {
-                        if (card.getAttribute('data-day') === slot.dia) {
-                            console.log("Encontrada tarjeta para:", slot.dia);
-                            
-                            // Buscar si ya existe un botón para esa hora
-                            const timeSlots = card.querySelector('.mg-time-slots');
-                            let timeButton = null;
-                            
-                            // Buscar botones existentes
-                            const buttons = timeSlots.querySelectorAll('.mg-time-btn');
-                            buttons.forEach(btn => {
-                                if (btn.textContent.includes(slot.hora)) {
-                                    timeButton = btn;
-                                }
-                            });
-                            
-                            // Si no existe un botón para esta hora, crear uno nuevo
-                            if (!timeButton) {
-                                timeButton = document.createElement('button');
+            // Limpiar el contenedor de horarios primero
+            const dynamicSchedulesContainer = document.getElementById('dynamic-schedules');
+            dynamicSchedulesContainer.innerHTML = '';
+            
+            // Consultar Firestore para obtener los horarios disponibles
+            db.collection('disponibilidad')
+                .get()
+                .then((snapshot) => {
+                    console.log("Horarios disponibles encontrados:", snapshot.size);
+                    
+                    if (snapshot.empty) {
+                        dynamicSchedulesContainer.innerHTML = `
+                            <div class="mg-info">
+                                <h3>No hay horarios disponibles</h3>
+                                <p>Actualmente no hay horarios disponibles. Por favor, intente más tarde o contáctenos directamente.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Crear un mapa para organizar horarios por día
+                    const horariosPorDia = {};
+                    
+                    // Procesar cada horario
+                    snapshot.forEach((doc) => {
+                        const slot = doc.data();
+                        console.log("Horario disponible:", slot);
+                        
+                        // Verificar que tenemos la información necesaria
+                        if (slot.dia && slot.hora) {
+                            // Guardar en el mapa
+                            if (!horariosPorDia[slot.dia]) {
+                                horariosPorDia[slot.dia] = [];
+                            }
+                            horariosPorDia[slot.dia].push(slot);
+                        }
+                    });
+                    
+                    // Ahora procesamos todos los días con sus horarios
+                    // Convertir el objeto en array para poder ordenarlo
+                    const sortedDays = Object.keys(horariosPorDia).sort();
+                    
+                    sortedDays.forEach(dia => {
+                        // Extraer el número y nombre del día
+                        const dayMatch = dia.match(/\d+/);
+                        const dayNumber = dayMatch ? dayMatch[0] : "?";
+                        const dayName = dia.split(' ')[0]; // "Jueves"
+                        
+                        // Crear tarjeta para el día
+                        const dayCard = document.createElement('div');
+                        dayCard.className = 'mg-day-card';
+                        dayCard.setAttribute('data-day', dia);
+                        
+                        // Determinar capacidad general del día
+                        let capacidadDia = 'high';
+                        const slots = horariosPorDia[dia];
+                        const totalSlots = slots.length;
+                        const disponibles = slots.filter(s => s.capacidad !== 'unavailable').length;
+                        
+                        if (disponibles === 0) {
+                            capacidadDia = 'low';
+                        } else if (disponibles < totalSlots * 0.5) {
+                            capacidadDia = 'medium';
+                        }
+                        
+                        // Crear estructura interna de la tarjeta
+                        dayCard.innerHTML = `
+                            <div class="mg-day-header">
+                                <div class="mg-day-mobile">
+                                    <div class="mg-day-icon">${dayNumber}</div>
+                                    ${dayName}
+                                </div>
+                                <div class="mg-availability ${capacidadDia}">
+                                    ${capacidadDia === 'high' ? 'Alta disponibilidad' :
+                                      capacidadDia === 'medium' ? 'Disponibilidad media' :
+                                      'Último espacio'}
+                                </div>
+                            </div>
+                            <div class="mg-day-content">
+                                <div class="mg-time-slots">
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Agregar al contenedor de horarios
+                        dynamicSchedulesContainer.appendChild(dayCard);
+                        
+                        // Ahora agregamos los horarios a la tarjeta
+                        const timeSlotsContainer = dayCard.querySelector('.mg-time-slots');
+                        
+                        // Ordenar horarios por hora
+                        slots.sort((a, b) => a.hora.localeCompare(b.hora));
+                        
+                        // Agregar cada horario
+                        slots.forEach(slot => {
+                            if (slot.capacidad !== 'unavailable') {
+                                const timeButton = document.createElement('button');
                                 timeButton.className = 'mg-time-btn';
+                                
+                                // Aplicar estilo según capacidad
+                                if (slot.capacidad === 'medium') {
+                                    timeButton.classList.add('mg-time-btn-medium');
+                                } else if (slot.capacidad === 'low') {
+                                    timeButton.classList.add('mg-time-btn-low');
+                                }
+                                
                                 timeButton.innerHTML = `<i>⏰</i> ${slot.hora}`;
                                 timeButton.onclick = function() {
                                     openModal(slot.dia, slot.hora);
                                 };
-                                timeSlots.appendChild(timeButton);
-                            }
-                            
-                            // Aplicar estilo según capacidad
-                            if (slot.capacidad === 'medium') {
-                                timeButton.classList.add('mg-time-btn-medium');
-                            } else if (slot.capacidad === 'low') {
-                                timeButton.classList.add('mg-time-btn-low');
-                            } else if (slot.capacidad === 'unavailable') {
-                                timeButton.classList.add('mg-time-btn-disabled');
+                                
+                                timeSlotsContainer.appendChild(timeButton);
+                            } else {
+                                // Si está no disponible, mostrar como deshabilitado
+                                const timeButton = document.createElement('button');
+                                timeButton.className = 'mg-time-btn mg-time-btn-disabled';
                                 timeButton.innerHTML = `<i>🔒</i> ${slot.hora}`;
-                                timeButton.onclick = null;
+                                timeButton.disabled = true;
+                                
+                                timeSlotsContainer.appendChild(timeButton);
                             }
-                        }
+                        });
                     });
-                }
-            });
-        })
-        .catch((error) => {
-            console.error("Error al cargar horarios disponibles:", error);
-        });
-}
-
-// Llamar a esta función al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    // Código existente...
-    
-    // Cargar horarios disponibles
-    loadAvailableDays();
-});
+                    
+                    console.log("Horarios cargados correctamente");
+                })
+                .catch((error) => {
+                    console.error("Error al cargar horarios disponibles:", error);
+                    dynamicSchedulesContainer.innerHTML = `
+                        <div class="mg-error-message">
+                            <p>Error al cargar los horarios disponibles. Por favor, intente de nuevo más tarde.</p>
+                        </div>
+                    `;
+                });
+        }
 
         // Inicialización cuando el DOM está listo
         document.addEventListener('DOMContentLoaded', function() {
@@ -2157,6 +2079,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Iniciar con el primer servicio seleccionado
             updateServiceDetails();
+            
+            // Cargar horarios disponibles
+            loadAvailableDays();
             
             // Cerrar el modal si se hace clic fuera de él
             window.onclick = function(event) {
