@@ -3583,6 +3583,40 @@ function formatTimeTo12Hour(time24h) {
                     alert('Error al actualizar horario. Inténtalo de nuevo.');
                 });
         }
+        function getDayFromDate(dateString) {
+    // Crear fecha asegurando que se interprete correctamente en zona horaria local
+    let date;
+    
+    if (typeof dateString === 'string' && dateString.includes('-')) {
+        // Si es una cadena de formato YYYY-MM-DD (desde input date)
+        const parts = dateString.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // Meses en JS son 0-indexed
+        const day = parseInt(parts[2]);
+        
+        // Crear fecha específicamente con estos valores
+        date = new Date(year, month, day);
+    } else {
+        // Si ya es un objeto Date u otro formato
+        date = new Date(dateString);
+    }
+    
+    // Asegurar que estamos trabajando con la fecha correcta imprimiendo para depuración
+    console.log("Fecha original:", dateString);
+    console.log("Fecha procesada:", date);
+    
+    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const weekday = weekdays[date.getDay()];
+    const dayOfMonth = date.getDate();
+    const monthName = months[date.getMonth()];
+    
+    const resultado = `${weekday} ${dayOfMonth} ${monthName}`;
+    console.log("Resultado:", resultado);
+    
+    return resultado;
+}
         
         // Eliminar disponibilidad
         function deleteAvailability() {
