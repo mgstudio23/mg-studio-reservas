@@ -1239,79 +1239,75 @@
     <!-- MODALES PARA GESTIÓN DE DISPONIBILIDAD -->
     
     <!-- Modal para nuevo horario disponible -->
-    <div id="new-availability-modal" class="admin-modal">
-        <div class="admin-modal-content">
-            <div class="admin-modal-header">
-                <h3 class="admin-modal-title">Agregar Nuevo Horario</h3>
-                <span class="admin-modal-close" onclick="closeNewAvailabilityModal()">&times;</span>
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Fecha:</label>
-                <input type="date" id="new-avail-date" class="admin-form-input">
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Hora de inicio:</label>
-                <select id="new-avail-time" class="admin-form-select">
-                    <option value="9:00 AM">9:00 AM</option>
-                    <option value="11:00 AM">11:00 AM</option>
-                    <option value="2:00 PM">2:00 PM</option>
-                    <option value="5:00 PM">5:00 PM</option>
-                </select>
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Capacidad:</label>
-                <select id="new-avail-capacity" class="admin-form-select">
-                    <option value="high">Alta disponibilidad</option>
-                    <option value="medium">Disponibilidad media</option>
-                    <option value="low">Último espacio</option>
-                </select>
-            </div>
-            
-            <div class="admin-form-buttons">
-                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewAvailabilityModal()">Cancelar</button>
-                <button class="admin-button" onclick="createNewAvailability()">Agregar Horario</button>
-            </div>
+<div id="new-availability-modal" class="admin-modal">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 class="admin-modal-title">Agregar Nuevo Horario</h3>
+            <span class="admin-modal-close" onclick="closeNewAvailabilityModal()">&times;</span>
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Fecha:</label>
+            <input type="date" id="new-avail-date" class="admin-form-input">
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Hora de inicio:</label>
+            <input type="time" id="new-avail-time" class="admin-form-input">
+            <small style="color: #666; margin-top: 5px; display: block;">Formato: 24 horas (Ej: 14:00 para 2:00 PM)</small>
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Capacidad:</label>
+            <select id="new-avail-capacity" class="admin-form-select">
+                <option value="high">Alta disponibilidad</option>
+                <option value="medium">Disponibilidad media</option>
+                <option value="low">Último espacio</option>
+            </select>
+        </div>
+        
+        <div class="admin-form-buttons">
+            <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeNewAvailabilityModal()">Cancelar</button>
+            <button class="admin-button" onclick="createNewAvailability()">Agregar Horario</button>
         </div>
     </div>
+</div>
 
     <!-- Modal para editar horario disponible -->
-    <div id="edit-availability-modal" class="admin-modal">
-        <div class="admin-modal-content">
-            <div class="admin-modal-header">
-                <h3 class="admin-modal-title">Editar Horario</h3>
-                <span class="admin-modal-close" onclick="closeEditAvailabilityModal()">&times;</span>
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Fecha:</label>
-                <input type="text" id="edit-avail-date" class="admin-form-input" readonly>
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Hora:</label>
-                <input type="text" id="edit-avail-time" class="admin-form-input" readonly>
-            </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label">Capacidad:</label>
-                <select id="edit-avail-capacity" class="admin-form-select">
-                    <option value="high">Alta disponibilidad</option>
-                    <option value="medium">Disponibilidad media</option>
-                    <option value="low">Último espacio</option>
-                    <option value="unavailable">No disponible</option>
-                </select>
-            </div>
-            
-            <div class="admin-form-buttons">
-                <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditAvailabilityModal()">Cancelar</button>
-                <button class="admin-button" onclick="saveAvailabilityChanges()">Guardar Cambios</button>
-                <button class="admin-button" style="background-color: #e74c3c;" onclick="deleteAvailability()">Eliminar</button>
-            </div>
+<div id="edit-availability-modal" class="admin-modal">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 class="admin-modal-title">Editar Horario</h3>
+            <span class="admin-modal-close" onclick="closeEditAvailabilityModal()">&times;</span>
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Fecha:</label>
+            <input type="text" id="edit-avail-date" class="admin-form-input" readonly>
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Hora:</label>
+            <input type="text" id="edit-avail-time" class="admin-form-input" readonly>
+        </div>
+        
+        <div class="admin-form-group">
+            <label class="admin-form-label">Capacidad:</label>
+            <select id="edit-avail-capacity" class="admin-form-select">
+                <option value="high">Alta disponibilidad</option>
+                <option value="medium">Disponibilidad media</option>
+                <option value="low">Último espacio</option>
+                <option value="unavailable">No disponible</option>
+            </select>
+        </div>
+        
+        <div class="admin-form-buttons">
+            <button class="admin-button" style="background-color: #ccc; color: black;" onclick="closeEditAvailabilityModal()">Cancelar</button>
+            <button class="admin-button" onclick="saveAvailabilityChanges()">Guardar Cambios</button>
+            <button class="admin-button" style="background-color: #e74c3c;" onclick="deleteAvailability()">Eliminar</button>
         </div>
     </div>
+</div>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -3432,56 +3428,86 @@
             document.getElementById('new-availability-modal').style.display = 'none';
         }
         
-        // Crear nueva disponibilidad
-        function createNewAvailability() {
-            // Obtener datos del formulario
-            const dateInput = document.getElementById('new-avail-date').value;
-            const time = document.getElementById('new-avail-time').value;
-            const capacity = document.getElementById('new-avail-capacity').value;
-            
-            // Validar
-            if (!dateInput) {
-                alert('Por favor, selecciona una fecha');
-                return;
-            }
-            
-            // Convertir a objeto Date para obtener el formato de día
-            const dateObj = new Date(dateInput);
-            const day = getDayFromDate(dateObj);
-            
-            // ID único
-            const availabilityId = 'avail_' + Date.now().toString();
-            
-            // Crear objeto de disponibilidad
-            const availabilityData = {
-                id: availabilityId,
-                fecha: dateInput,
-                dia: day,
-                hora: time,
-                capacidad: capacity,
-                fechaCreacion: new Date().toISOString()
-            };
-            
-            // Guardar en Firestore
-            db.collection('disponibilidad').doc(availabilityId)
-                .set(availabilityData)
-                .then(() => {
-                    console.log("Horario creado con éxito");
-                    // Cerrar modal
-                    closeNewAvailabilityModal();
-                    // Recargar disponibilidad
-                    loadAvailability();
-                    // Mostrar mensaje
-                    alert('Horario creado correctamente');
-                    
-                    // Actualizar también la página principal
-                    updateHomepageAvailability(day, time, capacity);
-                })
-                .catch((error) => {
-                    console.error("Error al crear horario:", error);
-                    alert('Error al crear horario. Inténtalo de nuevo.');
-                });
+       // Crear nueva disponibilidad
+function createNewAvailability() {
+    // Obtener datos del formulario
+    const dateInput = document.getElementById('new-avail-date').value;
+    const timeInput = document.getElementById('new-avail-time').value;
+    const capacity = document.getElementById('new-avail-capacity').value;
+    
+    // Validar
+    if (!dateInput) {
+        alert('Por favor, selecciona una fecha');
+        return;
+    }
+    
+    if (!timeInput) {
+        alert('Por favor, ingresa una hora');
+        return;
+    }
+    
+    // Convertir el formato de hora de 24h a 12h con AM/PM
+    let formattedTime = formatTimeTo12Hour(timeInput);
+    
+    // Convertir a objeto Date para obtener el formato de día
+    const dateObj = new Date(dateInput);
+    const day = getDayFromDate(dateObj);
+    
+    // ID único
+    const availabilityId = 'avail_' + Date.now().toString();
+    
+    // Crear objeto de disponibilidad
+    const availabilityData = {
+        id: availabilityId,
+        fecha: dateInput,
+        dia: day,
+        hora: formattedTime,
+        capacidad: capacity,
+        fechaCreacion: new Date().toISOString()
+    };
+    
+    // Guardar en Firestore
+    db.collection('disponibilidad').doc(availabilityId)
+        .set(availabilityData)
+        .then(() => {
+            console.log("Horario creado con éxito");
+            // Cerrar modal
+            closeNewAvailabilityModal();
+            // Recargar disponibilidad
+            loadAvailability();
+            // Mostrar mensaje
+            alert('Horario creado correctamente');
+        })
+        .catch((error) => {
+            console.error("Error al crear horario:", error);
+            alert('Error al crear horario. Inténtalo de nuevo.');
+        });
+}
+
+// Función para convertir formato de hora de 24h a 12h con AM/PM
+function formatTimeTo12Hour(time24h) {
+    // Verificar si ya tiene formato AM/PM
+    if (time24h.includes('AM') || time24h.includes('PM')) {
+        return time24h;
+    }
+    
+    const [hours, minutes] = time24h.split(':');
+    let period = 'AM';
+    let hour = parseInt(hours);
+    
+    if (hour >= 12) {
+        period = 'PM';
+        if (hour > 12) {
+            hour -= 12;
         }
+    }
+    
+    if (hour === 0) {
+        hour = 12;
+    }
+    
+    return `${hour}:${minutes} ${period}`;
+}
         
         // Abrir modal para editar disponibilidad
         function openEditAvailabilityModal(availabilityId) {
