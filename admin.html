@@ -34,6 +34,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            display: none; /* Se mostrará después de autenticar */
         }
         
         .admin-header {
@@ -812,6 +813,12 @@
         </div>
     </div>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
+    
     <script>
         // Variables globales
         let currentTab = 'recent';
@@ -819,71 +826,92 @@
         let appointments = [];
         let clients = [];
         
-// Inicializar
+        // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-    // Comprobar si el usuario está autenticado
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (!user) {
-            // Si no hay usuario autenticado, redirigir a login.html
-            window.location.href = 'login.html';
-        } else {
-            // Usuario autenticado, mostrar el contenido
-            document.querySelector('.admin-container').style.display = 'block';
-            
-            // Opcional: mostrar información del usuario
-            const adminHeader = document.querySelector('.admin-header');
-            const userInfo = document.createElement('span');
-            userInfo.textContent = user.email;
-            userInfo.style.marginRight = '10px';
-            userInfo.style.fontSize = '14px';
-            
-            const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'view-site';
-            logoutBtn.style.backgroundColor = '#eee';
-            logoutBtn.style.color = '#333';
-            logoutBtn.textContent = 'Cerrar Sesión';
-            logoutBtn.addEventListener('click', function() {
-                firebase.auth().signOut().then(function() {
+            // Comprobar si el usuario está autenticado
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (!user) {
+                    // Si no hay usuario autenticado, redirigir a login.html
                     window.location.href = 'login.html';
-                });
+                } else {
+                    // Usuario autenticado, mostrar el contenido
+                    document.querySelector('.admin-container').style.display = 'block';
+                    
+                    // Opcional: mostrar información del usuario
+                    const adminHeader = document.querySelector('.admin-header');
+                    const userInfo = document.createElement('span');
+                    userInfo.textContent = user.email;
+                    userInfo.style.marginRight = '10px';
+                    userInfo.style.fontSize = '14px';
+                    
+                    const logoutBtn = document.createElement('button');
+                    logoutBtn.className = 'view-site';
+                    logoutBtn.style.backgroundColor = '#eee';
+                    logoutBtn.style.color = '#333';
+                    logoutBtn.textContent = 'Cerrar Sesión';
+                    logoutBtn.addEventListener('click', function() {
+                        firebase.auth().signOut().then(function() {
+                            window.location.href = 'login.html';
+                        });
+                    });
+                    
+                    adminHeader.appendChild(userInfo);
+                    adminHeader.appendChild(logoutBtn);
+                    
+                    // Mostrar la fecha actual
+                    const today = new Date();
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    document.getElementById('current-date').textContent = 'Hoy: ' + today.toLocaleDateString('es-ES', options);
+                    
+                    // Cargar datos en tiempo real
+                    listenForAdminChanges();
+                }
             });
-            
-            adminHeader.appendChild(userInfo);
-            adminHeader.appendChild(logoutBtn);
-            
-            // Cargar datos en tiempo real
-            listenForAdminChanges();
-        }
-    });
-});
+        });
         
         // Escuchar cambios en tiempo real para la administración
-function listenForAdminChanges() {
-    db.collection('reservations')
-        .onSnapshot((snapshot) => {
-            // Actualizar array de citas
-            appointments = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Asegúrate de que el ID esté presente
-                appointments.push({...data, id: doc.id});
-            });
-            
-            // Extraer clientes únicos de las reservas
-            clients = extractClients(appointments);
-            
-            // Actualizar UI
-            updateDashboard();
-            loadAppointmentsTable();
-            
-            // Solo actualizar la tabla de clientes si estamos en esa sección
-            if (document.getElementById('clients').classList.contains('active')) {
-                loadClientsTable();
-            }
-        }, (error) => {
-            console.error("Error al escuchar cambios en admin: ", error);
-        });
-}
+        function listenForAdminChanges() {
+            db.collection('reservas')
+                .onSnapshot((snapshot) => {
+                    // Actualizar array de citas
+                    appointments = [];
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        // Convertir el formato de datos de index.html al formato esperado por admin.html
+                        const appointment = {
+                            id: doc.id,
+                            service: data.servicio,
+                            day: data.fecha,
+                            time: data.hora,
+                            date: data.fechaCreacion,
+                            status: data.estado === 'pendiente' ? 'pending' : 
+                                data.estado === 'confirmada' ? 'confirmed' : 'canceled',
+                            client: {
+                                name: data.nombre,
+                                phone: data.telefono,
+                                comments: data.comentarios
+                            }
+                        };
+                        
+                        appointments.push(appointment);
+                    });
+                    
+                    // Extraer clientes únicos de las reservas
+                    clients = extractClients(appointments);
+                    
+                    // Actualizar UI
+                    updateDashboard();
+                    loadAppointmentsTable();
+                    
+                    // Solo actualizar la tabla de clientes si estamos en esa sección
+                    if (document.getElementById('clients').classList.contains('active')) {
+                        loadClientsTable();
+                    }
+                }, (error) => {
+                    console.error("Error al escuchar cambios en admin: ", error);
+                });
+        }
+        
         // Extraer clientes únicos de las reservas
         function extractClients(appointments) {
             const clientsMap = new Map();
@@ -1074,16 +1102,16 @@ function listenForAdminChanges() {
                     // Acciones
                     const actionsCell = document.createElement('td');
                     let actionButtons = `
-                        <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${appointment.id})">✎</button>
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
                         <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
                     `;
                     
                     if (status === 'pending') {
-                        actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${appointment.id})">✓</button>`;
+                        actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
                     }
                     
                     if (status !== 'canceled') {
-                        actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${appointment.id})">✕</button>`;
+                        actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
                     }
                     
                     actionsCell.innerHTML = actionButtons;
@@ -1347,16 +1375,123 @@ function listenForAdminChanges() {
                 // Acciones
                 const actionsCell = document.createElement('td');
                 let actionButtons = `
-                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal(${appointment.id})">✎</button>
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
                     <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
                 `;
                 
                 if (status === 'pending') {
-                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment(${appointment.id})">✓</button>`;
+                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
                 }
                 
                 if (status !== 'canceled') {
-                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment(${appointment.id})">✕</button>`;
+                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
+                }
+                
+                actionsCell.innerHTML = actionButtons;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Búsqueda específica para sección de citas
+        function searchAppointmentsData() {
+            const searchText = document.getElementById('appointments-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las citas
+                loadAppointmentsTable();
+                return;
+            }
+            
+            // Aplicar el mismo filtro que searchAppointments pero para la otra tabla
+            const filteredAppointments = appointments.filter(appointment => {
+                const clientName = appointment.client ? appointment.client.name || '' : '';
+                const service = appointment.service || '';
+                const day = appointment.day || '';
+                
+                return (
+                    clientName.toLowerCase().includes(searchText) ||
+                    service.toLowerCase().includes(searchText) ||
+                    day.toLowerCase().includes(searchText)
+                );
+            });
+            
+            // Actualizar tabla de citas
+            const tableBody = document.getElementById('appointments-data-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredAppointments.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar citas filtradas igual que en searchAppointments
+            filteredAppointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                
+                // Cliente
+                const clientCell = document.createElement('td');
+                clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                row.appendChild(clientCell);
+                
+                // Servicio
+                const serviceCell = document.createElement('td');
+                serviceCell.textContent = appointment.service || 'No especificado';
+                row.appendChild(serviceCell);
+                
+                // Fecha
+                const dateCell = document.createElement('td');
+                dateCell.textContent = appointment.day || formatDate(appointment.date);
+                row.appendChild(dateCell);
+                
+                // Hora
+                const timeCell = document.createElement('td');
+                timeCell.textContent = appointment.time || 'No especificada';
+                row.appendChild(timeCell);
+                
+                // Estado
+                const statusCell = document.createElement('td');
+                const status = appointment.status || 'pending';
+                let statusBadge = '';
+                
+                if (status === 'pending') {
+                    statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                } else if (status === 'confirmed') {
+                    statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                } else if (status === 'canceled') {
+                    statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+                }
+                
+                statusCell.innerHTML = statusBadge;
+                row.appendChild(statusCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                let actionButtons = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                `;
+                
+                if (status === 'pending') {
+                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
+                }
+                
+                if (status !== 'canceled') {
+                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
                 }
                 
                 actionsCell.innerHTML = actionButtons;
@@ -1422,67 +1557,65 @@ function listenForAdminChanges() {
             document.getElementById('edit-appointment-modal').style.display = 'none';
         }
         
-       // Editar cita
-function saveAppointment() {
-    // Obtener ID de la cita
-    const appointmentId = document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id');
-    
-    // Validar ID
-    if (!appointmentId) {
-        alert('No se encontró el ID de la cita');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const clientName = document.getElementById('edit-client-name').value;
-    const clientPhone = document.getElementById('edit-client-phone').value;
-    const service = document.getElementById('edit-service').value;
-    const date = document.getElementById('edit-date').value;
-    const time = document.getElementById('edit-time').value;
-    const status = document.getElementById('edit-status').value;
-    const notes = document.getElementById('edit-notes').value;
-    
-    // Validar datos
-    if (!clientName) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // Calcular día formateado (ej. "Lunes 1 Mayo")
-    const day = getDayFromDate(date);
-    
-    // Preparar datos para actualizar
-    const updatedData = {
-        service: service,
-        day: day,
-        time: time,
-        status: status,
-        client: {
-            name: clientName,
-            phone: clientPhone,
-            comments: notes
-        },
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('reservations').doc(appointmentId.toString())
-        .update(updatedData)
-        .then(() => {
-            console.log("Cita actualizada con éxito");
-            // Cerrar modal
-            closeEditModal();
-            // Recargar datos
-            loadAppointmentsTable();
-            // Mostrar mensaje
-            alert('Cita actualizada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al actualizar la cita: ", error);
-            alert('Error al actualizar la cita. Inténtalo de nuevo.');
-        });
-}
-
+        // Editar cita
+        function saveAppointment() {
+            // Obtener ID de la cita
+            const appointmentId = document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id');
+            
+            // Validar ID
+            if (!appointmentId) {
+                alert('No se encontró el ID de la cita');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const clientName = document.getElementById('edit-client-name').value;
+            const clientPhone = document.getElementById('edit-client-phone').value;
+            const service = document.getElementById('edit-service').value;
+            const date = document.getElementById('edit-date').value;
+            const time = document.getElementById('edit-time').value;
+            const status = document.getElementById('edit-status').value;
+            const notes = document.getElementById('edit-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Calcular día formateado (ej. "Lunes 1 Mayo")
+            const day = getDayFromDate(date);
+            
+            // Preparar datos para actualizar en el formato de index.html
+            const updatedData = {
+                servicio: service,
+                fecha: day,
+                hora: time,
+                estado: status === 'pending' ? 'pendiente' : 
+                        status === 'confirmed' ? 'confirmada' : 'cancelada',
+                nombre: clientName,
+                telefono: clientPhone,
+                comentarios: notes,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('reservas').doc(appointmentId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Cita actualizada con éxito");
+                    // Cerrar modal
+                    closeEditModal();
+                    // Recargar datos
+                    loadAppointmentsTable();
+                    // Mostrar mensaje
+                    alert('Cita actualizada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar la cita: ", error);
+                    alert('Error al actualizar la cita. Inténtalo de nuevo.');
+                });
+        }
         
         // Abrir modal de nueva cita
         function openNewAppointmentModal() {
@@ -1504,62 +1637,59 @@ function saveAppointment() {
             document.getElementById('new-appointment-modal').style.display = 'none';
         }
         
-       // Crear nueva cita
-function createAppointment() {
-    // Obtener datos del formulario
-    const clientName = document.getElementById('new-client-name').value;
-    const clientPhone = document.getElementById('new-client-phone').value;
-    const service = document.getElementById('new-service').value;
-    const date = document.getElementById('new-date').value;
-    const time = document.getElementById('new-time').value;
-    const status = document.getElementById('new-status').value;
-    const notes = document.getElementById('new-notes').value;
-    
-    // Validar datos
-    if (!clientName) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // Calcular día formateado
-    const day = getDayFromDate(date);
-    
-    // ID único basado en timestamp
-    const appointmentId = Date.now().toString();
-    
-    // Crear nueva cita
-    const newAppointment = {
-        id: appointmentId,
-        day: day,
-        time: time,
-        service: service,
-        status: status,
-        client: {
-            name: clientName,
-            phone: clientPhone,
-            comments: notes
-        },
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        date: date // Fecha seleccionada en formato ISO
-    };
-    
-    // Guardar en Firestore
-    db.collection('reservations').doc(appointmentId)
-        .set(newAppointment)
-        .then(() => {
-            console.log("Cita creada con éxito");
-            // Cerrar modal
-            closeNewAppointmentModal();
-            // Recargar datos
-            loadAppointmentsTable();
-            // Mostrar mensaje
-            alert('Cita creada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al crear la cita: ", error);
-            alert('Error al crear la cita. Inténtalo de nuevo.');
-        });
-}
+        // Crear nueva cita
+        function createAppointment() {
+            // Obtener datos del formulario
+            const clientName = document.getElementById('new-client-name').value;
+            const clientPhone = document.getElementById('new-client-phone').value;
+            const service = document.getElementById('new-service').value;
+            const date = document.getElementById('new-date').value;
+            const time = document.getElementById('new-time').value;
+            const status = document.getElementById('new-status').value;
+            const notes = document.getElementById('new-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Calcular día formateado
+            const day = getDayFromDate(date);
+            
+            // ID único basado en timestamp
+            const appointmentId = Date.now().toString();
+            
+            // Crear nueva cita en el formato de index.html
+            const newAppointment = {
+                nombre: clientName,
+                telefono: clientPhone,
+                servicio: service,
+                fecha: day,
+                hora: time,
+                estado: status === 'pending' ? 'pendiente' : 'confirmada',
+                comentarios: notes,
+                fechaCreacion: new Date().toISOString(),
+                metodoPago: 'Pendiente'
+            };
+            
+            // Guardar en Firestore
+            db.collection('reservas').doc(appointmentId)
+                .set(newAppointment)
+                .then(() => {
+                    console.log("Cita creada con éxito");
+                    // Cerrar modal
+                    closeNewAppointmentModal();
+                    // Recargar datos
+                    loadAppointmentsTable();
+                    // Mostrar mensaje
+                    alert('Cita creada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear la cita: ", error);
+                    alert('Error al crear la cita. Inténtalo de nuevo.');
+                });
+        }
         
         // Convertir fecha a formato "Lunes 1 Mayo"
         function getDayFromDate(dateString) {
@@ -1576,51 +1706,51 @@ function createAppointment() {
         }
         
         // Confirmar cita
-function confirmAppointment(appointmentId) {
-    return db.collection('reservations').doc(appointmentId.toString())
-        .update({
-            status: 'confirmed',
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => {
-            console.log("Cita confirmada con éxito");
-            // Opcional: Mostrar un mensaje de éxito
-            alert('Cita confirmada correctamente');
-            // Recargar datos o actualizar UI
-            loadAppointmentsTable();
-        })
-        .catch((error) => {
-            console.error("Error al confirmar la cita: ", error);
-            alert('Error al confirmar la cita. Inténtalo de nuevo.');
-        });
-}
+        function confirmAppointment(appointmentId) {
+            return db.collection('reservas').doc(appointmentId)
+                .update({
+                    estado: 'confirmada',
+                    fechaActualizacion: new Date().toISOString()
+                })
+                .then(() => {
+                    console.log("Cita confirmada con éxito");
+                    // Opcional: Mostrar un mensaje de éxito
+                    alert('Cita confirmada correctamente');
+                    // Recargar datos o actualizar UI
+                    loadAppointmentsTable();
+                })
+                .catch((error) => {
+                    console.error("Error al confirmar la cita: ", error);
+                    alert('Error al confirmar la cita. Inténtalo de nuevo.');
+                });
+        }
+        
         // Cancelar cita
-function cancelAppointment(appointmentId) {
-    // Confirmar cancelación
-    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-        return Promise.resolve(false);
-    }
-    
-    return db.collection('reservations').doc(appointmentId.toString())
-        .update({
-            status: 'canceled',
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => {
-            console.log("Cita cancelada con éxito");
-            // Opcional: Mostrar un mensaje de éxito
-            alert('Cita cancelada correctamente');
-            // Recargar datos o actualizar UI
-            loadAppointmentsTable();
-            return true;
-        })
-        .catch((error) => {
-            console.error("Error al cancelar la cita: ", error);
-            alert('Error al cancelar la cita. Inténtalo de nuevo.');
-            return false;
-        });
-}
-
+        function cancelAppointment(appointmentId) {
+            // Confirmar cancelación
+            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                return Promise.resolve(false);
+            }
+            
+            return db.collection('reservas').doc(appointmentId)
+                .update({
+                    estado: 'cancelada',
+                    fechaActualizacion: new Date().toISOString()
+                })
+                .then(() => {
+                    console.log("Cita cancelada con éxito");
+                    // Opcional: Mostrar un mensaje de éxito
+                    alert('Cita cancelada correctamente');
+                    // Recargar datos o actualizar UI
+                    loadAppointmentsTable();
+                    return true;
+                })
+                .catch((error) => {
+                    console.error("Error al cancelar la cita: ", error);
+                    alert('Error al cancelar la cita. Inténtalo de nuevo.');
+                    return false;
+                });
+        }
         
         // Contactar cliente por WhatsApp
         function contactClient(name, phone) {
@@ -1709,14 +1839,6 @@ function cancelAppointment(appointmentId) {
                 tableBody.appendChild(row);
             });
         }
-        <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="config.js"></script>
-<script>
-  // Aquí irá tu código para verificar autenticación
-</script>
     </script>
 </body>
 </html>
