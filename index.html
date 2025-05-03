@@ -1948,7 +1948,27 @@
                     
                     // Ahora procesamos todos los días con sus horarios
                     // Convertir el objeto en array para poder ordenarlo
-                    const sortedDays = Object.keys(horariosPorDia).sort();
+                    // Función para ordenar días cronológicamente
+function ordenarDiasCronologicamente(dias) {
+    const ordenDias = {
+        'Domingo': 0,
+        'Lunes': 1,
+        'Martes': 2,
+        'Miércoles': 3,
+        'Jueves': 4,
+        'Viernes': 5,
+        'Sábado': 6
+    };
+    
+    return dias.sort((a, b) => {
+        const diaA = a.split(' ')[0];
+        const diaB = b.split(' ')[0];
+        return ordenDias[diaA] - ordenDias[diaB];
+    });
+}
+
+// Ordenar los días cronológicamente en lugar de alfabéticamente
+const sortedDays = ordenarDiasCronologicamente(Object.keys(horariosPorDia));
                     
                     sortedDays.forEach(dia => {
                         // Extraer el número y nombre del día
