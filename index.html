@@ -1677,110 +1677,78 @@
             }
         }
 
-       // Marcar una hora como reservada (no disponible)
-function markAsReserved(day, time) {
-    console.log("Marcando como reservada:", day, time); // Añadir para depuración
-    
-    const dayCards = document.querySelectorAll('.mg-day-card');
-    dayCards.forEach(card => {
-        if (card.getAttribute('data-day') === day) {
-            const buttons = card.querySelectorAll('.mg-time-btn');
-            buttons.forEach(btn => {
-                // Extraer solo el texto de la hora
-                const buttonTimeText = btn.textContent.trim();
-                
-                if (buttonTimeText.includes(time)) {
-                    // Eliminar todas las clases de estado
-                    btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
-                                        'mg-time-btn-pending', 'mg-time-btn-confirmed', 
-                                        'mg-time-btn-unavailable', 'mg-time-btn-medium',
-                                        'mg-time-btn-low');
-                    
-                    // Añadir clase reservada y estilo gris
-                    btn.classList.add('mg-time-btn-reserved');
-                    btn.style.backgroundColor = '#95a5a6'; // Gris
-                    
-                    // Cambiar el icono y deshabilitar el botón
-                    btn.innerHTML = `<i>🔒</i> ${time}`;
-                    btn.onclick = null;
-                    btn.disabled = true;
+        // Marcar una hora como reservada (no disponible)
+        function markAsReserved(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase reservada
+                            btn.classList.add('mg-time-btn-reserved');
+                            
+                            // Cambiar el icono y deshabilitar el botón
+                            btn.innerHTML = `<i>🔒</i> ${time}`;
+                            btn.onclick = null;
+                            btn.disabled = true;
+                        }
+                    });
                 }
             });
         }
-    });
-}
 
         // Marcar una hora como pendiente de confirmación
-function markAsPending(day, time) {
-    console.log("Marcando como pendiente:", day, time); // Añadir para depuración
-    
-    const dayCards = document.querySelectorAll('.mg-day-card');
-    dayCards.forEach(card => {
-        // Imprimir ambos valores para depuración
-        console.log("Comparando:", card.getAttribute('data-day'), "con", day);
-        
-        if (card.getAttribute('data-day') === day) {
-            const buttons = card.querySelectorAll('.mg-time-btn');
-            buttons.forEach(btn => {
-                // Extraer solo el texto de la hora (ignorando el ícono)
-                const buttonTimeText = btn.textContent.trim();
-                console.log("Comparando botón:", buttonTimeText, "con hora:", time);
-                
-                // Comprobar si la hora está incluida en el texto del botón
-                if (buttonTimeText.includes(time)) {
-                    console.log("¡Coincidencia encontrada!");
-                    
-                    // Eliminar todas las clases de estado
-                    btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
-                                        'mg-time-btn-pending', 'mg-time-btn-confirmed', 
-                                        'mg-time-btn-unavailable', 'mg-time-btn-medium',
-                                        'mg-time-btn-low');
-                    
-                    // Añadir clase pendiente y estilo amarillo
-                    btn.classList.add('mg-time-btn-pending');
-                    btn.style.backgroundColor = '#f39c12'; // Amarillo
-                    
-                    // Cambiar el icono
-                    btn.innerHTML = `<i>⏳</i> ${time}`;
+        function markAsPending(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase pendiente
+                            btn.classList.add('mg-time-btn-pending');
+                            
+                            // Cambiar el icono pero mantener habilitado el botón
+                            btn.innerHTML = `<i>⏳</i> ${time}`;
+                        }
+                    });
                 }
             });
         }
-    });
-}
 
-       // Marcar una hora como confirmada
-function markAsConfirmed(day, time) {
-    console.log("Marcando como confirmada:", day, time); // Añadir para depuración
-    
-    const dayCards = document.querySelectorAll('.mg-day-card');
-    dayCards.forEach(card => {
-        if (card.getAttribute('data-day') === day) {
-            const buttons = card.querySelectorAll('.mg-time-btn');
-            buttons.forEach(btn => {
-                // Extraer solo el texto de la hora
-                const buttonTimeText = btn.textContent.trim();
-                
-                if (buttonTimeText.includes(time)) {
-                    // Eliminar todas las clases de estado
-                    btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
-                                        'mg-time-btn-pending', 'mg-time-btn-confirmed', 
-                                        'mg-time-btn-unavailable', 'mg-time-btn-medium',
-                                        'mg-time-btn-low');
-                    
-                    // Añadir clase confirmada y estilo verde
-                    btn.classList.add('mg-time-btn-confirmed');
-                    btn.style.backgroundColor = '#2ecc71'; // Verde
-                    
-                    // Cambiar el icono y deshabilitar el botón
-                    btn.innerHTML = `<i>✓</i> ${time}`;
-                    btn.onclick = null;
-                    btn.disabled = true;
+        // Marcar una hora como confirmada
+        function markAsConfirmed(day, time) {
+            const dayCards = document.querySelectorAll('.mg-day-card');
+            dayCards.forEach(card => {
+                if (card.getAttribute('data-day') === day) {
+                    const buttons = card.querySelectorAll('.mg-time-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent.includes(time)) {
+                            // Eliminar todas las clases de estado
+                            btn.classList.remove('mg-time-btn-available', 'mg-time-btn-reserved', 
+                                                'mg-time-btn-pending', 'mg-time-btn-confirmed', 
+                                                'mg-time-btn-unavailable');
+                            // Añadir clase confirmada
+                            btn.classList.add('mg-time-btn-confirmed');
+                            
+                            // Cambiar el icono y deshabilitar el botón
+                            btn.innerHTML = `<i>✓</i> ${time}`;
+                            btn.onclick = null;
+                            btn.disabled = true;
+                        }
+                    });
                 }
             });
         }
-    });
-}
-
 
         // Filtrar horarios por día seleccionado en el calendario
         function filterByDay(day) {
@@ -1980,27 +1948,7 @@ function markAsConfirmed(day, time) {
                     
                     // Ahora procesamos todos los días con sus horarios
                     // Convertir el objeto en array para poder ordenarlo
-                    // Función para ordenar días cronológicamente
-function ordenarDiasCronologicamente(dias) {
-    const ordenDias = {
-        'Domingo': 0,
-        'Lunes': 1,
-        'Martes': 2,
-        'Miércoles': 3,
-        'Jueves': 4,
-        'Viernes': 5,
-        'Sábado': 6
-    };
-    
-    return dias.sort((a, b) => {
-        const diaA = a.split(' ')[0];
-        const diaB = b.split(' ')[0];
-        return ordenDias[diaA] - ordenDias[diaB];
-    });
-}
-
-// Ordenar los días cronológicamente en lugar de alfabéticamente
-const sortedDays = ordenarDiasCronologicamente(Object.keys(horariosPorDia));
+                    const sortedDays = Object.keys(horariosPorDia).sort();
                     
                     sortedDays.forEach(dia => {
                         // Extraer el número y nombre del día
