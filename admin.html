@@ -3461,7 +3461,9 @@ function openNewAvailabilityModal() {
         }
         
    // Crear nueva disponibilidad
+
 function createNewAvailability() {
+    console.log("Fecha seleccionada:", dateInput);
     // Obtener datos del formulario
     const dateInput = document.getElementById('new-avail-date').value;
     const hour = document.getElementById('new-avail-hour').value;
@@ -3480,6 +3482,7 @@ function createNewAvailability() {
     
     // Obtener el día formateado
     const day = getDayFromDate(dateInput);
+    console.log("Día formateado:", day);
     
     // ID único
     const availabilityId = 'avail_' + Date.now().toString();
@@ -3541,6 +3544,9 @@ function formatTimeTo12Hour(time24h) {
 }
         // Función para convertir fecha a formato "Lunes 1 Mayo"
 function getDayFromDate(dateString) {
+console.log("Componentes:", year, month, day);
+console.log("Fecha creada:", date);
+console.log("Día de la semana:", date.getDay());
     let date;
     
     if (typeof dateString === 'string' && dateString.includes('-')) {
@@ -3682,6 +3688,8 @@ function getDayFromDate(dateString) {
                     alert('Error al eliminar horario. Inténtalo de nuevo.');
                 });
         }
+
+    
         
         // Actualizar disponibilidad en la página principal
         // Esta función sería ideal si tuviéramos una base de datos en tiempo real,
