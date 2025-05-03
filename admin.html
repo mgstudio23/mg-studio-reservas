@@ -1342,2155 +1342,2099 @@
     
     <script>
         // Variables globales
-let currentTab = 'recent';
-let currentFilter = 'all';
-let appointments = [];
-let clients = [];
-let services = [];
-let promotions = [];
-let availableTimes = [];
-
-// Variables para gestión de módulos
-let currentClientId = null;
-let currentServiceId = null;
-let currentPromotionId = null;
-let currentAvailabilityId = null;
-let currentAdminMonth = new Date();
-
-// Inicializar
-document.addEventListener('DOMContentLoaded', function() {
-    // Comprobar si el usuario está autenticado
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (!user) {
-            // Si no hay usuario autenticado, redirigir a login.html
-            window.location.href = 'login.html';
-        } else {
-            // Usuario autenticado, mostrar el contenido
-            document.querySelector('.admin-container').style.display = 'block';
-            
-            // Opcional: mostrar información del usuario
-            const adminHeader = document.querySelector('.admin-header');
-            const userInfo = document.createElement('span');
-            userInfo.textContent = user.email;
-            userInfo.style.marginRight = '10px';
-            userInfo.style.fontSize = '14px';
-            
-            const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'view-site';
-            logoutBtn.style.backgroundColor = '#eee';
-            logoutBtn.style.color = '#333';
-            logoutBtn.textContent = 'Cerrar Sesión';
-            logoutBtn.addEventListener('click', function() {
-                firebase.auth().signOut().then(function() {
+        let currentTab = 'recent';
+        let currentFilter = 'all';
+        let appointments = [];
+        let clients = [];
+        let services = [];
+        let promotions = [];
+        let availableTimes = [];
+        
+        // Variables para gestión de módulos
+        let currentClientId = null;
+        let currentServiceId = null;
+        let currentPromotionId = null;
+        let currentAvailabilityId = null;
+        let currentAdminMonth = new Date();
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Comprobar si el usuario está autenticado
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (!user) {
+                    // Si no hay usuario autenticado, redirigir a login.html
                     window.location.href = 'login.html';
-                });
+                } else {
+                    // Usuario autenticado, mostrar el contenido
+                    document.querySelector('.admin-container').style.display = 'block';
+                    
+                    // Opcional: mostrar información del usuario
+                    const adminHeader = document.querySelector('.admin-header');
+                    const userInfo = document.createElement('span');
+                    userInfo.textContent = user.email;
+                    userInfo.style.marginRight = '10px';
+                    userInfo.style.fontSize = '14px';
+                    
+                    const logoutBtn = document.createElement('button');
+                    logoutBtn.className = 'view-site';
+                    logoutBtn.style.backgroundColor = '#eee';
+                    logoutBtn.style.color = '#333';
+                    logoutBtn.textContent = 'Cerrar Sesión';
+                    logoutBtn.addEventListener('click', function() {
+                        firebase.auth().signOut().then(function() {
+                            window.location.href = 'login.html';
+                        });
+                    });
+                    
+                    adminHeader.appendChild(userInfo);
+                    adminHeader.appendChild(logoutBtn);
+                    
+                    // Mostrar la fecha actual
+                    const today = new Date();
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    document.getElementById('current-date').textContent = 'Hoy: ' + today.toLocaleDateString('es-ES', options);
+                    
+                    // Cargar datos en tiempo real
+                    listenForAdminChanges();
+                    
+                    // Inicializar funcionamiento de la configuración
+                    initSettings();
+                }
             });
-            
-            adminHeader.appendChild(userInfo);
-            adminHeader.appendChild(logoutBtn);
-            
-            // Mostrar la fecha actual
-            const today = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = 'Hoy: ' + today.toLocaleDateString('es-ES', options);
-            
-            // Cargar datos en tiempo real
-            listenForAdminChanges();
-            
-            // Inicializar funcionamiento de la configuración
-            initSettings();
-        }
-    });
-});
-
-// Escuchar cambios en tiempo real para la administración
-function listenForAdminChanges() {
-    db.collection('reservas')
-        .onSnapshot((snapshot) => {
-            // Actualizar array de citas
-            appointments = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Convertir el formato de datos de index.html al formato esperado por admin.html
-                const appointment = {
-                    id: doc.id,
-                    service: data.servicio,
-                    day: data.fecha,
-                    time: data.hora,
-                    date: data.fechaCreacion,
-                    status: data.estado === 'pendiente' ? 'pending' : 
-                           data.estado === 'confirmada' ? 'confirmed' : 'canceled',
-                    client: {
-                        name: data.nombre,
-                        phone: data.telefono,
-                        comments: data.comentarios
+        });
+        
+        // Escuchar cambios en tiempo real para la administración
+        function listenForAdminChanges() {
+            db.collection('reservas')
+                .onSnapshot((snapshot) => {
+                    // Actualizar array de citas
+                    appointments = [];
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        // Convertir el formato de datos de index.html al formato esperado por admin.html
+                        const appointment = {
+                            id: doc.id,
+                            service: data.servicio,
+                            day: data.fecha,
+                            time: data.hora,
+                            date: data.fechaCreacion,
+                            status: data.estado === 'pendiente' ? 'pending' : 
+                                   data.estado === 'confirmada' ? 'confirmed' : 'canceled',
+                            client: {
+                                name: data.nombre,
+                                phone: data.telefono,
+                                comments: data.comentarios
+                            }
+                        };
+                        
+                        appointments.push(appointment);
+                    });
+                    
+                    // Extraer clientes únicos de las reservas
+                    clients = extractClients(appointments);
+                    
+                    // Actualizar UI
+                    updateDashboard();
+                    loadAppointmentsTable();
+                    
+                    // Solo actualizar la tabla de clientes si estamos en esa sección
+                    if (document.getElementById('clients').classList.contains('active')) {
+                        loadClientsTable();
                     }
-                };
-                
-                appointments.push(appointment);
+                }, (error) => {
+                    console.error("Error al escuchar cambios en admin: ", error);
+                });
+        }
+        
+        // Extraer clientes únicos de las reservas
+        function extractClients(appointments) {
+            const clientsMap = new Map();
+            
+            appointments.forEach(appointment => {
+                if (appointment.client && appointment.client.name) {
+                    const clientName = appointment.client.name;
+                    const clientId = 'client_' + clientName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    
+                    if (!clientsMap.has(clientName)) {
+                        clientsMap.set(clientName, {
+                            id: clientId,
+                            name: clientName,
+                            phone: appointment.client.phone || '',
+                            appointments: [],
+                            lastAppointment: appointment.date || ''
+                        });
+                    }
+                    
+                    const client = clientsMap.get(clientName);
+                    client.appointments.push(appointment);
+                    
+                    // Actualizar última cita si es más reciente
+                    const appointmentDate = new Date(appointment.date || 0);
+                    const lastDate = new Date(client.lastAppointment || 0);
+                    
+                    if (appointmentDate > lastDate) {
+                        client.lastAppointment = appointment.date;
+                    }
+                }
             });
             
-            // Extraer clientes únicos de las reservas
-            clients = extractClients(appointments);
-            
-            // Actualizar UI
-            updateDashboard();
-            loadAppointmentsTable();
-            
-            // Solo actualizar la tabla de clientes si estamos en esa sección
-            if (document.getElementById('clients').classList.contains('active')) {
-                loadClientsTable();
-            }
-        }, (error) => {
-            console.error("Error al escuchar cambios en admin: ", error);
-        });
-}
-
-// Extraer clientes únicos de las reservas
-function extractClients(appointments) {
-    const clientsMap = new Map();
-    
-    appointments.forEach(appointment => {
-        if (appointment.client && appointment.client.name) {
-            const clientName = appointment.client.name;
-            const clientId = 'client_' + clientName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            
-            if (!clientsMap.has(clientName)) {
-                clientsMap.set(clientName, {
-                    id: clientId,
-                    name: clientName,
-                    phone: appointment.client.phone || '',
-                    appointments: [],
-                    lastAppointment: appointment.date || ''
-                });
-            }
-            
-            const client = clientsMap.get(clientName);
-            client.appointments.push(appointment);
-            
-            // Actualizar última cita si es más reciente
-            const appointmentDate = new Date(appointment.date || 0);
-            const lastDate = new Date(client.lastAppointment || 0);
-            
-            if (appointmentDate > lastDate) {
-                client.lastAppointment = appointment.date;
-            }
-        }
-    });
-    
-    return Array.from(clientsMap.values());
-}
-
-// Actualizar dashboard
-function updateDashboard() {
-    // Contar citas de hoy
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todayAppointments = appointments.filter(appointment => {
-        if (!appointment.day) return false;
-        
-        const parts = appointment.day.split(' ');
-        if (parts.length < 2) return false;
-        
-        const day = parseInt(parts[1]);
-        return day === today.getDate();
-    });
-    
-    // Contar citas pendientes
-    const pendingAppointments = appointments.filter(appointment => 
-        appointment.status === 'pending'
-    );
-    
-    // Actualizar contadores
-    document.getElementById('today-counter').textContent = todayAppointments.length;
-    document.getElementById('pending-counter').textContent = pendingAppointments.length;
-    document.getElementById('clients-counter').textContent = clients.length;
-    
-    // Calcular ingresos (simulado)
-    document.getElementById('income-counter').textContent = 's/' + calculateIncome();
-}
-
-// Calcular ingresos totales (ejemplo)
-function calculateIncome() {
-    let totalIncome = 0;
-    
-    // Precios de servicios
-    const prices = {
-        'Lifting de Pestañas': 40,
-        'Extensiones Clásicas': 50,
-        'Efecto Rímel': 60,
-        'Efecto Mojado': 65,
-        'Extensiones Híbridas': 70,
-        'Volumen Brasileño 2D': 80,
-        'Volumen Hawaiano 3D': 80,
-        'Volumen Griego 4D': 80,
-        'Volumen Egipcio 5D': 85,
-        'Mega Volumen Egipcio 6D': 110,
-        'Visagismo': 10,
-        'Depilación con cera': 15,
-        'Laminado de cejas': 35,
-        'Pigmentación con henna': 35,
-        'Paquete 1: Lifting + Laminado': 60,
-        'Paquete 2: Extensiones + Visagismo': 70
-    };
-    
-    // Solo contar citas confirmadas
-    const confirmedAppointments = appointments.filter(appointment => 
-        appointment.status === 'confirmed'
-    );
-    
-    confirmedAppointments.forEach(appointment => {
-        if (appointment.service && prices[appointment.service]) {
-            totalIncome += prices[appointment.service];
-        }
-    });
-    
-    return totalIncome;
-}
-
-// Cargar tabla de citas
-function loadAppointmentsTable() {
-    const tablesIds = ['appointments-table', 'appointments-data-table'];
-    
-    tablesIds.forEach(tableId => {
-        const tableBody = document.getElementById(tableId);
-        if (!tableBody) return;
-        
-        // Limpiar tabla
-        tableBody.innerHTML = '';
-        
-        // Filtrar según la tab actual
-        let filteredAppointments = filterAppointmentsByTab(appointments, currentTab);
-        
-        // Filtrar según búsqueda adicional
-        if (currentFilter !== 'all' && tableId === 'appointments-data-table') {
-            filteredAppointments = filteredAppointments.filter(appointment => 
-                appointment.status === currentFilter
-            );
+            return Array.from(clientsMap.values());
         }
         
-        // Si no hay citas, mostrar mensaje
-        if (filteredAppointments.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6">
-                        <div class="admin-empty-state">
-                            <div class="admin-empty-state-icon">📅</div>
-                            <div class="admin-empty-state-text">No hay citas para mostrar</div>
-                            <button class="admin-button" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-        
-        // Ordenar citas (más recientes primero)
-        filteredAppointments.sort((a, b) => {
-            // Intentar ordenar por fecha
-            const dateA = new Date(a.date || 0);
-            const dateB = new Date(b.date || 0);
+        // Actualizar dashboard
+        function updateDashboard() {
+            // Contar citas de hoy
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            return dateB - dateA;
-        });
-        
-        // Cargar citas en la tabla
-        filteredAppointments.forEach(appointment => {
-            const row = document.createElement('tr');
-            
-            // Cliente
-            const clientCell = document.createElement('td');
-            clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
-            row.appendChild(clientCell);
-            
-            // Servicio
-            const serviceCell = document.createElement('td');
-            serviceCell.textContent = appointment.service || 'No especificado';
-            row.appendChild(serviceCell);
-            
-            // Fecha
-            const dateCell = document.createElement('td');
-            dateCell.textContent = appointment.day || formatDate(appointment.date);
-            row.appendChild(dateCell);
-            
-            // Hora
-            const timeCell = document.createElement('td');
-            timeCell.textContent = appointment.time || 'No especificada';
-            row.appendChild(timeCell);
-            
-            // Estado
-            const statusCell = document.createElement('td');
-            const status = appointment.status || 'pending';
-            let statusBadge = '';
-            
-            if (status === 'pending') {
-                statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-            } else if (status === 'confirmed') {
-                statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-            } else if (status === 'canceled') {
-                statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-            }
-            
-            statusCell.innerHTML = statusBadge;
-            row.appendChild(statusCell);
-            
-            // Acciones
-            const actionsCell = document.createElement('td');
-            let actionButtons = `
-                <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
-                <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
-            `;
-            
-            if (status === 'pending') {
-                actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
-            }
-            
-            if (status !== 'canceled') {
-                actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
-            }
-            
-            actionsCell.innerHTML = actionButtons;
-            row.appendChild(actionsCell);
-            
-            // Agregar fila a la tabla
-            tableBody.appendChild(row);
-        });
-    });
-}
-
-// Filtrar citas según la tab actual
-function filterAppointmentsByTab(appointments, tab) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (tab === 'recent') {
-        return appointments; // Todas las citas
-    } else if (tab === 'pending') {
-        return appointments.filter(appointment => 
-            appointment.status === 'pending'
-        );
-    } else if (tab === 'today') {
-        return appointments.filter(appointment => {
-            if (!appointment.day) return false;
-            
-            const parts = appointment.day.split(' ');
-            if (parts.length < 2) return false;
-            
-            const day = parseInt(parts[1]);
-            return day === today.getDate();
-        });
-    }
-    
-    return appointments;
-}
-
-// Cargar tabla de clientes
-function loadClientsTable() {
-    const tableBody = document.getElementById('clients-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay clientes, mostrar mensaje
-    if (clients.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-icon">👥</div>
-                        <div class="admin-empty-state-text">No hay clientes registrados</div>
-                        <button class="admin-button" onclick="openNewClientModal()">+ Nuevo Cliente</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Ordenar clientes por nombre
-    clients.sort((a, b) => a.name.localeCompare(b.name));
-    
-    // Cargar clientes en la tabla
-    clients.forEach(client => {
-        const row = document.createElement('tr');
-        
-        // Nombre
-        const nameCell = document.createElement('td');
-        nameCell.textContent = client.name;
-        row.appendChild(nameCell);
-        
-        // Teléfono
-        const phoneCell = document.createElement('td');
-        phoneCell.textContent = client.phone || 'No especificado';
-        row.appendChild(phoneCell);
-        
-        // Última visita
-        const lastVisitCell = document.createElement('td');
-        lastVisitCell.textContent = formatDate(client.lastAppointment);
-        row.appendChild(lastVisitCell);
-        
-        // Total citas
-        const totalAppointmentsCell = document.createElement('td');
-        totalAppointmentsCell.textContent = client.appointments.length;
-        row.appendChild(totalAppointmentsCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        actionsCell.innerHTML = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
-            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
-            <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
-        `;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// Formatear fecha
-function formatDate(dateString) {
-    if (!dateString) return 'No registrada';
-    
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES');
-    } catch (e) {
-        return 'Fecha inválida';
-    }
-}
-
-// Mostrar sección
-function showSection(sectionId) {
-    // Ocultar todas las secciones
-    const sections = document.querySelectorAll('.admin-content');
-    sections.forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // Mostrar la sección seleccionada
-    document.getElementById(sectionId).classList.add('active');
-    
-    // Actualizar menú
-    const menuLinks = document.querySelectorAll('.admin-menu-link');
-    menuLinks.forEach(link => {
-        link.classList.remove('active');
-    });
-    
-    // Activar el enlace actual
-    event.currentTarget.classList.add('active');
-    
-    // Cargar datos específicos de la sección
-    if (sectionId === 'dashboard') {
-        loadAppointmentsTable();
-    } else if (sectionId === 'appointments') {
-        loadAppointmentsTable();
-        // Restablecer la vista de citas (ocultar sección de disponibilidad)
-        hideAvailabilitySection();
-        // Establecer la primera tab como activa
-        const tabs = document.querySelectorAll('#appointments .admin-tab');
-        tabs.forEach((tab, index) => {
-            tab.classList.toggle('active', index === 0);
-        });
-        currentFilter = 'all';
-    } else if (sectionId === 'clients') {
-        loadClientsTable();
-    } else if (sectionId === 'services') {
-        loadServices();
-    } else if (sectionId === 'promotions') {
-        loadPromotions();
-    } else if (sectionId === 'settings') {
-        loadSettings();
-    }
-}
-
-// Mostrar tab
-function showTab(tabId) {
-    // Actualizar tabs
-    const tabs = document.querySelectorAll('.admin-tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Activar la tab seleccionada
-    event.currentTarget.classList.add('active');
-    
-    // Actualizar tab actual
-    currentTab = tabId;
-    
-    // Recargar tabla de citas
-    loadAppointmentsTable();
-}
-
-// Filtrar citas en la sección de citas
-function filterAppointments(filter) {
-    // Si se muestra la sección de disponibilidad, ocultarla
-    hideAvailabilitySection();
-    
-    // Actualizar filtro actual
-    currentFilter = filter;
-    
-    // Actualizar tabs
-    const tabs = document.querySelectorAll('#appointments .admin-tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Activar la tab seleccionada (excepto la última que es Disponibilidad)
-    if (filter === 'all') tabs[0].classList.add('active');
-    else if (filter === 'pending') tabs[1].classList.add('active');
-    else if (filter === 'confirmed') tabs[2].classList.add('active');
-    else if (filter === 'canceled') tabs[3].classList.add('active');
-    
-    // Recargar tabla de citas
-    loadAppointmentsTable();
-}
-
-// Buscar citas
-function searchAppointments() {
-    const searchText = document.getElementById('search-input').value.toLowerCase();
-    
-    if (!searchText.trim()) {
-        // Si no hay texto, mostrar todas las citas
-        loadAppointmentsTable();
-        return;
-    }
-    
-    // Filtrar citas según el texto de búsqueda
-    const filteredAppointments = appointments.filter(appointment => {
-        const clientName = appointment.client ? appointment.client.name || '' : '';
-        const service = appointment.service || '';
-        const day = appointment.day || '';
-        
-        return (
-            clientName.toLowerCase().includes(searchText) ||
-            service.toLowerCase().includes(searchText) ||
-            day.toLowerCase().includes(searchText)
-        );
-    });
-    
-    // Actualizar tabla con las citas filtradas
-    const tableBody = document.getElementById('appointments-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay resultados, mostrar mensaje
-    if (filteredAppointments.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Cargar citas filtradas
-    filteredAppointments.forEach(appointment => {
-        const row = document.createElement('tr');
-        
-        // Cliente
-        const clientCell = document.createElement('td');
-        clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
-        row.appendChild(clientCell);
-        
-        // Servicio
-        const serviceCell = document.createElement('td');
-        serviceCell.textContent = appointment.service || 'No especificado';
-        row.appendChild(serviceCell);
-        
-        // Fecha
-        const dateCell = document.createElement('td');
-        dateCell.textContent = appointment.day || formatDate(appointment.date);
-        row.appendChild(dateCell);
-        
-        // Hora
-        const timeCell = document.createElement('td');
-        timeCell.textContent = appointment.time || 'No especificada';
-        row.appendChild(timeCell);
-        
-        // Estado
-        const statusCell = document.createElement('td');
-        const status = appointment.status || 'pending';
-        let statusBadge = '';
-        
-        if (status === 'pending') {
-            statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-        } else if (status === 'confirmed') {
-            statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-        } else if (status === 'canceled') {
-            statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-        }
-        
-        statusCell.innerHTML = statusBadge;
-        row.appendChild(statusCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        let actionButtons = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
-            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
-        `;
-        
-        if (status === 'pending') {
-            actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
-        }
-        
-        if (status !== 'canceled') {
-            actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
-        }
-        
-        actionsCell.innerHTML = actionButtons;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// Búsqueda específica para sección de citas
-function searchAppointmentsData() {
-    const searchText = document.getElementById('appointments-search').value.toLowerCase();
-    
-    if (!searchText.trim()) {
-        // Si no hay texto, mostrar todas las citas
-        loadAppointmentsTable();
-        return;
-    }
-    
-    // Aplicar el mismo filtro que searchAppointments pero para la otra tabla
-    const filteredAppointments = appointments.filter(appointment => {
-        const clientName = appointment.client ? appointment.client.name || '' : '';
-        const service = appointment.service || '';
-        const day = appointment.day || '';
-        
-        return (
-            clientName.toLowerCase().includes(searchText) ||
-            service.toLowerCase().includes(searchText) ||
-            day.toLowerCase().includes(searchText)
-        );
-    });
-    
-    // Actualizar tabla de citas
-    const tableBody = document.getElementById('appointments-data-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay resultados, mostrar mensaje
-    if (filteredAppointments.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Cargar citas filtradas igual que en searchAppointments
-    filteredAppointments.forEach(appointment => {
-        const row = document.createElement('tr');
-        
-        // Cliente
-        const clientCell = document.createElement('td');
-        clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
-        row.appendChild(clientCell);
-        
-        // Servicio
-        const serviceCell = document.createElement('td');
-        serviceCell.textContent = appointment.service || 'No especificado';
-        row.appendChild(serviceCell);
-        
-        // Fecha
-        const dateCell = document.createElement('td');
-        dateCell.textContent = appointment.day || formatDate(appointment.date);
-        row.appendChild(dateCell);
-        
-        // Hora
-        const timeCell = document.createElement('td');
-        timeCell.textContent = appointment.time || 'No especificada';
-        row.appendChild(timeCell);
-        
-        // Estado
-        const statusCell = document.createElement('td');
-        const status = appointment.status || 'pending';
-        let statusBadge = '';
-        
-        if (status === 'pending') {
-            statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
-        } else if (status === 'confirmed') {
-            statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
-        } else if (status === 'canceled') {
-            statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
-        }
-        
-        statusCell.innerHTML = statusBadge;
-        row.appendChild(statusCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        let actionButtons = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
-            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
-        `;
-        
-        if (status === 'pending') {
-            actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
-        }
-        
-        if (status !== 'canceled') {
-            actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
-        }
-        
-        actionsCell.innerHTML = actionButtons;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// Abrir modal de edición
-function openEditModal(appointmentId) {
-    // Buscar cita por ID
-    const appointment = appointments.find(a => a.id === appointmentId);
-    
-    if (!appointment) {
-        alert('No se encontró la cita');
-        return;
-    }
-    
-    // Llenar formulario
-    document.getElementById('edit-client-name').value = appointment.client ? appointment.client.name || '' : '';
-    document.getElementById('edit-client-phone').value = appointment.client ? appointment.client.phone || '' : '';
-    
-    // Seleccionar servicio
-    const serviceSelect = document.getElementById('edit-service');
-    for (let i = 0; i < serviceSelect.options.length; i++) {
-        if (serviceSelect.options[i].text === appointment.service) {
-            serviceSelect.selectedIndex = i;
-            break;
-        }
-    }
-    
-    // Establecer fecha
-    // Para simplificar, usamos la fecha actual
-    const today = new Date();
-    document.getElementById('edit-date').value = today.toISOString().split('T')[0];
-    
-    // Seleccionar hora
-    const timeSelect = document.getElementById('edit-time');
-    for (let i = 0; i < timeSelect.options.length; i++) {
-        if (timeSelect.options[i].text === appointment.time) {
-            timeSelect.selectedIndex = i;
-            break;
-        }
-    }
-    
-    // Seleccionar estado
-    document.getElementById('edit-status').value = appointment.status || 'pending';
-    
-    // Establecer observaciones
-    document.getElementById('edit-notes').value = appointment.client && appointment.client.comments ? appointment.client.comments : '';
-    
-    // Guardar ID de la cita
-    document.getElementById('edit-appointment-modal').setAttribute('data-appointment-id', appointmentId);
-    
-    // Mostrar modal
-    document.getElementById('edit-appointment-modal').style.display = 'block';
-}
-
-// Cerrar modal de edición
-function closeEditModal() {
-    document.getElementById('edit-appointment-modal').style.display = 'none';
-}
-
-// Editar cita
-function saveAppointment() {
-    // Obtener ID de la cita
-    const appointmentId = document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id');
-    
-    // Validar ID
-    if (!appointmentId) {
-        alert('No se encontró el ID de la cita');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const clientName = document.getElementById('edit-client-name').value;
-    const clientPhone = document.getElementById('edit-client-phone').value;
-    const service = document.getElementById('edit-service').value;
-    const date = document.getElementById('edit-date').value;
-    const time = document.getElementById('edit-time').value;
-    const status = document.getElementById('edit-status').value;
-    const notes = document.getElementById('edit-notes').value;
-    
-    // Validar datos
-    if (!clientName) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // Calcular día formateado (ej. "Lunes 1 Mayo")
-    const day = getDayFromDate(date);
-    
-    // Preparar datos para actualizar en el formato de index.html
-    const updatedData = {
-        servicio: service,
-        fecha: day,
-        hora: time,
-        estado: status === 'pending' ? 'pendiente' : 
-                status === 'confirmed' ? 'confirmada' : 'cancelada',
-        nombre: clientName,
-        telefono: clientPhone,
-        comentarios: notes,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('reservas').doc(appointmentId)
-        .update(updatedData)
-        .then(() => {
-            console.log("Cita actualizada con éxito");
-            // Cerrar modal
-            closeEditModal();
-            // Recargar datos
-            loadAppointmentsTable();
-            // Mostrar mensaje
-            alert('Cita actualizada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al actualizar la cita: ", error);
-            alert('Error al actualizar la cita. Inténtalo de nuevo.');
-        });
-}
-
-// Abrir modal de nueva cita
-function openNewAppointmentModal() {
-    // Limpiar formulario
-    document.getElementById('new-client-name').value = '';
-    document.getElementById('new-client-phone').value = '';
-    document.getElementById('new-notes').value = '';
-    
-    // Establecer fecha actual
-    const today = new Date();
-    document.getElementById('new-date').value = today.toISOString().split('T')[0];
-    
-    // Actualizar select de servicios con los servicios disponibles
-    updateServiceSelects();
-    
-    // Mostrar modal
-    document.getElementById('new-appointment-modal').style.display = 'block';
-}
-
-// Cerrar modal de nueva cita
-function closeNewAppointmentModal() {
-    document.getElementById('new-appointment-modal').style.display = 'none';
-}
-
-// Crear nueva cita
-function createAppointment() {
-    // Obtener datos del formulario
-    const clientName = document.getElementById('new-client-name').value;
-    const clientPhone = document.getElementById('new-client-phone').value;
-    const service = document.getElementById('new-service').value;
-    const date = document.getElementById('new-date').value;
-    const time = document.getElementById('new-time').value;
-    const status = document.getElementById('new-status').value;
-    const notes = document.getElementById('new-notes').value;
-    
-    // Validar datos
-    if (!clientName) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // Calcular día formateado utilizando la función mejorada
-    const day = getDayFromDate(date);
-    
-    // ID único basado en timestamp
-    const appointmentId = Date.now().toString();
-    
-    // Crear nueva cita en el formato de index.html
-    const newAppointment = {
-        nombre: clientName,
-        telefono: clientPhone,
-        servicio: service,
-        fecha: day,
-        hora: time,
-        estado: status === 'pending' ? 'pendiente' : 'confirmada',
-        comentarios: notes,
-        fechaCreacion: new Date().toISOString(),
-        metodoPago: 'Pendiente'
-    };
-    
-    // Guardar en Firestore
-    db.collection('reservas').doc(appointmentId)
-        .set(newAppointment)
-        .then(() => {
-            console.log("Cita creada con éxito");
-            // Cerrar modal
-            closeNewAppointmentModal();
-            // Recargar datos
-            loadAppointmentsTable();
-            // Mostrar mensaje
-            alert('Cita creada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al crear la cita: ", error);
-            alert('Error al crear la cita. Inténtalo de nuevo.');
-        });
-}
-
-// Actualizar selects de servicios
-function updateServiceSelects() {
-    // Obtener los selects
-    const newServiceSelect = document.getElementById('new-service');
-    const editServiceSelect = document.getElementById('edit-service');
-    
-    // Si no hay servicios cargados, cargarlos primero
-    if (services.length === 0) {
-        db.collection('servicios')
-            .get()
-            .then((snapshot) => {
-                // Limpiar selects
-                newServiceSelect.innerHTML = '';
-                editServiceSelect.innerHTML = '';
+            const todayAppointments = appointments.filter(appointment => {
+                if (!appointment.day) return false;
                 
-                // Si no hay servicios, usar los predeterminados
-                if (snapshot.empty) {
+                const parts = appointment.day.split(' ');
+                if (parts.length < 2) return false;
+                
+                const day = parseInt(parts[1]);
+                return day === today.getDate();
+            });
+            
+            // Contar citas pendientes
+            const pendingAppointments = appointments.filter(appointment => 
+                appointment.status === 'pending'
+            );
+            
+            // Actualizar contadores
+            document.getElementById('today-counter').textContent = todayAppointments.length;
+            document.getElementById('pending-counter').textContent = pendingAppointments.length;
+            document.getElementById('clients-counter').textContent = clients.length;
+            
+            // Calcular ingresos (simulado)
+            document.getElementById('income-counter').textContent = 's/' + calculateIncome();
+        }
+        
+        // Calcular ingresos totales (ejemplo)
+        function calculateIncome() {
+            let totalIncome = 0;
+            
+            // Precios de servicios
+            const prices = {
+                'Lifting de Pestañas': 40,
+                'Extensiones Clásicas': 50,
+                'Efecto Rímel': 60,
+                'Efecto Mojado': 65,
+                'Extensiones Híbridas': 70,
+                'Volumen Brasileño 2D': 80,
+                'Volumen Hawaiano 3D': 80,
+                'Volumen Griego 4D': 80,
+                'Volumen Egipcio 5D': 85,
+                'Mega Volumen Egipcio 6D': 110,
+                'Visagismo': 10,
+                'Depilación con cera': 15,
+                'Laminado de cejas': 35,
+                'Pigmentación con henna': 35,
+                'Paquete 1: Lifting + Laminado': 60,
+                'Paquete 2: Extensiones + Visagismo': 70
+            };
+            
+            // Solo contar citas confirmadas
+            const confirmedAppointments = appointments.filter(appointment => 
+                appointment.status === 'confirmed'
+            );
+            
+            confirmedAppointments.forEach(appointment => {
+                if (appointment.service && prices[appointment.service]) {
+                    totalIncome += prices[appointment.service];
+                }
+            });
+            
+            return totalIncome;
+        }
+        
+        // Cargar tabla de citas
+        function loadAppointmentsTable() {
+            const tablesIds = ['appointments-table', 'appointments-data-table'];
+            
+            tablesIds.forEach(tableId => {
+                const tableBody = document.getElementById(tableId);
+                if (!tableBody) return;
+                
+                // Limpiar tabla
+                tableBody.innerHTML = '';
+                
+                // Filtrar según la tab actual
+                let filteredAppointments = filterAppointmentsByTab(appointments, currentTab);
+                
+                // Filtrar según búsqueda adicional
+                if (currentFilter !== 'all' && tableId === 'appointments-data-table') {
+                    filteredAppointments = filteredAppointments.filter(appointment => 
+                        appointment.status === currentFilter
+                    );
+                }
+                
+                // Si no hay citas, mostrar mensaje
+                if (filteredAppointments.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="admin-empty-state">
+                                    <div class="admin-empty-state-icon">📅</div>
+                                    <div class="admin-empty-state-text">No hay citas para mostrar</div>
+                                    <button class="admin-button" onclick="openNewAppointmentModal()">+ Crear Nueva Cita</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
                 
-                // Procesar servicios
-                const servicesByCategory = {};
-                
-                snapshot.forEach((doc) => {
-                    const service = doc.data();
+                // Ordenar citas (más recientes primero)
+                filteredAppointments.sort((a, b) => {
+                    // Intentar ordenar por fecha
+                    const dateA = new Date(a.date || 0);
+                    const dateB = new Date(b.date || 0);
                     
-                    if (!servicesByCategory[service.categoria]) {
-                        servicesByCategory[service.categoria] = [];
+                    return dateB - dateA;
+                });
+                
+                // Cargar citas en la tabla
+                filteredAppointments.forEach(appointment => {
+                    const row = document.createElement('tr');
+                    
+                    // Cliente
+                    const clientCell = document.createElement('td');
+                    clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                    row.appendChild(clientCell);
+                    
+                    // Servicio
+                    const serviceCell = document.createElement('td');
+                    serviceCell.textContent = appointment.service || 'No especificado';
+                    row.appendChild(serviceCell);
+                    
+                    // Fecha
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = appointment.day || formatDate(appointment.date);
+                    row.appendChild(dateCell);
+                    
+                    // Hora
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = appointment.time || 'No especificada';
+                    row.appendChild(timeCell);
+                    
+                    // Estado
+                    const statusCell = document.createElement('td');
+                    const status = appointment.status || 'pending';
+                    let statusBadge = '';
+                    
+                    if (status === 'pending') {
+                        statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                    } else if (status === 'confirmed') {
+                        statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                    } else if (status === 'canceled') {
+                        statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
                     }
                     
-                    servicesByCategory[service.categoria].push(service);
-                });
-                
-                // Agregar opciones agrupadas por categoría
-                Object.keys(servicesByCategory).forEach(category => {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = category;
+                    statusCell.innerHTML = statusBadge;
+                    row.appendChild(statusCell);
                     
-                    servicesByCategory[category].forEach(service => {
-                        const option = document.createElement('option');
-                        option.value = service.nombre;
-                        option.textContent = `${service.nombre} - s/${service.precio}`;
-                        optgroup.appendChild(option);
-                        
-                        // Clonar para el otro select
-                        const optionClone = option.cloneNode(true);
-                        optgroup.appendChild(optionClone);
-                    });
+                    // Acciones
+                    const actionsCell = document.createElement('td');
+                    let actionButtons = `
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
+                        <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                    `;
                     
-                    newServiceSelect.appendChild(optgroup);
-                    // Clonar para el otro select
-                    const optgroupClone = optgroup.cloneNode(true);
-                    editServiceSelect.appendChild(optgroupClone);
-                });
-            })
-            .catch((error) => {
-                console.error("Error al cargar servicios: ", error);
-            });
-    }
-}
-
-// Función para convertir fecha a formato "Lunes 1 Mayo"
-// FUNCIÓN MEJORADA
-function getDayFromDate(dateObj) {
-    // Si es un string de fecha, convertir a objeto Date
-    if (typeof dateObj === 'string') {
-        // Para manejar ambos formatos: YYYY-MM-DD o ISO string
-        if (dateObj.includes('-') && dateObj.length <= 10) {
-            // Formato YYYY-MM-DD (desde input date)
-            const [year, month, day] = dateObj.split('-');
-            // Usar hora 12 para evitar problemas con zona horaria
-            dateObj = new Date(year, parseInt(month) - 1, day, 12, 0, 0);
-        } else {
-            // ISO string u otro formato
-            // Usar hora 12 para evitar problemas
-            const tempDate = new Date(dateObj);
-            dateObj = new Date(
-                tempDate.getFullYear(),
-                tempDate.getMonth(),
-                tempDate.getDate(),
-                12, 0, 0
-            );
-        }
-    }
-    
-    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
-    const weekday = weekdays[dateObj.getDay()];
-    const dayOfMonth = dateObj.getDate();
-    const monthName = months[dateObj.getMonth()];
-    
-    return `${weekday} ${dayOfMonth} ${monthName}`;
-}
-
-// Confirmar cita
-function confirmAppointment(appointmentId) {
-    return db.collection('reservas').doc(appointmentId)
-        .update({
-            estado: 'confirmada',
-            fechaActualizacion: new Date().toISOString()
-        })
-        .then(() => {
-            console.log("Cita confirmada con éxito");
-            // Opcional: Mostrar un mensaje de éxito
-            alert('Cita confirmada correctamente');
-            // Recargar datos o actualizar UI
-            loadAppointmentsTable();
-        })
-        .catch((error) => {
-            console.error("Error al confirmar la cita: ", error);
-            alert('Error al confirmar la cita. Inténtalo de nuevo.');
-        });
-}
-
-// Cancelar cita
-function cancelAppointment(appointmentId) {
-    // Confirmar cancelación
-    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-        return Promise.resolve(false);
-    }
-    
-    return db.collection('reservas').doc(appointmentId)
-        .update({
-            estado: 'cancelada',
-            fechaActualizacion: new Date().toISOString()
-        })
-        .then(() => {
-            console.log("Cita cancelada con éxito");
-            // Opcional: Mostrar un mensaje de éxito
-            alert('Cita cancelada correctamente');
-            // Recargar datos o actualizar UI
-            loadAppointmentsTable();
-            return true;
-        })
-        .catch((error) => {
-            console.error("Error al cancelar la cita: ", error);
-            alert('Error al cancelar la cita. Inténtalo de nuevo.');
-            return false;
-        });
-}
-
-// Contactar cliente por WhatsApp
-function contactClient(name, phone) {
-    if (!phone) {
-        alert('El cliente no tiene número de teléfono registrado');
-        return;
-    }
-    
-    // Crear mensaje
-    const message = `Hola ${name}, te contactamos desde MG STUDIO para confirmar tu cita.`;
-    
-    // Abrir WhatsApp
-    window.open(`https://wa.me/51${phone}?text=${encodeURIComponent(message)}`, '_blank');
-}
-
-// Buscar clientes
-function searchClients() {
-    const searchText = document.getElementById('clients-search').value.toLowerCase();
-    
-    if (!searchText.trim()) {
-        // Si no hay texto, mostrar todos los clientes
-        loadClientsTable();
-        return;
-    }
-    
-    // Filtrar clientes según el texto de búsqueda
-    const filteredClients = clients.filter(client => 
-        client.name.toLowerCase().includes(searchText) ||
-        (client.phone && client.phone.includes(searchText))
-    );
-    
-    // Actualizar tabla con los clientes filtrados
-    const tableBody = document.getElementById('clients-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay resultados, mostrar mensaje
-    if (filteredClients.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Cargar clientes filtrados
-    filteredClients.forEach(client => {
-        const row = document.createElement('tr');
-        
-        // Nombre
-        const nameCell = document.createElement('td');
-        nameCell.textContent = client.name;
-        row.appendChild(nameCell);
-        
-        // Teléfono
-        const phoneCell = document.createElement('td');
-        phoneCell.textContent = client.phone || 'No especificado';
-        row.appendChild(phoneCell);
-        
-        // Última visita
-        const lastVisitCell = document.createElement('td');
-        lastVisitCell.textContent = formatDate(client.lastAppointment);
-        row.appendChild(lastVisitCell);
-        
-        // Total citas
-        const totalAppointmentsCell = document.createElement('td');
-        totalAppointmentsCell.textContent = client.appointments.length;
-        row.appendChild(totalAppointmentsCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        actionsCell.innerHTML = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
-            <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
-            <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
-        `;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// ===== FUNCIONES PARA GESTIÓN DE CLIENTES =====
-
-// Abrir modal de edición de cliente
-function openEditClientModal(clientId) {
-    // Buscar cliente
-    const client = clients.find(c => c.id === clientId);
-    
-    if (!client) {
-        alert('Cliente no encontrado');
-        return;
-    }
-    
-    // Llenar formulario con datos del cliente
-    document.getElementById('edit-client-full-name').value = client.name || '';
-    document.getElementById('edit-client-full-phone').value = client.phone || '';
-    document.getElementById('edit-client-notes').value = client.notes || '';
-    
-    // Guardar ID del cliente actual
-    currentClientId = clientId;
-    
-    // Mostrar modal
-    document.getElementById('edit-client-modal').style.display = 'block';
-}
-
-// Cerrar modal de edición de cliente
-function closeEditClientModal() {
-    document.getElementById('edit-client-modal').style.display = 'none';
-    currentClientId = null;
-}
-
-// Guardar cambios de cliente
-function saveClientChanges() {
-    // Verificar que hay un cliente seleccionado
-    if (!currentClientId) {
-        alert('No hay cliente seleccionado');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const name = document.getElementById('edit-client-full-name').value;
-    const phone = document.getElementById('edit-client-full-phone').value;
-    const notes = document.getElementById('edit-client-notes').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // Preparar datos actualizados
-    const updatedData = {
-        nombre: name,
-        telefono: phone,
-        notas: notes,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('clientes').doc(currentClientId)
-        .update(updatedData)
-        .then(() => {
-            console.log("Cliente actualizado con éxito");
-            // Cerrar modal
-            closeEditClientModal();
-            // Recargar lista de clientes
-            loadClientsTable();
-            // Mostrar mensaje
-            alert('Cliente actualizado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al actualizar el cliente: ", error);
-            alert('Error al actualizar el cliente. Inténtalo de nuevo.');
-        });
-}
-
-// Abrir modal para nuevo cliente
-function openNewClientModal() {
-    // Limpiar formulario
-    document.getElementById('new-client-full-name').value = '';
-    document.getElementById('new-client-full-phone').value = '';
-    document.getElementById('new-client-notes').value = '';
-    
-    // Mostrar modal
-    document.getElementById('new-client-modal').style.display = 'block';
-}
-
-// Cerrar modal de nuevo cliente
-function closeNewClientModal() {
-    document.getElementById('new-client-modal').style.display = 'none';
-}
-
-// Crear nuevo cliente
-function createNewClient() {
-    // Obtener datos del formulario
-    const name = document.getElementById('new-client-full-name').value;
-    const phone = document.getElementById('new-client-full-phone').value;
-    const notes = document.getElementById('new-client-notes').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre del cliente es obligatorio');
-        return;
-    }
-    
-    // ID único basado en timestamp
-    const clientId = 'client_' + Date.now().toString();
-    
-    // Crear nuevo cliente
-    const newClient = {
-        id: clientId,
-        nombre: name,
-        telefono: phone,
-        notas: notes,
-        fechaCreacion: new Date().toISOString(),
-        citas: []
-    };
-    
-    // Guardar en Firestore
-    db.collection('clientes').doc(clientId)
-        .set(newClient)
-        .then(() => {
-            console.log("Cliente creado con éxito");
-            // Cerrar modal
-            closeNewClientModal();
-            // Actualizar lista de clientes
-            loadClientsTable();
-            // Mostrar mensaje
-            alert('Cliente creado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al crear el cliente: ", error);
-            alert('Error al crear el cliente. Inténtalo de nuevo.');
-        });
-}
-
-// Eliminar cliente
-function deleteClient(clientId) {
-    // Confirmar eliminación
-    if (!confirm('¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.')) {
-        return;
-    }
-    
-    // Eliminar de Firestore
-    db.collection('clientes').doc(clientId)
-        .delete()
-        .then(() => {
-            console.log("Cliente eliminado con éxito");
-            // Recargar lista de clientes
-            loadClientsTable();
-            // Mostrar mensaje
-            alert('Cliente eliminado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al eliminar el cliente: ", error);
-            alert('Error al eliminar el cliente. Inténtalo de nuevo.');
-        });
-}
-
-// ===== FUNCIONES PARA GESTIÓN DE SERVICIOS =====
-
-// Cargar servicios desde Firestore
-function loadServices() {
-    db.collection('servicios')
-        .get()
-        .then((snapshot) => {
-            services = [];
-            snapshot.forEach((doc) => {
-                services.push({
-                    id: doc.id,
-                    ...doc.data()
+                    if (status === 'pending') {
+                        actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
+                    }
+                    
+                    if (status !== 'canceled') {
+                        actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
+                    }
+                    
+                    actionsCell.innerHTML = actionButtons;
+                    row.appendChild(actionsCell);
+                    
+                    // Agregar fila a la tabla
+                    tableBody.appendChild(row);
                 });
             });
-            renderServicesTable();
-        })
-        .catch((error) => {
-            console.error("Error al cargar servicios:", error);
-        });
-}
-
-// Renderizar tabla de servicios
-function renderServicesTable() {
-    const tableBody = document.getElementById('services-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    if (services.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-icon">💄</div>
-                        <div class="admin-empty-state-text">No hay servicios registrados</div>
-                        <button class="admin-button" onclick="openNewServiceModal()">+ Agregar Servicio</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Ordenar servicios por categoría y nombre
-    services.sort((a, b) => {
-        if (a.categoria !== b.categoria) {
-            return a.categoria.localeCompare(b.categoria);
-        }
-        return a.nombre.localeCompare(b.nombre);
-    });
-    
-    // Renderizar cada servicio
-    services.forEach(service => {
-        const row = document.createElement('tr');
-        
-        // Nombre
-        const nameCell = document.createElement('td');
-        nameCell.textContent = service.nombre;
-        row.appendChild(nameCell);
-        
-        // Categoría
-        const categoryCell = document.createElement('td');
-        categoryCell.textContent = service.categoria;
-        row.appendChild(categoryCell);
-        
-        // Duración
-        const durationCell = document.createElement('td');
-        durationCell.textContent = service.duracion + ' min';
-        row.appendChild(durationCell);
-        
-        // Precio
-        const priceCell = document.createElement('td');
-        priceCell.textContent = 's/' + service.precio;
-        row.appendChild(priceCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        actionsCell.innerHTML = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
-            <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
-        `;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// Abrir modal para nuevo servicio
-function openNewServiceModal() {
-    // Limpiar formulario
-    document.getElementById('new-service-name').value = '';
-    document.getElementById('new-service-category').value = 'Pestañas';
-    document.getElementById('new-service-duration').value = '60';
-    document.getElementById('new-service-price').value = '';
-    document.getElementById('new-service-description').value = '';
-    
-    // Mostrar modal
-    document.getElementById('new-service-modal').style.display = 'block';
-}
-
-// Cerrar modal de nuevo servicio
-function closeNewServiceModal() {
-    document.getElementById('new-service-modal').style.display = 'none';
-}
-
-// Crear nuevo servicio
-function createNewService() {
-    // Obtener datos del formulario
-    const name = document.getElementById('new-service-name').value;
-    const category = document.getElementById('new-service-category').value;
-    const duration = document.getElementById('new-service-duration').value;
-    const price = document.getElementById('new-service-price').value;
-    const description = document.getElementById('new-service-description').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre del servicio es obligatorio');
-        return;
-    }
-    
-    if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
-        alert('La duración debe ser un número positivo');
-        return;
-    }
-    
-    if (!price || isNaN(price) || parseFloat(price) <= 0) {
-        alert('El precio debe ser un número positivo');
-        return;
-    }
-    
-    // ID único
-    const serviceId = 'service_' + Date.now().toString();
-    
-    // Crear servicio
-    const newService = {
-        id: serviceId,
-        nombre: name,
-        categoria: category,
-        duracion: parseInt(duration),
-        precio: parseFloat(price),
-        descripcion: description,
-        fechaCreacion: new Date().toISOString()
-    };
-    
-    // Guardar en Firestore
-    db.collection('servicios').doc(serviceId)
-        .set(newService)
-        .then(() => {
-            console.log("Servicio creado con éxito");
-            // Cerrar modal
-            closeNewServiceModal();
-            // Recargar servicios
-            loadServices();
-            // Mostrar mensaje
-            alert('Servicio creado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al crear el servicio: ", error);
-            alert('Error al crear el servicio. Inténtalo de nuevo.');
-        });
-}
-// Abrir modal de edición de servicio
-function openEditServiceModal(serviceId) {
-    // Buscar servicio
-    const service = services.find(s => s.id === serviceId);
-    
-    if (!service) {
-        alert('Servicio no encontrado');
-        return;
-    }
-    
-    // Llenar formulario
-    document.getElementById('edit-service-name').value = service.nombre;
-    document.getElementById('edit-service-category').value = service.categoria;
-    document.getElementById('edit-service-duration').value = service.duracion;
-    document.getElementById('edit-service-price').value = service.precio;
-    document.getElementById('edit-service-description').value = service.descripcion || '';
-    
-    // Guardar ID del servicio actual
-    currentServiceId = serviceId;
-    
-    // Mostrar modal
-    document.getElementById('edit-service-modal').style.display = 'block';
-}
-
-// Cerrar modal de edición de servicio
-function closeEditServiceModal() {
-    document.getElementById('edit-service-modal').style.display = 'none';
-    currentServiceId = null;
-}
-
-// Guardar cambios de servicio
-function saveServiceChanges() {
-    // Verificar que hay un servicio seleccionado
-    if (!currentServiceId) {
-        alert('No hay servicio seleccionado');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const name = document.getElementById('edit-service-name').value;
-    const category = document.getElementById('edit-service-category').value;
-    const duration = document.getElementById('edit-service-duration').value;
-    const price = document.getElementById('edit-service-price').value;
-    const description = document.getElementById('edit-service-description').value;
-    
-    // Validar datos (igual que en createNewService)
-    if (!name) {
-        alert('El nombre del servicio es obligatorio');
-        return;
-    }
-    
-    if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
-        alert('La duración debe ser un número positivo');
-        return;
-    }
-    
-    if (!price || isNaN(price) || parseFloat(price) <= 0) {
-        alert('El precio debe ser un número positivo');
-        return;
-    }
-    
-    // Preparar datos actualizados
-    const updatedData = {
-        nombre: name,
-        categoria: category,
-        duracion: parseInt(duration),
-        precio: parseFloat(price),
-        descripcion: description,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('servicios').doc(currentServiceId)
-        .update(updatedData)
-        .then(() => {
-            console.log("Servicio actualizado con éxito");
-            // Cerrar modal
-            closeEditServiceModal();
-            // Recargar servicios
-            loadServices();
-            // Mostrar mensaje
-            alert('Servicio actualizado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al actualizar el servicio: ", error);
-            alert('Error al actualizar el servicio. Inténtalo de nuevo.');
-        });
-}
-
-// Eliminar servicio
-function deleteService(serviceId) {
-    // Confirmar eliminación
-    if (!confirm('¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.')) {
-        return;
-    }
-    
-    // Eliminar de Firestore
-    db.collection('servicios').doc(serviceId)
-        .delete()
-        .then(() => {
-            console.log("Servicio eliminado con éxito");
-            // Recargar servicios
-            loadServices();
-            // Mostrar mensaje
-            alert('Servicio eliminado correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al eliminar el servicio: ", error);
-            alert('Error al eliminar el servicio. Inténtalo de nuevo.');
-        });
-}
-
-// Buscar servicios
-function searchServices() {
-    const searchText = document.getElementById('services-search').value.toLowerCase();
-    
-    if (!searchText.trim()) {
-        // Si no hay texto, mostrar todos los servicios
-        renderServicesTable();
-        return;
-    }
-    
-    // Filtrar servicios según el texto de búsqueda
-    const filteredServices = services.filter(service => 
-        service.nombre.toLowerCase().includes(searchText) ||
-        service.categoria.toLowerCase().includes(searchText) ||
-        (service.descripcion && service.descripcion.toLowerCase().includes(searchText))
-    );
-    
-    // Actualizar tabla con los servicios filtrados
-    const tableBody = document.getElementById('services-table');
-    if (!tableBody) return;
-    
-    // Limpiar tabla
-    tableBody.innerHTML = '';
-    
-    // Si no hay resultados, mostrar mensaje
-    if (filteredServices.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    <div class="admin-empty-state">
-                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Cargar servicios filtrados
-    filteredServices.forEach(service => {
-        const row = document.createElement('tr');
-        
-        // Nombre
-        const nameCell = document.createElement('td');
-        nameCell.textContent = service.nombre;
-        row.appendChild(nameCell);
-        
-        // Categoría
-        const categoryCell = document.createElement('td');
-        categoryCell.textContent = service.categoria;
-        row.appendChild(categoryCell);
-        
-        // Duración
-        const durationCell = document.createElement('td');
-        durationCell.textContent = service.duracion + ' min';
-        row.appendChild(durationCell);
-        
-        // Precio
-        const priceCell = document.createElement('td');
-        priceCell.textContent = 's/' + service.precio;
-        row.appendChild(priceCell);
-        
-        // Acciones
-        const actionsCell = document.createElement('td');
-        actionsCell.innerHTML = `
-            <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
-            <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
-        `;
-        row.appendChild(actionsCell);
-        
-        // Agregar fila a la tabla
-        tableBody.appendChild(row);
-    });
-}
-
-// ===== FUNCIONES PARA GESTIÓN DE PROMOCIONES =====
-
-// Cargar promociones desde Firestore
-function loadPromotions() {
-    db.collection('promociones')
-        .get()
-        .then((snapshot) => {
-            promotions = [];
-            snapshot.forEach((doc) => {
-                promotions.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-// Renderizar promociones
-function renderPromotions() {
-    const container = document.getElementById('promotions-container');
-    if (!container) return;
-    
-    // Limpiar contenedor
-    container.innerHTML = '';
-    
-    if (promotions.length === 0) {
-        container.innerHTML = `
-            <div class="admin-empty-state">
-                <div class="admin-empty-state-icon">📢</div>
-                <div class="admin-empty-state-text">No hay promociones registradas</div>
-                <button class="admin-button" onclick="openNewPromotionModal()">+ Agregar Promoción</button>
-            </div>
-        `;
-        return;
-    }
-    
-    // Ordenar promociones por estado (activas primero) y nombre
-    promotions.sort((a, b) => {
-        if (a.estado !== b.estado) {
-            return a.estado === 'active' ? -1 : 1;
-        }
-        return a.nombre.localeCompare(b.nombre);
-    });
-    
-    // Renderizar cada promoción
-    promotions.forEach(promotion => {
-        const promoCard = document.createElement('div');
-        promoCard.className = 'promo-card';
-        
-        promoCard.innerHTML = `
-            <div class="promo-info">
-                <div class="promo-title">${promotion.nombre}</div>
-                <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
-                <div class="promo-discount">Descuento: ${promotion.descuento}</div>
-                <div>
-                    <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
-                        ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
-                    </span>
-                </div>
-            </div>
-            <div class="promo-actions">
-                <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
-                <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
-            </div>
-        `;
-        
-        container.appendChild(promoCard);
-    });
-}
-
-// Abrir modal para nueva promoción
-function openNewPromotionModal() {
-    // Limpiar formulario
-    document.getElementById('new-promotion-name').value = '';
-    document.getElementById('new-promotion-description').value = '';
-    document.getElementById('new-promotion-discount').value = '';
-    document.getElementById('new-promotion-status').value = 'active';
-    
-    // Mostrar modal
-    document.getElementById('new-promotion-modal').style.display = 'block';
-}
-
-// Cerrar modal de nueva promoción
-function closeNewPromotionModal() {
-    document.getElementById('new-promotion-modal').style.display = 'none';
-}
-
-// Crear nueva promoción
-function createNewPromotion() {
-    // Obtener datos del formulario
-    const name = document.getElementById('new-promotion-name').value;
-    const description = document.getElementById('new-promotion-description').value;
-    const discount = document.getElementById('new-promotion-discount').value;
-    const status = document.getElementById('new-promotion-status').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre de la promoción es obligatorio');
-        return;
-    }
-    
-    if (!discount) {
-        alert('El descuento es obligatorio');
-        return;
-    }
-    
-    // ID único
-    const promotionId = 'promo_' + Date.now().toString();
-    
-    // Crear promoción
-    const newPromotion = {
-        id: promotionId,
-        nombre: name,
-        descripcion: description,
-        descuento: discount,
-        estado: status,
-        fechaCreacion: new Date().toISOString()
-    };
-    
-    // Guardar en Firestore
-    db.collection('promociones').doc(promotionId)
-        .set(newPromotion)
-        .then(() => {
-            console.log("Promoción creada con éxito");
-            // Cerrar modal
-            closeNewPromotionModal();
-            // Recargar promociones
-            loadPromotions();
-            // Mostrar mensaje
-            alert('Promoción creada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al crear la promoción: ", error);
-            alert('Error al crear la promoción. Inténtalo de nuevo.');
-        });
-}
-
-// Abrir modal de edición de promoción
-function openEditPromotionModal(promotionId) {
-    // Buscar promoción
-    const promotion = promotions.find(p => p.id === promotionId);
-    
-    if (!promotion) {
-        alert('Promoción no encontrada');
-        return;
-    }
-    
-    // Llenar formulario
-    document.getElementById('edit-promotion-name').value = promotion.nombre;
-    document.getElementById('edit-promotion-description').value = promotion.descripcion || '';
-    document.getElementById('edit-promotion-discount').value = promotion.descuento;
-    document.getElementById('edit-promotion-status').value = promotion.estado || 'active';
-    
-    // Guardar ID de la promoción actual
-    currentPromotionId = promotionId;
-    
-    // Mostrar modal
-    document.getElementById('edit-promotion-modal').style.display = 'block';
-}
-
-// Cerrar modal de edición de promoción
-function closeEditPromotionModal() {
-    document.getElementById('edit-promotion-modal').style.display = 'none';
-    currentPromotionId = null;
-}
-
-// Guardar cambios de promoción
-function savePromotionChanges() {
-    // Verificar que hay una promoción seleccionada
-    if (!currentPromotionId) {
-        alert('No hay promoción seleccionada');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const name = document.getElementById('edit-promotion-name').value;
-    const description = document.getElementById('edit-promotion-description').value;
-    const discount = document.getElementById('edit-promotion-discount').value;
-    const status = document.getElementById('edit-promotion-status').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre de la promoción es obligatorio');
-        return;
-    }
-    
-    if (!discount) {
-        alert('El descuento es obligatorio');
-        return;
-    }
-    
-    // Preparar datos actualizados
-    const updatedData = {
-        nombre: name,
-        descripcion: description,
-        descuento: discount,
-        estado: status,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('promociones').doc(currentPromotionId)
-        .update(updatedData)
-        .then(() => {
-            console.log("Promoción actualizada con éxito");
-            // Cerrar modal
-            closeEditPromotionModal();
-            // Recargar promociones
-            loadPromotions();
-            // Mostrar mensaje
-            alert('Promoción actualizada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al actualizar la promoción: ", error);
-            alert('Error al actualizar la promoción. Inténtalo de nuevo.');
-        });
-}
-
-// Eliminar promoción
-function deletePromotion(promotionId) {
-    // Confirmar eliminación
-    if (!confirm('¿Estás seguro de que deseas eliminar esta promoción? Esta acción no se puede deshacer.')) {
-        return;
-    }
-    
-    // Eliminar de Firestore
-    db.collection('promociones').doc(promotionId)
-        .delete()
-        .then(() => {
-            console.log("Promoción eliminada con éxito");
-            // Recargar promociones
-            loadPromotions();
-            // Mostrar mensaje
-            alert('Promoción eliminada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al eliminar la promoción: ", error);
-            alert('Error al eliminar la promoción. Inténtalo de nuevo.');
-        });
-}
-
-// Buscar promociones
-function searchPromotions() {
-    const searchText = document.getElementById('promotions-search').value.toLowerCase();
-    
-    if (!searchText.trim()) {
-        // Si no hay texto, mostrar todas las promociones
-        renderPromotions();
-        return;
-    }
-    
-    // Filtrar promociones según el texto de búsqueda
-    const filteredPromotions = promotions.filter(promotion => 
-        promotion.nombre.toLowerCase().includes(searchText) ||
-        (promotion.descripcion && promotion.descripcion.toLowerCase().includes(searchText)) ||
-        promotion.descuento.toLowerCase().includes(searchText)
-    );
-    
-    // Actualizar contenedor con las promociones filtradas
-    const container = document.getElementById('promotions-container');
-    if (!container) return;
-    
-    // Limpiar contenedor
-    container.innerHTML = '';
-    
-    // Si no hay resultados, mostrar mensaje
-    if (filteredPromotions.length === 0) {
-        container.innerHTML = `
-            <div class="admin-empty-state">
-                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
-            </div>
-        `;
-        return;
-    }
-    
-    // Cargar promociones filtradas
-    filteredPromotions.forEach(promotion => {
-        const promoCard = document.createElement('div');
-        promoCard.className = 'promo-card';
-        
-        promoCard.innerHTML = `
-            <div class="promo-info">
-                <div class="promo-title">${promotion.nombre}</div>
-                <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
-                <div class="promo-discount">Descuento: ${promotion.descuento}</div>
-                <div>
-                    <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
-                        ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
-                    </span>
-                </div>
-            </div>
-            <div class="promo-actions">
-                <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
-                <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
-            </div>
-        `;
-        
-        container.appendChild(promoCard);
-    });
-}
-
-// ===== FUNCIONES PARA GESTIÓN DE DISPONIBILIDAD =====
-
-// Mostrar sección de disponibilidad
-function showAvailabilitySection() {
-    // Ocultar tabla de citas y mostrar sección de disponibilidad
-    document.querySelector('#appointments .admin-table').style.display = 'none';
-    document.getElementById('availability-section').style.display = 'block';
-    
-    // Actualizar UI
-    updateAdminMonthLabel();
-    loadAvailability();
-    
-    // Actualizar tabs
-    const tabs = document.querySelectorAll('#appointments .admin-tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    tabs[4].classList.add('active'); // La tab de Disponibilidad
-}
-
-// Ocultar sección de disponibilidad
-function hideAvailabilitySection() {
-    document.querySelector('#appointments .admin-table').style.display = 'table';
-    document.getElementById('availability-section').style.display = 'none';
-}
-
-// Cambiar mes en administrador
-function changeAdminMonth(offset) {
-    currentAdminMonth.setMonth(currentAdminMonth.getMonth() + offset);
-    updateAdminMonthLabel();
-    loadAvailability();
-}
-
-// Actualizar etiqueta del mes
-function updateAdminMonthLabel() {
-    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    const monthName = months[currentAdminMonth.getMonth()];
-    const year = currentAdminMonth.getFullYear();
-    
-    document.getElementById('currentMonthLabel').textContent = `${monthName} ${year}`;
-}
-
-// Función para cargar disponibilidad desde Firestore - MEJORADA
-function loadAvailability() {
-    // Obtener el primer y último día del mes actual
-    const firstDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth(), 1, 0, 0, 0);
-    const lastDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth() + 1, 0, 23, 59, 59);
-    
-    // Formatear fechas como ISO strings
-    const firstDayISO = firstDay.toISOString();
-    const lastDayISO = lastDay.toISOString();
-    
-    // Consultar Firestore para obtener la disponibilidad del mes actual
-    db.collection('disponibilidad')
-        .where('fecha', '>=', firstDayISO)
-        .where('fecha', '<=', lastDayISO)
-        .get()
-        .then((snapshot) => {
-            availableTimes = [];
-            snapshot.forEach((doc) => {
-                availableTimes.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            renderAvailabilityList();
-        })
-        .catch((error) => {
-            console.error("Error al cargar disponibilidad:", error);
-        });
-}
-
-// Función para renderizar lista de disponibilidad - MEJORADA
-function renderAvailabilityList() {
-    const container = document.getElementById('availability-list');
-    container.innerHTML = '';
-    
-    if (availableTimes.length === 0) {
-        container.innerHTML = `
-            <div class="admin-empty-state">
-                <div class="admin-empty-state-icon">📅</div>
-                <div class="admin-empty-state-text">No hay horarios disponibles para este mes</div>
-                <button class="admin-button" onclick="openNewAvailabilityModal()">+ Agregar Horario</button>
-            </div>
-        `;
-        return;
-    }
-    
-    // Agrupar por día
-    const dayGroups = {};
-    availableTimes.forEach(slot => {
-        // Usar el valor día precalculado en lugar de recalcularlo
-        const dayKey = slot.dia;
-        
-        if (!dayGroups[dayKey]) {
-            dayGroups[dayKey] = [];
         }
         
-        dayGroups[dayKey].push(slot);
-    });
-    
-    // Obtener las fechas
-    const sortedDates = Object.keys(dayGroups);
-    
-    // Función para ordenar las fechas correctamente
-    sortedDates.sort((a, b) => {
-        // Extraer número de día del texto (ej: "Lunes 15 Mayo" -> 15)
-        const dayA = parseInt(a.split(' ')[1]);
-        const dayB = parseInt(b.split(' ')[1]);
-        return dayA - dayB;
-    });
-    
-    // Renderizar cada día con sus horarios
-    sortedDates.forEach(day => {
-        const dayEl = document.createElement('div');
-        dayEl.className = 'availability-day';
-        
-        const slots = dayGroups[day];
-        
-        // Crear cabecera del día
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'availability-day-header';
-        dayHeader.innerHTML = `
-            <div class="availability-day-date">${day}</div>
-        `;
-        
-        // Crear contenedor de horarios
-        const timesContainer = document.createElement('div');
-        timesContainer.className = 'availability-times';
-        
-        // Ordenar slots por hora usando función de comparación personalizada
-        slots.sort((a, b) => {
-            return compareTimes(a.hora, b.hora);
-        });
-        
-        // Agregar cada horario
-        slots.forEach(slot => {
-            const timeEl = document.createElement('div');
-            timeEl.className = 'availability-time';
+        // Filtrar citas según la tab actual
+        function filterAppointmentsByTab(appointments, tab) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            let statusClass = '';
-            switch (slot.capacidad) {
-                case 'high': statusClass = 'status-high'; break;
-                case 'medium': statusClass = 'status-medium'; break;
-                case 'low': statusClass = 'status-low'; break;
-                case 'unavailable': statusClass = 'status-unavailable'; break;
+            if (tab === 'recent') {
+                return appointments; // Todas las citas
+            } else if (tab === 'pending') {
+                return appointments.filter(appointment => 
+                    appointment.status === 'pending'
+                );
+            } else if (tab === 'today') {
+                return appointments.filter(appointment => {
+                    if (!appointment.day) return false;
+                    
+                    const parts = appointment.day.split(' ');
+                    if (parts.length < 2) return false;
+                    
+                    const day = parseInt(parts[1]);
+                    return day === today.getDate();
+                });
             }
             
-            timeEl.innerHTML = `
-                <div class="availability-time-info">
-                    <div class="availability-status ${statusClass}"></div>
-                    <div>${slot.hora}</div>
-                </div>
-                <div class="availability-time-actions">
-                    <button class="admin-action-btn admin-action-edit" onclick="openEditAvailabilityModal('${slot.id}')">✎</button>
-                </div>
-            `;
+            return appointments;
+        }
+        
+        // Cargar tabla de clientes
+        function loadClientsTable() {
+            const tableBody = document.getElementById('clients-table');
+            if (!tableBody) return;
             
-            timesContainer.appendChild(timeEl);
-        });
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay clientes, mostrar mensaje
+            if (clients.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-icon">👥</div>
+                                <div class="admin-empty-state-text">No hay clientes registrados</div>
+                                <button class="admin-button" onclick="openNewClientModal()">+ Nuevo Cliente</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Ordenar clientes por nombre
+            clients.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Cargar clientes en la tabla
+            clients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = client.name;
+                row.appendChild(nameCell);
+                
+                // Teléfono
+                const phoneCell = document.createElement('td');
+                phoneCell.textContent = client.phone || 'No especificado';
+                row.appendChild(phoneCell);
+                
+                // Última visita
+                const lastVisitCell = document.createElement('td');
+                lastVisitCell.textContent = formatDate(client.lastAppointment);
+                row.appendChild(lastVisitCell);
+                
+                // Total citas
+                const totalAppointmentsCell = document.createElement('td');
+                totalAppointmentsCell.textContent = client.appointments.length;
+                row.appendChild(totalAppointmentsCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
         
-        // Agregar elementos al día
-        dayEl.appendChild(dayHeader);
-        dayEl.appendChild(timesContainer);
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'No registrada';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES');
+            } catch (e) {
+                return 'Fecha inválida';
+            }
+        }
         
-        // Agregar día al contenedor principal
-        container.appendChild(dayEl);
-    });
-}
-
-// Función para comparar horas en formato "HH:MM AM/PM" - NUEVA
-function compareTimes(timeA, timeB) {
-    // Extraer componentes
-    const [timePartA, periodA] = timeA.split(' ');
-    const [timePartB, periodB] = timeB.split(' ');
-    
-    const [hourA, minuteA] = timePartA.split(':');
-    const [hourB, minuteB] = timePartB.split(':');
-    
-    // Convertir a horas de 24h para comparación
-    let hour24A = parseInt(hourA);
-    let hour24B = parseInt(hourB);
-    
-    // Ajustar para AM/PM
-    if (periodA === 'PM' && hour24A < 12) hour24A += 12;
-    if (periodA === 'AM' && hour24A === 12) hour24A = 0;
-    
-    if (periodB === 'PM' && hour24B < 12) hour24B += 12;
-    if (periodB === 'AM' && hour24B === 12) hour24B = 0;
-    
-    // Comparar horas
-    if (hour24A !== hour24B) {
-        return hour24A - hour24B;
-    }
-    
-    // Si las horas son iguales, comparar minutos
-    return parseInt(minuteA) - parseInt(minuteB);
-}
-
-// Abrir modal para nueva disponibilidad
+        // Mostrar sección
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            const sections = document.querySelectorAll('.admin-content');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Actualizar menú
+            const menuLinks = document.querySelectorAll('.admin-menu-link');
+            menuLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Activar el enlace actual
+            event.currentTarget.classList.add('active');
+            
+            // Cargar datos específicos de la sección
+            if (sectionId === 'dashboard') {
+                loadAppointmentsTable();
+            } else if (sectionId === 'appointments') {
+                loadAppointmentsTable();
+                // Restablecer la vista de citas (ocultar sección de disponibilidad)
+                hideAvailabilitySection();
+                // Establecer la primera tab como activa
+                const tabs = document.querySelectorAll('#appointments .admin-tab');
+                tabs.forEach((tab, index) => {
+                    tab.classList.toggle('active', index === 0);
+                });
+                currentFilter = 'all';
+            } else if (sectionId === 'clients') {
+                loadClientsTable();
+            } else if (sectionId === 'services') {
+                loadServices();
+            } else if (sectionId === 'promotions') {
+                loadPromotions();
+            } else if (sectionId === 'settings') {
+                loadSettings();
+            }
+        }
+        
+        // Mostrar tab
+        function showTab(tabId) {
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('.admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la tab seleccionada
+            event.currentTarget.classList.add('active');
+            
+            // Actualizar tab actual
+            currentTab = tabId;
+            
+            // Recargar tabla de citas
+            loadAppointmentsTable();
+        }
+        
+        // Filtrar citas en la sección de citas
+        function filterAppointments(filter) {
+            // Si se muestra la sección de disponibilidad, ocultarla
+            hideAvailabilitySection();
+            
+            // Actualizar filtro actual
+            currentFilter = filter;
+            
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('#appointments .admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la tab seleccionada (excepto la última que es Disponibilidad)
+            if (filter === 'all') tabs[0].classList.add('active');
+            else if (filter === 'pending') tabs[1].classList.add('active');
+            else if (filter === 'confirmed') tabs[2].classList.add('active');
+            else if (filter === 'canceled') tabs[3].classList.add('active');
+            
+            // Recargar tabla de citas
+            loadAppointmentsTable();
+        }
+        
+        // Buscar citas
+        function searchAppointments() {
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las citas
+                loadAppointmentsTable();
+                return;
+            }
+            
+            // Filtrar citas según el texto de búsqueda
+            const filteredAppointments = appointments.filter(appointment => {
+                const clientName = appointment.client ? appointment.client.name || '' : '';
+                const service = appointment.service || '';
+                const day = appointment.day || '';
+                
+                return (
+                    clientName.toLowerCase().includes(searchText) ||
+                    service.toLowerCase().includes(searchText) ||
+                    day.toLowerCase().includes(searchText)
+                );
+            });
+            
+            // Actualizar tabla con las citas filtradas
+            const tableBody = document.getElementById('appointments-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredAppointments.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar citas filtradas
+            filteredAppointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                
+                // Cliente
+                const clientCell = document.createElement('td');
+                clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                row.appendChild(clientCell);
+                
+                // Servicio
+                const serviceCell = document.createElement('td');
+                serviceCell.textContent = appointment.service || 'No especificado';
+                row.appendChild(serviceCell);
+                
+                // Fecha
+                const dateCell = document.createElement('td');
+                dateCell.textContent = appointment.day || formatDate(appointment.date);
+                row.appendChild(dateCell);
+                
+                // Hora
+                const timeCell = document.createElement('td');
+                timeCell.textContent = appointment.time || 'No especificada';
+                row.appendChild(timeCell);
+                
+                // Estado
+                const statusCell = document.createElement('td');
+                const status = appointment.status || 'pending';
+                let statusBadge = '';
+                
+                if (status === 'pending') {
+                    statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                } else if (status === 'confirmed') {
+                    statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                } else if (status === 'canceled') {
+                    statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+                }
+                
+                statusCell.innerHTML = statusBadge;
+                row.appendChild(statusCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                let actionButtons = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                `;
+                
+                if (status === 'pending') {
+                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
+                }
+                
+                if (status !== 'canceled') {
+                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
+                }
+                
+                actionsCell.innerHTML = actionButtons;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Búsqueda específica para sección de citas
+        function searchAppointmentsData() {
+            const searchText = document.getElementById('appointments-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las citas
+                loadAppointmentsTable();
+                return;
+            }
+            
+            // Aplicar el mismo filtro que searchAppointments pero para la otra tabla
+            const filteredAppointments = appointments.filter(appointment => {
+                const clientName = appointment.client ? appointment.client.name || '' : '';
+                const service = appointment.service || '';
+                const day = appointment.day || '';
+                
+                return (
+                    clientName.toLowerCase().includes(searchText) ||
+                    service.toLowerCase().includes(searchText) ||
+                    day.toLowerCase().includes(searchText)
+                );
+            });
+            
+            // Actualizar tabla de citas
+            const tableBody = document.getElementById('appointments-data-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredAppointments.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar citas filtradas igual que en searchAppointments
+            filteredAppointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                
+                // Cliente
+                const clientCell = document.createElement('td');
+                clientCell.textContent = appointment.client ? appointment.client.name || 'Sin nombre' : 'Sin nombre';
+                row.appendChild(clientCell);
+                
+                // Servicio
+                const serviceCell = document.createElement('td');
+                serviceCell.textContent = appointment.service || 'No especificado';
+                row.appendChild(serviceCell);
+                
+                // Fecha
+                const dateCell = document.createElement('td');
+                dateCell.textContent = appointment.day || formatDate(appointment.date);
+                row.appendChild(dateCell);
+                
+                // Hora
+                const timeCell = document.createElement('td');
+                timeCell.textContent = appointment.time || 'No especificada';
+                row.appendChild(timeCell);
+                
+                // Estado
+                const statusCell = document.createElement('td');
+                const status = appointment.status || 'pending';
+                let statusBadge = '';
+                
+                if (status === 'pending') {
+                    statusBadge = '<span class="admin-badge admin-badge-pending">Pendiente</span>';
+                } else if (status === 'confirmed') {
+                    statusBadge = '<span class="admin-badge admin-badge-confirmed">Confirmado</span>';
+                } else if (status === 'canceled') {
+                    statusBadge = '<span class="admin-badge admin-badge-canceled">Cancelado</span>';
+                }
+                
+                statusCell.innerHTML = statusBadge;
+                row.appendChild(statusCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                let actionButtons = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditModal('${appointment.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${appointment.client ? appointment.client.name || '' : ''}', '${appointment.client ? appointment.client.phone || '' : ''}')">📱</button>
+                `;
+                
+                if (status === 'pending') {
+                    actionButtons += `<button class="admin-action-btn admin-action-confirm" onclick="confirmAppointment('${appointment.id}')">✓</button>`;
+                }
+                
+                if (status !== 'canceled') {
+                    actionButtons += `<button class="admin-action-btn admin-action-cancel" onclick="cancelAppointment('${appointment.id}')">✕</button>`;
+                }
+                
+                actionsCell.innerHTML = actionButtons;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Abrir modal de edición
+        function openEditModal(appointmentId) {
+            // Buscar cita por ID
+            const appointment = appointments.find(a => a.id === appointmentId);
+            
+            if (!appointment) {
+                alert('No se encontró la cita');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-client-name').value = appointment.client ? appointment.client.name || '' : '';
+            document.getElementById('edit-client-phone').value = appointment.client ? appointment.client.phone || '' : '';
+            
+            // Seleccionar servicio
+            const serviceSelect = document.getElementById('edit-service');
+            for (let i = 0; i < serviceSelect.options.length; i++) {
+                if (serviceSelect.options[i].text === appointment.service) {
+                    serviceSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Establecer fecha
+            // Para simplificar, usamos la fecha actual
+            const today = new Date();
+            document.getElementById('edit-date').value = today.toISOString().split('T')[0];
+            
+            // Seleccionar hora
+            const timeSelect = document.getElementById('edit-time');
+            for (let i = 0; i < timeSelect.options.length; i++) {
+                if (timeSelect.options[i].text === appointment.time) {
+                    timeSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Seleccionar estado
+            document.getElementById('edit-status').value = appointment.status || 'pending';
+            
+            // Establecer observaciones
+            document.getElementById('edit-notes').value = appointment.client && appointment.client.comments ? appointment.client.comments : '';
+            
+            // Guardar ID de la cita
+            document.getElementById('edit-appointment-modal').setAttribute('data-appointment-id', appointmentId);
+            
+            // Mostrar modal
+            document.getElementById('edit-appointment-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición
+        function closeEditModal() {
+            document.getElementById('edit-appointment-modal').style.display = 'none';
+        }
+        
+        // Editar cita
+        function saveAppointment() {
+            // Obtener ID de la cita
+            const appointmentId = document.getElementById('edit-appointment-modal').getAttribute('data-appointment-id');
+            
+            // Validar ID
+            if (!appointmentId) {
+                alert('No se encontró el ID de la cita');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const clientName = document.getElementById('edit-client-name').value;
+            const clientPhone = document.getElementById('edit-client-phone').value;
+            const service = document.getElementById('edit-service').value;
+            const date = document.getElementById('edit-date').value;
+            const time = document.getElementById('edit-time').value;
+            const status = document.getElementById('edit-status').value;
+            const notes = document.getElementById('edit-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Calcular día formateado (ej. "Lunes 1 Mayo")
+            const day = getDayFromDate(date);
+            
+            // Preparar datos para actualizar en el formato de index.html
+            const updatedData = {
+                servicio: service,
+                fecha: day,
+                hora: time,
+                estado: status === 'pending' ? 'pendiente' : 
+                        status === 'confirmed' ? 'confirmada' : 'cancelada',
+                nombre: clientName,
+                telefono: clientPhone,
+                comentarios: notes,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('reservas').doc(appointmentId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Cita actualizada con éxito");
+                    // Cerrar modal
+                    closeEditModal();
+                    // Recargar datos
+                    loadAppointmentsTable();
+                    // Mostrar mensaje
+                    alert('Cita actualizada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar la cita: ", error);
+                    alert('Error al actualizar la cita. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal de nueva cita
+        function openNewAppointmentModal() {
+            // Limpiar formulario
+            document.getElementById('new-client-name').value = '';
+            document.getElementById('new-client-phone').value = '';
+            document.getElementById('new-notes').value = '';
+            
+            // Establecer fecha actual
+            const today = new Date();
+            document.getElementById('new-date').value = today.toISOString().split('T')[0];
+            
+            // Actualizar select de servicios con los servicios disponibles
+            updateServiceSelects();
+            
+            // Mostrar modal
+            document.getElementById('new-appointment-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nueva cita
+        function closeNewAppointmentModal() {
+            document.getElementById('new-appointment-modal').style.display = 'none';
+        }
+        
+        // Crear nueva cita
+        function createAppointment() {
+            // Obtener datos del formulario
+            const clientName = document.getElementById('new-client-name').value;
+            const clientPhone = document.getElementById('new-client-phone').value;
+            const service = document.getElementById('new-service').value;
+            const date = document.getElementById('new-date').value;
+            const time = document.getElementById('new-time').value;
+            const status = document.getElementById('new-status').value;
+            const notes = document.getElementById('new-notes').value;
+            
+            // Validar datos
+            if (!clientName) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Calcular día formateado
+            const day = getDayFromDate(date);
+            
+            // ID único basado en timestamp
+            const appointmentId = Date.now().toString();
+            
+            // Crear nueva cita en el formato de index.html
+            const newAppointment = {
+                nombre: clientName,
+                telefono: clientPhone,
+                servicio: service,
+                fecha: day,
+                hora: time,
+                estado: status === 'pending' ? 'pendiente' : 'confirmada',
+                comentarios: notes,
+                fechaCreacion: new Date().toISOString(),
+                metodoPago: 'Pendiente'
+            };
+            
+            // Guardar en Firestore
+            db.collection('reservas').doc(appointmentId)
+                .set(newAppointment)
+                .then(() => {
+                    console.log("Cita creada con éxito");
+                    // Cerrar modal
+                    closeNewAppointmentModal();
+                    // Recargar datos
+                    loadAppointmentsTable();
+                    // Mostrar mensaje
+                    alert('Cita creada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear la cita: ", error);
+                    alert('Error al crear la cita. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Actualizar selects de servicios
+        function updateServiceSelects() {
+            // Obtener los selects
+            const newServiceSelect = document.getElementById('new-service');
+            const editServiceSelect = document.getElementById('edit-service');
+            
+            // Si no hay servicios cargados, cargarlos primero
+            if (services.length === 0) {
+                db.collection('servicios')
+                    .get()
+                    .then((snapshot) => {
+                        // Limpiar selects
+                        newServiceSelect.innerHTML = '';
+                        editServiceSelect.innerHTML = '';
+                        
+                        // Si no hay servicios, usar los predeterminados
+                        if (snapshot.empty) {
+                            return;
+                        }
+                        
+                        // Procesar servicios
+                        const servicesByCategory = {};
+                        
+                        snapshot.forEach((doc) => {
+                            const service = doc.data();
+                            
+                            if (!servicesByCategory[service.categoria]) {
+                                servicesByCategory[service.categoria] = [];
+                            }
+                            
+                            servicesByCategory[service.categoria].push(service);
+                        });
+                        
+                        // Agregar opciones agrupadas por categoría
+                        Object.keys(servicesByCategory).forEach(category => {
+                            const optgroup = document.createElement('optgroup');
+                            optgroup.label = category;
+                            
+                            servicesByCategory[category].forEach(service => {
+                                const option = document.createElement('option');
+                                option.value = service.nombre;
+                                option.textContent = `${service.nombre} - s/${service.precio}`;
+                                optgroup.appendChild(option);
+                                
+                                // Clonar para el otro select
+                                const optionClone = option.cloneNode(true);
+                                optgroup.appendChild(optionClone);
+                            });
+                            
+                            newServiceSelect.appendChild(optgroup);
+                            // Clonar para el otro select
+                            const optgroupClone = optgroup.cloneNode(true);
+                            editServiceSelect.appendChild(optgroupClone);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error al cargar servicios: ", error);
+                    });
+            }
+        }
+        
+        // Convertir fecha a formato "Lunes 1 Mayo"
+        function getDayFromDate(dateString) {
+            const date = new Date(dateString);
+            
+            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            const weekday = weekdays[date.getDay()];
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            
+            return `${weekday} ${day} ${month}`;
+        }
+        
+        // Confirmar cita
+        function confirmAppointment(appointmentId) {
+            return db.collection('reservas').doc(appointmentId)
+                .update({
+                    estado: 'confirmada',
+                    fechaActualizacion: new Date().toISOString()
+                })
+                .then(() => {
+                    console.log("Cita confirmada con éxito");
+                    // Opcional: Mostrar un mensaje de éxito
+                    alert('Cita confirmada correctamente');
+                    // Recargar datos o actualizar UI
+                    loadAppointmentsTable();
+                })
+                .catch((error) => {
+                    console.error("Error al confirmar la cita: ", error);
+                    alert('Error al confirmar la cita. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Cancelar cita
+        function cancelAppointment(appointmentId) {
+            // Confirmar cancelación
+            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                return Promise.resolve(false);
+            }
+            
+            return db.collection('reservas').doc(appointmentId)
+                .update({
+                    estado: 'cancelada',
+                    fechaActualizacion: new Date().toISOString()
+                })
+                .then(() => {
+                    console.log("Cita cancelada con éxito");
+                    // Opcional: Mostrar un mensaje de éxito
+                    alert('Cita cancelada correctamente');
+                    // Recargar datos o actualizar UI
+                    loadAppointmentsTable();
+                    return true;
+                })
+                .catch((error) => {
+                    console.error("Error al cancelar la cita: ", error);
+                    alert('Error al cancelar la cita. Inténtalo de nuevo.');
+                    return false;
+                });
+        }
+        
+        // Contactar cliente por WhatsApp
+        function contactClient(name, phone) {
+            if (!phone) {
+                alert('El cliente no tiene número de teléfono registrado');
+                return;
+            }
+            
+            // Crear mensaje
+            const message = `Hola ${name}, te contactamos desde MG STUDIO para confirmar tu cita.`;
+            
+            // Abrir WhatsApp
+            window.open(`https://wa.me/51${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+        
+        // Buscar clientes
+        function searchClients() {
+            const searchText = document.getElementById('clients-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todos los clientes
+                loadClientsTable();
+                return;
+            }
+            
+            // Filtrar clientes según el texto de búsqueda
+            const filteredClients = clients.filter(client => 
+                client.name.toLowerCase().includes(searchText) ||
+                (client.phone && client.phone.includes(searchText))
+            );
+            
+            // Actualizar tabla con los clientes filtrados
+            const tableBody = document.getElementById('clients-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredClients.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar clientes filtrados
+            filteredClients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = client.name;
+                row.appendChild(nameCell);
+                
+                // Teléfono
+                const phoneCell = document.createElement('td');
+                phoneCell.textContent = client.phone || 'No especificado';
+                row.appendChild(phoneCell);
+                
+                // Última visita
+                const lastVisitCell = document.createElement('td');
+                lastVisitCell.textContent = formatDate(client.lastAppointment);
+                row.appendChild(lastVisitCell);
+                
+                // Total citas
+                const totalAppointmentsCell = document.createElement('td');
+                totalAppointmentsCell.textContent = client.appointments.length;
+                row.appendChild(totalAppointmentsCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditClientModal('${client.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-whatsapp" onclick="contactClient('${client.name}', '${client.phone}')">📱</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteClient('${client.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE CLIENTES =====
+        
+        // Abrir modal de edición de cliente
+        function openEditClientModal(clientId) {
+            // Buscar cliente
+            const client = clients.find(c => c.id === clientId);
+            
+            if (!client) {
+                alert('Cliente no encontrado');
+                return;
+            }
+            
+            // Llenar formulario con datos del cliente
+            document.getElementById('edit-client-full-name').value = client.name || '';
+            document.getElementById('edit-client-full-phone').value = client.phone || '';
+            document.getElementById('edit-client-notes').value = client.notes || '';
+            
+            // Guardar ID del cliente actual
+            currentClientId = clientId;
+            
+            // Mostrar modal
+            document.getElementById('edit-client-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de cliente
+        function closeEditClientModal() {
+            document.getElementById('edit-client-modal').style.display = 'none';
+            currentClientId = null;
+        }
+        
+        // Guardar cambios de cliente
+        function saveClientChanges() {
+            // Verificar que hay un cliente seleccionado
+            if (!currentClientId) {
+                alert('No hay cliente seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-client-full-name').value;
+            const phone = document.getElementById('edit-client-full-phone').value;
+            const notes = document.getElementById('edit-client-notes').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                telefono: phone,
+                notas: notes,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('clientes').doc(currentClientId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Cliente actualizado con éxito");
+                    // Cerrar modal
+                    closeEditClientModal();
+                    // Recargar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente actualizado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar el cliente: ", error);
+                    alert('Error al actualizar el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal para nuevo cliente
+        function openNewClientModal() {
+            // Limpiar formulario
+            document.getElementById('new-client-full-name').value = '';
+            document.getElementById('new-client-full-phone').value = '';
+            document.getElementById('new-client-notes').value = '';
+            
+            // Mostrar modal
+            document.getElementById('new-client-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nuevo cliente
+        function closeNewClientModal() {
+            document.getElementById('new-client-modal').style.display = 'none';
+        }
+        
+        // Crear nuevo cliente
+        function createNewClient() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-client-full-name').value;
+            const phone = document.getElementById('new-client-full-phone').value;
+            const notes = document.getElementById('new-client-notes').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del cliente es obligatorio');
+                return;
+            }
+            
+            // ID único basado en timestamp
+            const clientId = 'client_' + Date.now().toString();
+            
+            // Crear nuevo cliente
+            const newClient = {
+                id: clientId,
+                nombre: name,
+                telefono: phone,
+                notas: notes,
+                fechaCreacion: new Date().toISOString(),
+                citas: []
+            };
+            
+            // Guardar en Firestore
+            db.collection('clientes').doc(clientId)
+                .set(newClient)
+                .then(() => {
+                    console.log("Cliente creado con éxito");
+                    // Cerrar modal
+                    closeNewClientModal();
+                    // Actualizar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente creado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear el cliente: ", error);
+                    alert('Error al crear el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar cliente
+        function deleteClient(clientId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('clientes').doc(clientId)
+                .delete()
+                .then(() => {
+                    console.log("Cliente eliminado con éxito");
+                    // Recargar lista de clientes
+                    loadClientsTable();
+                    // Mostrar mensaje
+                    alert('Cliente eliminado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar el cliente: ", error);
+                    alert('Error al eliminar el cliente. Inténtalo de nuevo.');
+                });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE SERVICIOS =====
+        
+        // Cargar servicios desde Firestore
+        function loadServices() {
+            db.collection('servicios')
+                .get()
+                .then((snapshot) => {
+                    services = [];
+                    snapshot.forEach((doc) => {
+                        services.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderServicesTable();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar servicios:", error);
+                });
+        }
+        
+        // Renderizar tabla de servicios
+        function renderServicesTable() {
+            const tableBody = document.getElementById('services-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            if (services.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-icon">💄</div>
+                                <div class="admin-empty-state-text">No hay servicios registrados</div>
+                                <button class="admin-button" onclick="openNewServiceModal()">+ Agregar Servicio</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Ordenar servicios por categoría y nombre
+            services.sort((a, b) => {
+                if (a.categoria !== b.categoria) {
+                    return a.categoria.localeCompare(b.categoria);
+                }
+                return a.nombre.localeCompare(b.nombre);
+            });
+            
+            // Renderizar cada servicio
+            services.forEach(service => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = service.nombre;
+                row.appendChild(nameCell);
+                
+                // Categoría
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = service.categoria;
+                row.appendChild(categoryCell);
+                
+                // Duración
+                const durationCell = document.createElement('td');
+                durationCell.textContent = service.duracion + ' min';
+                row.appendChild(durationCell);
+                
+                // Precio
+                const priceCell = document.createElement('td');
+                priceCell.textContent = 's/' + service.precio;
+                row.appendChild(priceCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Abrir modal para nuevo servicio
+        function openNewServiceModal() {
+            // Limpiar formulario
+            document.getElementById('new-service-name').value = '';
+            document.getElementById('new-service-category').value = 'Pestañas';
+            document.getElementById('new-service-duration').value = '60';
+            document.getElementById('new-service-price').value = '';
+            document.getElementById('new-service-description').value = '';
+            
+            // Mostrar modal
+            document.getElementById('new-service-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nuevo servicio
+        function closeNewServiceModal() {
+            document.getElementById('new-service-modal').style.display = 'none';
+        }
+        
+        // Crear nuevo servicio
+        function createNewService() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-service-name').value;
+            const category = document.getElementById('new-service-category').value;
+            const duration = document.getElementById('new-service-duration').value;
+            const price = document.getElementById('new-service-price').value;
+            const description = document.getElementById('new-service-description').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del servicio es obligatorio');
+                return;
+            }
+            
+            if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
+                alert('La duración debe ser un número positivo');
+                return;
+            }
+            
+            if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                alert('El precio debe ser un número positivo');
+                return;
+            }
+            
+            // ID único
+            const serviceId = 'service_' + Date.now().toString();
+            
+            // Crear servicio
+            const newService = {
+                id: serviceId,
+                nombre: name,
+                categoria: category,
+                duracion: parseInt(duration),
+                precio: parseFloat(price),
+                descripcion: description,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('servicios').doc(serviceId)
+                .set(newService)
+                .then(() => {
+                    console.log("Servicio creado con éxito");
+                    // Cerrar modal
+                    closeNewServiceModal();
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio creado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear el servicio: ", error);
+                    alert('Error al crear el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal de edición de servicio
+        function openEditServiceModal(serviceId) {
+            // Buscar servicio
+            const service = services.find(s => s.id === serviceId);
+            
+            if (!service) {
+                alert('Servicio no encontrado');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-service-name').value = service.nombre;
+            document.getElementById('edit-service-category').value = service.categoria;
+            document.getElementById('edit-service-duration').value = service.duracion;
+            document.getElementById('edit-service-price').value = service.precio;
+            document.getElementById('edit-service-description').value = service.descripcion || '';
+            
+            // Guardar ID del servicio actual
+            currentServiceId = serviceId;
+            
+            // Mostrar modal
+            document.getElementById('edit-service-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de servicio
+        function closeEditServiceModal() {
+            document.getElementById('edit-service-modal').style.display = 'none';
+            currentServiceId = null;
+        }
+        
+        // Guardar cambios de servicio
+        function saveServiceChanges() {
+            // Verificar que hay un servicio seleccionado
+            if (!currentServiceId) {
+                alert('No hay servicio seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-service-name').value;
+            const category = document.getElementById('edit-service-category').value;
+            const duration = document.getElementById('edit-service-duration').value;
+            const price = document.getElementById('edit-service-price').value;
+            const description = document.getElementById('edit-service-description').value;
+            
+            // Validar datos (igual que en createNewService)
+            if (!name) {
+                alert('El nombre del servicio es obligatorio');
+                return;
+            }
+            
+            if (!duration || isNaN(duration) || parseInt(duration) <= 0) {
+                alert('La duración debe ser un número positivo');
+                return;
+            }
+            
+            if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                alert('El precio debe ser un número positivo');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                categoria: category,
+                duracion: parseInt(duration),
+                precio: parseFloat(price),
+                descripcion: description,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('servicios').doc(currentServiceId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Servicio actualizado con éxito");
+                    // Cerrar modal
+                    closeEditServiceModal();
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio actualizado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar el servicio: ", error);
+                    alert('Error al actualizar el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar servicio
+        function deleteService(serviceId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('servicios').doc(serviceId)
+                .delete()
+                .then(() => {
+                    console.log("Servicio eliminado con éxito");
+                    // Recargar servicios
+                    loadServices();
+                    // Mostrar mensaje
+                    alert('Servicio eliminado correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar el servicio: ", error);
+                    alert('Error al eliminar el servicio. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Buscar servicios
+        function searchServices() {
+            const searchText = document.getElementById('services-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todos los servicios
+                renderServicesTable();
+                return;
+            }
+            
+            // Filtrar servicios según el texto de búsqueda
+            const filteredServices = services.filter(service => 
+                service.nombre.toLowerCase().includes(searchText) ||
+                service.categoria.toLowerCase().includes(searchText) ||
+                (service.descripcion && service.descripcion.toLowerCase().includes(searchText))
+            );
+            
+            // Actualizar tabla con los servicios filtrados
+            const tableBody = document.getElementById('services-table');
+            if (!tableBody) return;
+            
+            // Limpiar tabla
+            tableBody.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredServices.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Cargar servicios filtrados
+            filteredServices.forEach(service => {
+                const row = document.createElement('tr');
+                
+                // Nombre
+                const nameCell = document.createElement('td');
+                nameCell.textContent = service.nombre;
+                row.appendChild(nameCell);
+                
+                // Categoría
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = service.categoria;
+                row.appendChild(categoryCell);
+                
+                // Duración
+                const durationCell = document.createElement('td');
+                durationCell.textContent = service.duracion + ' min';
+                row.appendChild(durationCell);
+                
+                // Precio
+                const priceCell = document.createElement('td');
+                priceCell.textContent = 's/' + service.precio;
+                row.appendChild(priceCell);
+                
+                // Acciones
+                const actionsCell = document.createElement('td');
+                actionsCell.innerHTML = `
+                    <button class="admin-action-btn admin-action-edit" onclick="openEditServiceModal('${service.id}')">✎</button>
+                    <button class="admin-action-btn admin-action-cancel" onclick="deleteService('${service.id}')">✕</button>
+                `;
+                row.appendChild(actionsCell);
+                
+                // Agregar fila a la tabla
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE PROMOCIONES =====
+        
+        // Cargar promociones desde Firestore
+        function loadPromotions() {
+            db.collection('promociones')
+                .get()
+                .then((snapshot) => {
+                    promotions = [];
+                    snapshot.forEach((doc) => {
+                        promotions.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderPromotions();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar promociones:", error);
+                });
+        }
+        
+        // Renderizar promociones
+        function renderPromotions() {
+            const container = document.getElementById('promotions-container');
+            if (!container) return;
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            if (promotions.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📢</div>
+                        <div class="admin-empty-state-text">No hay promociones registradas</div>
+                        <button class="admin-button" onclick="openNewPromotionModal()">+ Agregar Promoción</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar promociones por estado (activas primero) y nombre
+            promotions.sort((a, b) => {
+                if (a.estado !== b.estado) {
+                    return a.estado === 'active' ? -1 : 1;
+                }
+                return a.nombre.localeCompare(b.nombre);
+            });
+            
+            // Renderizar cada promoción
+            promotions.forEach(promotion => {
+                const promoCard = document.createElement('div');
+                promoCard.className = 'promo-card';
+                
+                promoCard.innerHTML = `
+                    <div class="promo-info">
+                        <div class="promo-title">${promotion.nombre}</div>
+                        <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
+                        <div class="promo-discount">Descuento: ${promotion.descuento}</div>
+                        <div>
+                            <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
+                                ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
+                        <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
+                    </div>
+                `;
+                
+                container.appendChild(promoCard);
+            });
+        }
+        
+        // Abrir modal para nueva promoción
+        function openNewPromotionModal() {
+            // Limpiar formulario
+            document.getElementById('new-promotion-name').value = '';
+            document.getElementById('new-promotion-description').value = '';
+            document.getElementById('new-promotion-discount').value = '';
+            document.getElementById('new-promotion-status').value = 'active';
+            
+            // Mostrar modal
+            document.getElementById('new-promotion-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de nueva promoción
+        function closeNewPromotionModal() {
+            document.getElementById('new-promotion-modal').style.display = 'none';
+        }
+        
+        // Crear nueva promoción
+        function createNewPromotion() {
+            // Obtener datos del formulario
+            const name = document.getElementById('new-promotion-name').value;
+            const description = document.getElementById('new-promotion-description').value;
+            const discount = document.getElementById('new-promotion-discount').value;
+            const status = document.getElementById('new-promotion-status').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre de la promoción es obligatorio');
+                return;
+            }
+            
+            if (!discount) {
+                alert('El descuento es obligatorio');
+                return;
+            }
+            
+            // ID único
+            const promotionId = 'promo_' + Date.now().toString();
+            
+            // Crear promoción
+            const newPromotion = {
+                id: promotionId,
+                nombre: name,
+                descripcion: description,
+                descuento: discount,
+                estado: status,
+                fechaCreacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('promociones').doc(promotionId)
+                .set(newPromotion)
+                .then(() => {
+                    console.log("Promoción creada con éxito");
+                    // Cerrar modal
+                    closeNewPromotionModal();
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción creada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al crear la promoción: ", error);
+                    alert('Error al crear la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Abrir modal de edición de promoción
+        function openEditPromotionModal(promotionId) {
+            // Buscar promoción
+            const promotion = promotions.find(p => p.id === promotionId);
+            
+            if (!promotion) {
+                alert('Promoción no encontrada');
+                return;
+            }
+            
+            // Llenar formulario
+            document.getElementById('edit-promotion-name').value = promotion.nombre;
+            document.getElementById('edit-promotion-description').value = promotion.descripcion || '';
+            document.getElementById('edit-promotion-discount').value = promotion.descuento;
+            document.getElementById('edit-promotion-status').value = promotion.estado || 'active';
+            
+            // Guardar ID de la promoción actual
+            currentPromotionId = promotionId;
+            
+            // Mostrar modal
+            document.getElementById('edit-promotion-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de edición de promoción
+        function closeEditPromotionModal() {
+            document.getElementById('edit-promotion-modal').style.display = 'none';
+            currentPromotionId = null;
+        }
+        
+        // Guardar cambios de promoción
+        function savePromotionChanges() {
+            // Verificar que hay una promoción seleccionada
+            if (!currentPromotionId) {
+                alert('No hay promoción seleccionada');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const name = document.getElementById('edit-promotion-name').value;
+            const description = document.getElementById('edit-promotion-description').value;
+            const discount = document.getElementById('edit-promotion-discount').value;
+            const status = document.getElementById('edit-promotion-status').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre de la promoción es obligatorio');
+                return;
+            }
+            
+            if (!discount) {
+                alert('El descuento es obligatorio');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                nombre: name,
+                descripcion: description,
+                descuento: discount,
+                estado: status,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('promociones').doc(currentPromotionId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Promoción actualizada con éxito");
+                    // Cerrar modal
+                    closeEditPromotionModal();
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción actualizada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar la promoción: ", error);
+                    alert('Error al actualizar la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Eliminar promoción
+        function deletePromotion(promotionId) {
+            // Confirmar eliminación
+            if (!confirm('¿Estás seguro de que deseas eliminar esta promoción? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            // Eliminar de Firestore
+            db.collection('promociones').doc(promotionId)
+                .delete()
+                .then(() => {
+                    console.log("Promoción eliminada con éxito");
+                    // Recargar promociones
+                    loadPromotions();
+                    // Mostrar mensaje
+                    alert('Promoción eliminada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar la promoción: ", error);
+                    alert('Error al eliminar la promoción. Inténtalo de nuevo.');
+                });
+        }
+        
+        // Buscar promociones
+        function searchPromotions() {
+            const searchText = document.getElementById('promotions-search').value.toLowerCase();
+            
+            if (!searchText.trim()) {
+                // Si no hay texto, mostrar todas las promociones
+                renderPromotions();
+                return;
+            }
+            
+            // Filtrar promociones según el texto de búsqueda
+            const filteredPromotions = promotions.filter(promotion => 
+                promotion.nombre.toLowerCase().includes(searchText) ||
+                (promotion.descripcion && promotion.descripcion.toLowerCase().includes(searchText)) ||
+                promotion.descuento.toLowerCase().includes(searchText)
+            );
+            
+            // Actualizar contenedor con las promociones filtradas
+            const container = document.getElementById('promotions-container');
+            if (!container) return;
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            // Si no hay resultados, mostrar mensaje
+            if (filteredPromotions.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-text">No se encontraron resultados para "${searchText}"</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Cargar promociones filtradas
+            filteredPromotions.forEach(promotion => {
+                const promoCard = document.createElement('div');
+                promoCard.className = 'promo-card';
+                
+                promoCard.innerHTML = `
+                    <div class="promo-info">
+                        <div class="promo-title">${promotion.nombre}</div>
+                        <div class="promo-description">${promotion.descripcion || 'Sin descripción'}</div>
+                        <div class="promo-discount">Descuento: ${promotion.descuento}</div>
+                        <div>
+                            <span class="admin-badge ${promotion.estado === 'active' ? 'admin-badge-confirmed' : 'admin-badge-canceled'}">
+                                ${promotion.estado === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="admin-action-btn admin-action-edit" onclick="openEditPromotionModal('${promotion.id}')">✎</button>
+                        <button class="admin-action-btn admin-action-cancel" onclick="deletePromotion('${promotion.id}')">✕</button>
+                    </div>
+                `;
+                
+                container.appendChild(promoCard);
+            });
+        }
+        
+        // ===== FUNCIONES PARA GESTIÓN DE DISPONIBILIDAD =====
+        
+        // Mostrar sección de disponibilidad
+        function showAvailabilitySection() {
+            // Ocultar tabla de citas y mostrar sección de disponibilidad
+            document.querySelector('#appointments .admin-table').style.display = 'none';
+            document.getElementById('availability-section').style.display = 'block';
+            
+            // Actualizar UI
+            updateAdminMonthLabel();
+            loadAvailability();
+            
+            // Actualizar tabs
+            const tabs = document.querySelectorAll('#appointments .admin-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabs[4].classList.add('active'); // La tab de Disponibilidad
+        }
+        
+        // Ocultar sección de disponibilidad
+        function hideAvailabilitySection() {
+            document.querySelector('#appointments .admin-table').style.display = 'table';
+            document.getElementById('availability-section').style.display = 'none';
+        }
+        
+        // Cambiar mes en administrador
+        function changeAdminMonth(offset) {
+            currentAdminMonth.setMonth(currentAdminMonth.getMonth() + offset);
+            updateAdminMonthLabel();
+            loadAvailability();
+        }
+        
+        // Actualizar etiqueta del mes
+        function updateAdminMonthLabel() {
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const monthName = months[currentAdminMonth.getMonth()];
+            const year = currentAdminMonth.getFullYear();
+            
+            document.getElementById('currentMonthLabel').textContent = `${monthName} ${year}`;
+        }
+        
+        // Cargar disponibilidad desde Firestore
+        function loadAvailability() {
+            // Obtener el primer y último día del mes actual
+            const firstDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth(), 1);
+            const lastDay = new Date(currentAdminMonth.getFullYear(), currentAdminMonth.getMonth() + 1, 0);
+            
+            // Consultar Firestore para obtener la disponibilidad del mes actual
+            db.collection('disponibilidad')
+                .where('fecha', '>=', firstDay.toISOString())
+                .where('fecha', '<=', lastDay.toISOString())
+                .get()
+                .then((snapshot) => {
+                    availableTimes = [];
+                    snapshot.forEach((doc) => {
+                        availableTimes.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    renderAvailabilityList();
+                })
+                .catch((error) => {
+                    console.error("Error al cargar disponibilidad:", error);
+                });
+        }
+        
+        // Renderizar lista de disponibilidad
+        function renderAvailabilityList() {
+            const container = document.getElementById('availability-list');
+            container.innerHTML = '';
+            
+            if (availableTimes.length === 0) {
+                container.innerHTML = `
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-state-icon">📅</div>
+                        <div class="admin-empty-state-text">No hay horarios disponibles para este mes</div>
+                        <button class="admin-button" onclick="openNewAvailabilityModal()">+ Agregar Horario</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Agrupar por día
+            const dayGroups = {};
+            availableTimes.forEach(slot => {
+                const dateObj = new Date(slot.fecha);
+                const dayKey = getDayFromDate(dateObj);
+                
+                if (!dayGroups[dayKey]) {
+                    dayGroups[dayKey] = [];
+                }
+                
+                dayGroups[dayKey].push(slot);
+            });
+            
+            // Renderizar cada día con sus horarios
+            Object.keys(dayGroups).sort().forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'availability-day';
+                
+                const slots = dayGroups[day];
+                
+                // Crear cabecera del día
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'availability-day-header';
+                dayHeader.innerHTML = `
+                    <div class="availability-day-date">${day}</div>
+                `;
+                
+                // Crear contenedor de horarios
+                const timesContainer = document.createElement('div');
+                timesContainer.className = 'availability-times';
+                
+                // Ordenar slots por hora
+                slots.sort((a, b) => {
+                    return a.hora.localeCompare(b.hora);
+                });
+                
+                // Agregar cada horario
+                slots.forEach(slot => {
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'availability-time';
+                    
+                    let statusClass = '';
+                    switch (slot.capacidad) {
+                        case 'high': statusClass = 'status-high'; break;
+                        case 'medium': statusClass = 'status-medium'; break;
+                        case 'low': statusClass = 'status-low'; break;
+                        case 'unavailable': statusClass = 'status-unavailable'; break;
+                    }
+                    
+                    timeEl.innerHTML = `
+                        <div class="availability-time-info">
+                            <div class="availability-status ${statusClass}"></div>
+                            <div>${slot.hora}</div>
+                        </div>
+                        <div class="availability-time-actions">
+                            <button class="admin-action-btn admin-action-edit" onclick="openEditAvailabilityModal('${slot.id}')">✎</button>
+                        </div>
+                    `;
+                    
+                    timesContainer.appendChild(timeEl);
+                });
+                
+                // Agregar elementos al día
+                dayEl.appendChild(dayHeader);
+                dayEl.appendChild(timesContainer);
+                
+                // Agregar día al contenedor principal
+                container.appendChild(dayEl);
+            });
+        }
+        
+       // Abrir modal para nueva disponibilidad
 function openNewAvailabilityModal() {
     // Establecer fecha actual por defecto
     const today = new Date();
@@ -3511,13 +3455,13 @@ function openNewAvailabilityModal() {
     // Mostrar modal
     document.getElementById('new-availability-modal').style.display = 'block';
 }
+        // Cerrar modal de nueva disponibilidad
+        function closeNewAvailabilityModal() {
+            document.getElementById('new-availability-modal').style.display = 'none';
+        }
+        
+   // Crear nueva disponibilidad
 
-// Cerrar modal de nueva disponibilidad
-function closeNewAvailabilityModal() {
-    document.getElementById('new-availability-modal').style.display = 'none';
-}
-
-// Crear nueva disponibilidad - FUNCIÓN MEJORADA
 function createNewAvailability() {
     // Obtener datos del formulario
     const dateInput = document.getElementById('new-avail-date').value;
@@ -3535,16 +3479,9 @@ function createNewAvailability() {
     // Formatear la hora en formato 12h con AM/PM
     const formattedTime = `${hour}:${minute} ${period}`;
     
-    // Crear objeto Date para manejar correctamente la fecha
-    // Añadimos hora 12 para evitar problemas con cambios de día por zona horaria
-    const [year, month, day] = dateInput.split('-');
-    const dateObj = new Date(year, parseInt(month) - 1, day, 12, 0, 0);
-    
-    // Obtener el día formateado usando la fecha creada
-    const formattedDay = getDayFromDate(dateObj);
-    
-    // Crear el objeto ISO para guardar
-    const isoDate = dateObj.toISOString();
+    // Obtener el día formateado
+    const day = getDayFromDate(dateInput);
+
     
     // ID único
     const availabilityId = 'avail_' + Date.now().toString();
@@ -3552,8 +3489,8 @@ function createNewAvailability() {
     // Crear objeto de disponibilidad
     const availabilityData = {
         id: availabilityId,
-        fecha: isoDate,
-        dia: formattedDay,
+        fecha: dateInput,
+        dia: day,
         hora: formattedTime,
         capacidad: capacity,
         fechaCreacion: new Date().toISOString()
@@ -3577,120 +3514,6 @@ function createNewAvailability() {
         .catch((error) => {
             console.error("Error al crear horario:", error);
             alert('Error al crear horario. Inténtalo de nuevo.');
-        });
-}
-
-// Abrir modal para editar disponibilidad
-function openEditAvailabilityModal(availabilityId) {
-    // Buscar la disponibilidad
-    const availability = availableTimes.find(a => a.id === availabilityId);
-    
-    if (!availability) {
-        alert('Horario no encontrado');
-        return;
-    }
-    
-    // Llenar formulario
-    document.getElementById('edit-avail-date').value = availability.dia;
-    document.getElementById('edit-avail-time').value = availability.hora;
-    document.getElementById('edit-avail-capacity').value = availability.capacidad || 'high';
-    
-    // Guardar ID actual
-    currentAvailabilityId = availabilityId;
-    
-    // Mostrar modal
-    document.getElementById('edit-availability-modal').style.display = 'block';
-}
-
-// Cerrar modal de editar disponibilidad
-function closeEditAvailabilityModal() {
-    document.getElementById('edit-availability-modal').style.display = 'none';
-    currentAvailabilityId = null;
-}
-
-// Guardar cambios de disponibilidad
-function saveAvailabilityChanges() {
-    // Verificar que hay una disponibilidad seleccionada
-    if (!currentAvailabilityId) {
-        alert('No hay horario seleccionado');
-        return;
-    }
-    
-    // Obtener datos del formulario
-    const capacity = document.getElementById('edit-avail-capacity').value;
-    
-    // Buscar la disponibilidad actual para obtener día y hora
-    const availability = availableTimes.find(a => a.id === currentAvailabilityId);
-    
-    // Verificar
-    if (!availability) {
-        alert('Horario no encontrado');
-        return;
-    }
-    
-    // Preparar datos actualizados
-    const updatedData = {
-        capacidad: capacity,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-    // Actualizar en Firestore
-    db.collection('disponibilidad').doc(currentAvailabilityId)
-        .update(updatedData)
-        .then(() => {
-            console.log("Horario actualizado con éxito");
-            // Cerrar modal
-            closeEditAvailabilityModal();
-            // Recargar disponibilidad
-            loadAvailability();
-            // Mostrar mensaje
-            alert('Horario actualizado correctamente');
-            
-            // Actualizar también la página principal
-            updateHomepageAvailability(availability.dia, availability.hora, capacity);
-        })
-        .catch((error) => {
-            console.error("Error al actualizar horario:", error);
-            alert('Error al actualizar horario. Inténtalo de nuevo.');
-        });
-}
-
-// Eliminar disponibilidad
-function deleteAvailability() {
-    // Verificar que hay una disponibilidad seleccionada
-    if (!currentAvailabilityId) {
-        alert('No hay horario seleccionado');
-        return;
-    }
-    
-    // Confirmar
-    if (!confirm('¿Estás seguro de que deseas eliminar este horario?')) {
-        return;
-    }
-    
-    // Buscar la disponibilidad actual para obtener día y hora
-    const availability = availableTimes.find(a => a.id === currentAvailabilityId);
-    
-    // Eliminar de Firestore
-    db.collection('disponibilidad').doc(currentAvailabilityId)
-        .delete()
-        .then(() => {
-            console.log("Horario eliminado con éxito");
-            // Cerrar modal
-            closeEditAvailabilityModal();
-            // Recargar disponibilidad
-            loadAvailability();
-            // Mostrar mensaje
-            alert('Horario eliminado correctamente');
-            
-            // Actualizar también la página principal si hay disponibilidad
-            if (availability) {
-                updateHomepageAvailability(availability.dia, availability.hora, 'unavailable');
-            }
-        })
-        .catch((error) => {
-            console.error("Error al eliminar horario:", error);
-            alert('Error al eliminar horario. Inténtalo de nuevo.');
         });
 }
 
@@ -3718,108 +3541,254 @@ function formatTimeTo12Hour(time24h) {
     
     return `${hour}:${minutes} ${period}`;
 }
-
-// Actualizar disponibilidad en la página principal
-function updateHomepageAvailability(day, time, capacity) {
-    console.log(`Actualizado en la página principal: Día ${day}, Hora ${time}, Capacidad ${capacity}`);
-    // Aquí se podría implementar una actualización en tiempo real 
-    // a través de sockets o mensajería si se requiere
-}
-
-// ===== FUNCIONES PARA CONFIGURACIÓN =====
-
-// Inicializar funcionalidad de configuración
-function initSettings() {
-    // Inicializar previsualización de colores
-    const primaryColorInput = document.getElementById('settings-primary-color');
-    const secondaryColorInput = document.getElementById('settings-secondary-color');
+        // Función para convertir fecha a formato "Lunes 1 Mayo"
+function getDayFromDate(dateString) {
+    let date;
     
-    if (primaryColorInput) {
-        primaryColorInput.addEventListener('input', updateColorPreviews);
+    if (typeof dateString === 'string' && dateString.includes('-')) {
+        // Si es una cadena de formato YYYY-MM-DD (desde input date)
+        const parts = dateString.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // Meses en JS son 0-indexed
+        const day = parseInt(parts[2]);
+        
+        // Crear fecha específicamente con estos valores y tiempo a mediodía
+        // para evitar problemas de zona horaria
+        date = new Date(year, month, day, 12, 0, 0);
+    } else {
+        // Si ya es un objeto Date u otro formato
+        date = new Date(dateString);
     }
     
-    if (secondaryColorInput) {
-        secondaryColorInput.addEventListener('input', updateColorPreviews);
-    }
+    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const weekday = weekdays[date.getDay()];
+    const dayOfMonth = date.getDate();
+    const monthName = months[date.getMonth()];
+    
+    return `${weekday} ${dayOfMonth} ${monthName}`;
 }
-
-// Cargar configuración
-function loadSettings() {
-    db.collection('configuracion').doc('settings')
-        .get()
-        .then((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                
-                // Llenar campos del formulario
-                document.getElementById('settings-name').value = data.nombre || 'MG STUDIO';
-                document.getElementById('settings-address').value = data.direccion || 'Jr. Bolognesi 265';
-                document.getElementById('settings-phone').value = data.telefono || '995 904 351';
-                document.getElementById('settings-instagram').value = data.instagram || 'https://www.instagram.com/mg.studio_pe';
-                
-                // Colores
-                document.getElementById('settings-primary-color').value = data.colorPrimario || '#ff4b7d';
-                document.getElementById('settings-secondary-color').value = data.colorSecundario || '#333333';
-                
-                // Actualizar previsualizaciones
-                updateColorPreviews();
+        
+        // Abrir modal para editar disponibilidad
+        function openEditAvailabilityModal(availabilityId) {
+            // Buscar la disponibilidad
+            const availability = availableTimes.find(a => a.id === availabilityId);
+            
+            if (!availability) {
+                alert('Horario no encontrado');
+                return;
             }
-        })
-        .catch((error) => {
-            console.error("Error al cargar configuración:", error);
-        });
-}
+            
+            // Llenar formulario
+            document.getElementById('edit-avail-date').value = availability.dia;
+            document.getElementById('edit-avail-time').value = availability.hora;
+            document.getElementById('edit-avail-capacity').value = availability.capacidad;
+            
+            // Guardar ID actual
+            currentAvailabilityId = availabilityId;
+            
+            // Mostrar modal
+            document.getElementById('edit-availability-modal').style.display = 'block';
+        }
+        
+        // Cerrar modal de editar disponibilidad
+        function closeEditAvailabilityModal() {
+            document.getElementById('edit-availability-modal').style.display = 'none';
+            currentAvailabilityId = null;
+        }
+        
+        // Guardar cambios de disponibilidad
+        function saveAvailabilityChanges() {
+            // Verificar que hay una disponibilidad seleccionada
+            if (!currentAvailabilityId) {
+                alert('No hay horario seleccionado');
+                return;
+            }
+            
+            // Obtener datos del formulario
+            const capacity = document.getElementById('edit-avail-capacity').value;
+            
+            // Buscar la disponibilidad actual para obtener día y hora
+            const availability = availableTimes.find(a => a.id === currentAvailabilityId);
+            
+            // Verificar
+            if (!availability) {
+                alert('Horario no encontrado');
+                return;
+            }
+            
+            // Preparar datos actualizados
+            const updatedData = {
+                capacidad: capacity,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Actualizar en Firestore
+            db.collection('disponibilidad').doc(currentAvailabilityId)
+                .update(updatedData)
+                .then(() => {
+                    console.log("Horario actualizado con éxito");
+                    // Cerrar modal
+                    closeEditAvailabilityModal();
+                    // Recargar disponibilidad
+                    loadAvailability();
+                    // Mostrar mensaje
+                    alert('Horario actualizado correctamente');
+                    
+                    // Actualizar también la página principal
+                    updateHomepageAvailability(availability.dia, availability.hora, capacity);
+                })
+                .catch((error) => {
+                    console.error("Error al actualizar horario:", error);
+                    alert('Error al actualizar horario. Inténtalo de nuevo.');
+                });
+        }
+        
+        
+        // Eliminar disponibilidad
+        function deleteAvailability() {
+            // Verificar que hay una disponibilidad seleccionada
+            if (!currentAvailabilityId) {
+                alert('No hay horario seleccionado');
+                return;
+            }
+            
+            // Confirmar
+            if (!confirm('¿Estás seguro de que deseas eliminar este horario?')) {
+                return;
+            }
+            
+            // Buscar la disponibilidad actual para obtener día y hora
+            const availability = availableTimes.find(a => a.id === currentAvailabilityId);
+            
+            // Eliminar de Firestore
+            db.collection('disponibilidad').doc(currentAvailabilityId)
+                .delete()
+                .then(() => {
+                    console.log("Horario eliminado con éxito");
+                    // Cerrar modal
+                    closeEditAvailabilityModal();
+                    // Recargar disponibilidad
+                    loadAvailability();
+                    // Mostrar mensaje
+                    alert('Horario eliminado correctamente');
+                    
+                    // Actualizar también la página principal si hay disponibilidad
+                    if (availability) {
+                        updateHomepageAvailability(availability.dia, availability.hora, 'unavailable');
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error al eliminar horario:", error);
+                    alert('Error al eliminar horario. Inténtalo de nuevo.');
+                });
+        }
 
-// Actualizar previsualizaciones de color
-function updateColorPreviews() {
-    const primaryColor = document.getElementById('settings-primary-color').value;
-    const secondaryColor = document.getElementById('settings-secondary-color').value;
     
-    // Actualizar previsualizaciones
-    document.getElementById('primaryColorPreview').style.backgroundColor = primaryColor;
-    document.getElementById('secondaryColorPreview').style.backgroundColor = secondaryColor;
-}
-
-// Guardar configuración
-function saveSettings() {
-    // Obtener datos del formulario
-    const name = document.getElementById('settings-name').value;
-    const address = document.getElementById('settings-address').value;
-    const phone = document.getElementById('settings-phone').value;
-    const instagram = document.getElementById('settings-instagram').value;
-    const primaryColor = document.getElementById('settings-primary-color').value;
-    const secondaryColor = document.getElementById('settings-secondary-color').value;
-    
-    // Validar datos
-    if (!name) {
-        alert('El nombre del estudio es obligatorio');
-        return;
-    }
-    
-    // Preparar datos
-    const settingsData = {
-        nombre: name,
-        direccion: address,
-        telefono: phone,
-        instagram: instagram,
-        colorPrimario: primaryColor,
-        colorSecundario: secondaryColor,
-        fechaActualizacion: new Date().toISOString()
-    };
-    
-   // Guardar en Firestore
-    db.collection('configuracion').doc('settings')
-        .set(settingsData, { merge: true })
-        .then(() => {
-            console.log("Configuración guardada con éxito");
-            alert('Configuración guardada correctamente');
-        })
-        .catch((error) => {
-            console.error("Error al guardar configuración:", error);
-            alert('Error al guardar configuración. Inténtalo de nuevo.');
-        });
-}
+        
+        // Actualizar disponibilidad en la página principal
+        // Esta función sería ideal si tuviéramos una base de datos en tiempo real,
+        // pero como estamos usando Firestore, los cambios se reflejarán al recargar la página
+        function updateHomepageAvailability(day, time, capacity) {
+            console.log(`Actualizado en la página principal: Día ${day}, Hora ${time}, Capacidad ${capacity}`);
+            // Aquí se podría implementar una actualización en tiempo real 
+            // a través de sockets o mensajería si se requiere
+        }
+        
+        // ===== FUNCIONES PARA CONFIGURACIÓN =====
+        
+        // Inicializar funcionalidad de configuración
+        function initSettings() {
+            // Inicializar previsualización de colores
+            const primaryColorInput = document.getElementById('settings-primary-color');
+            const secondaryColorInput = document.getElementById('settings-secondary-color');
+            
+            if (primaryColorInput) {
+                primaryColorInput.addEventListener('input', updateColorPreviews);
+            }
+            
+            if (secondaryColorInput) {
+                secondaryColorInput.addEventListener('input', updateColorPreviews);
+            }
+        }
+        
+        // Cargar configuración
+        function loadSettings() {
+            db.collection('configuracion').doc('settings')
+                .get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        // Llenar campos del formulario
+                        document.getElementById('settings-name').value = data.nombre || 'MG STUDIO';
+                        document.getElementById('settings-address').value = data.direccion || 'Jr. Bolognesi 265';
+                        document.getElementById('settings-phone').value = data.telefono || '995 904 351';
+                        document.getElementById('settings-instagram').value = data.instagram || 'https://www.instagram.com/mg.studio_pe';
+                        
+                        // Colores
+                        document.getElementById('settings-primary-color').value = data.colorPrimario || '#ff4b7d';
+                        document.getElementById('settings-secondary-color').value = data.colorSecundario || '#333333';
+                        
+                        // Actualizar previsualizaciones
+                        updateColorPreviews();
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error al cargar configuración:", error);
+                });
+        }
+        
+        // Actualizar previsualizaciones de color
+        function updateColorPreviews() {
+            const primaryColor = document.getElementById('settings-primary-color').value;
+            const secondaryColor = document.getElementById('settings-secondary-color').value;
+            
+            // Actualizar previsualizaciones
+            document.getElementById('primaryColorPreview').style.backgroundColor = primaryColor;
+            document.getElementById('secondaryColorPreview').style.backgroundColor = secondaryColor;
+        }
+        
+        // Guardar configuración
+        function saveSettings() {
+            // Obtener datos del formulario
+            const name = document.getElementById('settings-name').value;
+            const address = document.getElementById('settings-address').value;
+            const phone = document.getElementById('settings-phone').value;
+            const instagram = document.getElementById('settings-instagram').value;
+            const primaryColor = document.getElementById('settings-primary-color').value;
+            const secondaryColor = document.getElementById('settings-secondary-color').value;
+            
+            // Validar datos
+            if (!name) {
+                alert('El nombre del estudio es obligatorio');
+                return;
+            }
+            
+            // Preparar datos
+            const settingsData = {
+                nombre: name,
+                direccion: address,
+                telefono: phone,
+                instagram: instagram,
+                colorPrimario: primaryColor,
+                colorSecundario: secondaryColor,
+                fechaActualizacion: new Date().toISOString()
+            };
+            
+            // Guardar en Firestore
+            db.collection('configuracion').doc('settings')
+                .set(settingsData, { merge: true })
+                .then(() => {
+                    console.log("Configuración guardada con éxito");
+                    alert('Configuración guardada correctamente');
+                })
+                .catch((error) => {
+                    console.error("Error al guardar configuración:", error);
+                    alert('Error al guardar configuración. Inténtalo de nuevo.');
+                });
+        }
     </script>
 </body>
 </html>
-                    
