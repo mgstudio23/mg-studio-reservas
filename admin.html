@@ -3566,6 +3566,34 @@ function formatTimeTo12Hour(time24h) {
     
     return `${hour}:${minutes} ${period}`;
 }
+        // Función para convertir fecha a formato "Lunes 1 Mayo"
+function getDayFromDate(dateString) {
+    let date;
+    
+    if (typeof dateString === 'string' && dateString.includes('-')) {
+        // Si es una cadena de formato YYYY-MM-DD (desde input date)
+        const parts = dateString.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // Meses en JS son 0-indexed
+        const day = parseInt(parts[2]);
+        
+        // Crear fecha específicamente con estos valores y tiempo a mediodía
+        // para evitar problemas de zona horaria
+        date = new Date(year, month, day, 12, 0, 0);
+    } else {
+        // Si ya es un objeto Date u otro formato
+        date = new Date(dateString);
+    }
+    
+    const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
+    const weekday = weekdays[date.getDay()];
+    const dayOfMonth = date.getDate();
+    const monthName = months[date.getMonth()];
+    
+    return `${weekday} ${dayOfMonth} ${monthName}`;
+}
         
         // Abrir modal para editar disponibilidad
         function openEditAvailabilityModal(availabilityId) {
